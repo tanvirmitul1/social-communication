@@ -1,0 +1,409 @@
+// This is your Prisma schema file
+// Learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Enums
+enum UserRole {
+  USER
+  MODERATOR
+  ADMIN
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+  DELETED
+}
+
+enum FriendRequestStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  CANCELED
+}
+
+enum GroupType {
+  PRIVATE
+  PUBLIC
+  SECRET
+}
+
+enum GroupMemberRole {
+  MEMBER
+  ADMIN
+  OWNER
+}
+
+enum MessageType {
+  TEXT
+  IMAGE
+  FILE
+  VOICE
+  VIDEO
+  SYSTEM
+}
+
+enum MessageStatus {
+  SENT
+  DELIVERED
+  SEEN
+}
+
+enum CallType {
+  AUDIO
+  VIDEO
+}
+
+enum CallStatus {
+  RINGING
+  ONGOING
+  ENDED
+  MISSED
+  REJECTED
+  CANCELED
+}
+
+enum NotificationType {
+  MESSAGE
+  CALL
+  FRIEND_REQUEST
+  GROUP_INVITE
+  MENTION
+  REACTION
+  SYSTEM
+}
+
+// Models
+model User {
+  id            String      @id @default(uuid())
+  username      String      @unique @db.VarChar(50)
+  email         String      @unique @db.VarChar(255)
+  passwordHash  String
+  avatar        String?     @db.VarChar(500)
+  statusMessage String?     @db.VarChar(200)
+  role          UserRole    @default(USER)
+  status        UserStatus  @default(ACTIVE)
+  isOnline      Boolean     @default(false)
+  lastSeen      DateTime    @default(now())
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  // Relations
+  devices              Device[]
+  refreshTokens        RefreshToken[]
+  sentFriendRequests   FriendRequest[]       @relation("SentFriendRequests")
+  receivedFriendRequests FriendRequest[]     @relation("ReceivedFriendRequests")
+  followers            Follow[]              @relation("UserFollowers")
+  following            Follow[]              @relation("UserFollowing")
+  groupMemberships     GroupMember[]
+  sentMessages         Message[]
+  messageReactions     MessageReaction[]
+  calls                Call[]
+  callParticipants     CallParticipant[]
+  blockedUsers         BlockedUser[]         @relation("BlockingUser")
+  blockedByUsers       BlockedUser[]         @relation("BlockedUser")
+  reports              Report[]
+  notifications        Notification[]
+  activityLogs         ActivityLog[]
+  typingIndicators     TypingIndicator[]
+
+  @@index([email])
+  @@index([username])
+  @@index([isOnline])
+  @@map("users")
+}
+
+model Device {
+  id              String   @id @default(uuid())
+  userId          String
+  deviceName      String   @db.VarChar(100)
+  deviceType      String   @db.VarChar(50)
+  deviceToken     String?  @db.VarChar(500)
+  ipAddress       String?  @db.VarChar(45)
+  userAgent       String?  @db.VarChar(500)
+  lastActiveAt    DateTime @default(now())
+  createdAt       DateTime @default(now())
+
+  // Relations
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("devices")
+}
+
+model RefreshToken {
+  id          String   @id @default(uuid())
+  userId      String
+  token       String   @unique
+  expiresAt   DateTime
+  createdAt   DateTime @default(now())
+  revokedAt   DateTime?
+
+  // Relations
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([token])
+  @@index([expiresAt])
+  @@map("refresh_tokens")
+}
+
+model FriendRequest {
+  id          String               @id @default(uuid())
+  senderId    String
+  receiverId  String
+  status      FriendRequestStatus  @default(PENDING)
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @updatedAt
+
+  // Relations
+  sender      User                 @relation("SentFriendRequests", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver    User                 @relation("ReceivedFriendRequests", fields: [receiverId], references: [id], onDelete: Cascade)
+
+  @@unique([senderId, receiverId])
+  @@index([senderId])
+  @@index([receiverId])
+  @@index([status])
+  @@map("friend_requests")
+}
+
+model Follow {
+  id          String   @id @default(uuid())
+  followerId  String
+  followingId String
+  createdAt   DateTime @default(now())
+
+  // Relations
+  follower    User     @relation("UserFollowers", fields: [followerId], references: [id], onDelete: Cascade)
+  following   User     @relation("UserFollowing", fields: [followingId], references: [id], onDelete: Cascade)
+
+  @@unique([followerId, followingId])
+  @@index([followerId])
+  @@index([followingId])
+  @@map("follows")
+}
+
+model Group {
+  id          String    @id @default(uuid())
+  title       String    @db.VarChar(100)
+  description String?   @db.VarChar(500)
+  cover       String?   @db.VarChar(500)
+  type        GroupType @default(PRIVATE)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  // Relations
+  members     GroupMember[]
+  messages    Message[]
+
+  @@index([type])
+  @@map("groups")
+}
+
+model GroupMember {
+  id        String          @id @default(uuid())
+  groupId   String
+  userId    String
+  role      GroupMemberRole @default(MEMBER)
+  joinedAt  DateTime        @default(now())
+  mutedUntil DateTime?
+
+  // Relations
+  group     Group           @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([groupId, userId])
+  @@index([groupId])
+  @@index([userId])
+  @@map("group_members")
+}
+
+model Message {
+  id          String        @id @default(uuid())
+  senderId    String
+  groupId     String?
+  receiverId  String?
+  content     String        @db.Text
+  type        MessageType   @default(TEXT)
+  metadata    Json?
+  status      MessageStatus @default(SENT)
+  isPinned    Boolean       @default(false)
+  parentId    String?
+  editedAt    DateTime?
+  deletedAt   DateTime?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  // Relations
+  sender      User            @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  group       Group?          @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  parent      Message?        @relation("MessageThread", fields: [parentId], references: [id], onDelete: SetNull)
+  replies     Message[]       @relation("MessageThread")
+  reactions   MessageReaction[]
+
+  @@index([senderId])
+  @@index([groupId])
+  @@index([receiverId])
+  @@index([parentId])
+  @@index([createdAt])
+  @@index([type])
+  @@map("messages")
+}
+
+model MessageReaction {
+  id        String   @id @default(uuid())
+  messageId String
+  userId    String
+  emoji     String   @db.VarChar(10)
+  createdAt DateTime @default(now())
+
+  // Relations
+  message   Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([messageId, userId, emoji])
+  @@index([messageId])
+  @@index([userId])
+  @@map("message_reactions")
+}
+
+model Call {
+  id          String     @id @default(uuid())
+  initiatorId String
+  groupId     String?
+  roomId      String     @unique
+  type        CallType   @default(AUDIO)
+  status      CallStatus @default(RINGING)
+  startedAt   DateTime?
+  endedAt     DateTime?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  // Relations
+  initiator   User             @relation(fields: [initiatorId], references: [id], onDelete: Cascade)
+  participants CallParticipant[]
+
+  @@index([initiatorId])
+  @@index([groupId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("calls")
+}
+
+model CallParticipant {
+  id        String    @id @default(uuid())
+  callId    String
+  userId    String
+  joinedAt  DateTime?
+  leftAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  // Relations
+  call      Call      @relation(fields: [callId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([callId, userId])
+  @@index([callId])
+  @@index([userId])
+  @@map("call_participants")
+}
+
+model BlockedUser {
+  id          String   @id @default(uuid())
+  blockerId   String
+  blockedId   String
+  reason      String?  @db.VarChar(500)
+  createdAt   DateTime @default(now())
+
+  // Relations
+  blocker     User     @relation("BlockingUser", fields: [blockerId], references: [id], onDelete: Cascade)
+  blocked     User     @relation("BlockedUser", fields: [blockedId], references: [id], onDelete: Cascade)
+
+  @@unique([blockerId, blockedId])
+  @@index([blockerId])
+  @@index([blockedId])
+  @@map("blocked_users")
+}
+
+model Report {
+  id          String   @id @default(uuid())
+  reporterId  String
+  reportedId  String
+  reason      String   @db.Text
+  status      String   @default("PENDING") @db.VarChar(50)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  reporter    User     @relation(fields: [reporterId], references: [id], onDelete: Cascade)
+
+  @@index([reporterId])
+  @@index([reportedId])
+  @@index([status])
+  @@map("reports")
+}
+
+model Notification {
+  id        String           @id @default(uuid())
+  userId    String
+  type      NotificationType
+  title     String           @db.VarChar(255)
+  message   String           @db.Text
+  data      Json?
+  isRead    Boolean          @default(false)
+  createdAt DateTime         @default(now())
+
+  // Relations
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([isRead])
+  @@index([createdAt])
+  @@map("notifications")
+}
+
+model ActivityLog {
+  id        String   @id @default(uuid())
+  userId    String
+  action    String   @db.VarChar(100)
+  resource  String   @db.VarChar(100)
+  details   Json?
+  ipAddress String?  @db.VarChar(45)
+  userAgent String?  @db.VarChar(500)
+  createdAt DateTime @default(now())
+
+  // Relations
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([action])
+  @@index([createdAt])
+  @@map("activity_logs")
+}
+
+model TypingIndicator {
+  id        String   @id @default(uuid())
+  userId    String
+  groupId   String?
+  receiverId String?
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+
+  // Relations
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([groupId])
+  @@index([receiverId])
+  @@index([expiresAt])
+  @@map("typing_indicators")
+}
