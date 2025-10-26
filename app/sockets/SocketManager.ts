@@ -44,7 +44,7 @@ export class SocketManager {
       this.io.adapter(createAdapter(pubClient, subClient));
       logger.info('Socket.IO Redis adapter configured');
     } catch (error) {
-      logger.error({ error }, 'Failed to setup Redis adapter for Socket.IO');
+      logger.warn({ error }, 'Failed to setup Redis adapter for Socket.IO - using memory adapter');
     }
   }
 

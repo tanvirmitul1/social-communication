@@ -100,28 +100,58 @@ class Application {
   }
 
   public async start(): Promise<void> {
+    let dbConnected = false;
+    let redisConnected = false;
+
+    // Test database connection
     try {
-      // Test database connection
       await prisma.$connect();
       logger.info('Database connected successfully');
-
-      // Test Redis connection
-      await redis.ping();
-      logger.info('Redis connected successfully');
-
-      // Start server
-      this.httpServer.listen(config.PORT, () => {
-        logger.info({
-          port: config.PORT,
-          env: config.NODE_ENV,
-          apiVersion: config.API_VERSION,
-        }, 'Server started successfully');
-        logger.info(`API Documentation available at http://localhost:${config.PORT}/api/docs`);
-      });
+      dbConnected = true;
     } catch (error) {
-      logger.error({ error }, 'Failed to start application');
-      process.exit(1);
+      logger.warn({ error }, 'Database connection failed - continuing without database');
     }
+
+    // Test Redis connection
+    try {
+      await Promise.race([
+        redis.ping(),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('Redis connection timeout')), 2000))
+      ]);
+      logger.info('Redis connected successfully');
+      redisConnected = true;
+    } catch (error) {
+      logger.warn('Redis connection failed - continuing without Redis');
+    }
+
+    // Start server
+    this.httpServer.on('error', (error: any) => {
+      if (error.code === 'EADDRINUSE') {
+        logger.error(`Port ${config.PORT} is already in use. Please change the PORT in your .env file.`);
+        process.exit(1);
+      } else {
+        logger.error({ error }, 'Server startup error');
+        process.exit(1);
+      }
+    });
+
+    this.httpServer.listen(config.PORT, () => {
+      logger.info({
+        port: config.PORT,
+        env: config.NODE_ENV,
+        apiVersion: config.API_VERSION,
+        dbConnected,
+        redisConnected,
+      }, 'Server started successfully');
+      logger.info(`API Documentation available at http://localhost:${config.PORT}/api/docs`);
+      
+      if (!dbConnected) {
+        logger.warn('⚠️  Database not connected - some features may not work');
+      }
+      if (!redisConnected) {
+        logger.warn('⚠️  Redis not connected - caching and real-time features disabled');
+      }
+    });
   }
 
   public async shutdown(): Promise<void> {

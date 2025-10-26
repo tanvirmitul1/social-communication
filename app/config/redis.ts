@@ -13,10 +13,12 @@ class RedisClient {
         password: config.REDIS_PASSWORD || undefined,
         db: config.REDIS_DB,
         retryStrategy: (times: number) => {
+          if (times > 3) return null; // Stop retrying after 3 attempts
           const delay = Math.min(times * 50, 2000);
           return delay;
         },
-        maxRetriesPerRequest: 3,
+        maxRetriesPerRequest: 1,
+        lazyConnect: true,
       });
 
       RedisClient.instance.on('connect', () => {
@@ -24,7 +26,11 @@ class RedisClient {
       });
 
       RedisClient.instance.on('error', (error) => {
-        logger.error({ error }, 'Redis client error');
+        if (error.code === 'ECONNREFUSED') {
+          logger.warn('Redis connection refused - Redis server not available');
+        } else {
+          logger.error({ error }, 'Redis client error');
+        }
       });
 
       RedisClient.instance.on('close', () => {
@@ -43,3 +49,8 @@ class RedisClient {
 }
 
 export const redis = RedisClient.getInstance();
+
+// Handle Redis connection errors gracefully
+redis.on('error', () => {
+  // Silently handle errors to prevent unhandled rejections
+});
