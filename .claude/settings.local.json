@@ -4,7 +4,13 @@
       "Bash(mkdir:*)",
       "Bash(ls:*)",
       "Bash(pnpm prisma:generate:*)",
-      "Bash(pnpm install:*)"
+      "Bash(pnpm install:*)",
+      "Bash(findstr:*)",
+      "Bash(curl:*)",
+      "Bash(powershell -Command:*)",
+      "Bash(net start)",
+      "Bash(\"C:\\Program Files\\PostgreSQL\\18\\bin\\psql.exe\" --version)",
+      "Bash(\"C:\\Program Files\\PostgreSQL\\18\\bin\\psql.exe\" -U postgres -l)"
     ],
     "deny": [],
     "ask": []

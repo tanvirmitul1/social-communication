@@ -114,10 +114,18 @@ class Application {
 
     // Test Redis connection
     try {
+      // Add error handler before attempting connection to prevent unhandled rejections
+      const errorHandler = () => {
+        // Suppress errors during connection test
+      };
+      redis.on('error', errorHandler);
+
       await Promise.race([
         redis.ping(),
         new Promise((_, reject) => setTimeout(() => reject(new Error('Redis connection timeout')), 2000))
       ]);
+
+      redis.off('error', errorHandler);
       logger.info('Redis connected successfully');
       redisConnected = true;
     } catch (error) {

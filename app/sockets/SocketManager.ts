@@ -39,6 +39,15 @@ export class SocketManager {
       });
       const subClient = pubClient.duplicate();
 
+      // Handle errors to prevent unhandled rejections
+      pubClient.on('error', (err) => {
+        logger.debug({ error: err }, 'Redis pubClient error during adapter setup');
+      });
+
+      subClient.on('error', (err) => {
+        logger.debug({ error: err }, 'Redis subClient error during adapter setup');
+      });
+
       await Promise.all([pubClient.connect(), subClient.connect()]);
 
       this.io.adapter(createAdapter(pubClient, subClient));

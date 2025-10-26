@@ -27,14 +27,14 @@ class RedisClient {
 
       RedisClient.instance.on('error', (error) => {
         if (error.code === 'ECONNREFUSED') {
-          logger.warn('Redis connection refused - Redis server not available');
+          logger.debug('Redis connection refused - Redis server not available');
         } else {
           logger.error({ error }, 'Redis client error');
         }
       });
 
       RedisClient.instance.on('close', () => {
-        logger.warn('Redis client connection closed');
+        logger.debug('Redis client connection closed');
       });
     }
 
