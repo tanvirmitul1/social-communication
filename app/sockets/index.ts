@@ -137,7 +137,14 @@ export class SocketManager {
 
   private async handleMessageSend(socket: AuthSocket, data: unknown): Promise<void> {
     try {
-      const messageData = data as { content: string; type?: string; groupId?: string; receiverId?: string; parentId?: string; metadata?: Record<string, unknown> };
+      const messageData = data as {
+        content: string;
+        type?: string;
+        groupId?: string;
+        receiverId?: string;
+        parentId?: string;
+        metadata?: Record<string, unknown>;
+      };
       const message = await this.messageService.sendMessage({
         senderId: socket.userId!,
         content: messageData.content,

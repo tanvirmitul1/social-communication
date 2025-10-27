@@ -55,10 +55,12 @@ export class CallSocketHandler {
         socket.emit(CONSTANTS.SOCKET_EVENTS.CALL_ANSWER, { call, roomUrl, token });
 
         // Notify initiator and other participants
-        this.io.to(`user:${callWithParticipants.initiatorId}`).emit(CONSTANTS.SOCKET_EVENTS.CALL_PARTICIPANT_JOIN, {
-          callId: callWithParticipants.id,
-          userId,
-        });
+        this.io
+          .to(`user:${callWithParticipants.initiatorId}`)
+          .emit(CONSTANTS.SOCKET_EVENTS.CALL_PARTICIPANT_JOIN, {
+            callId: callWithParticipants.id,
+            userId,
+          });
 
         callWithParticipants.participants.forEach((participant) => {
           if (participant.userId !== userId) {
