@@ -1,5 +1,5 @@
 import { injectable } from 'tsyringe';
-import { FriendRequest, Prisma, FriendRequestStatus } from '@prisma/client';
+import { FriendRequest, FriendRequestStatus } from '@prisma/client';
 import { BaseRepository } from './BaseRepository.js';
 
 @injectable()

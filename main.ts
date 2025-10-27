@@ -1,6 +1,6 @@
 import 'reflect-metadata';
 import 'express-async-errors';
-import express, { Application } from 'express';
+import express, { Application as ExpressApplication } from 'express';
 import { createServer } from 'http';
 import helmet from 'helmet';
 import cors from 'cors';
@@ -20,7 +20,7 @@ import { logger } from '@logger/index.js';
 import './app/config/container.js';
 
 class Application {
-  private app: Application;
+  private app: ExpressApplication;
   private httpServer: ReturnType<typeof createServer>;
   private socketManager: SocketManager;
 
@@ -128,7 +128,7 @@ class Application {
       redis.off('error', errorHandler);
       logger.info('Redis connected successfully');
       redisConnected = true;
-    } catch (error) {
+    } catch (_error) {
       logger.warn('Redis connection failed - continuing without Redis');
     }
 

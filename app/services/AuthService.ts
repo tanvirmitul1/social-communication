@@ -5,7 +5,7 @@ import { User } from '@prisma/client';
 import { UserRepository } from '@repositories/UserRepository.js';
 import { CacheService } from './CacheService.js';
 import { config } from '@config/env.js';
-import { UnauthorizedError, ConflictError, ValidationError } from '@errors/index.js';
+import { UnauthorizedError, ConflictError } from '@errors/index.js';
 import { CONSTANTS } from '@constants/index.js';
 import ms from 'ms';
 
@@ -94,7 +94,7 @@ export class AuthService {
   async refreshAccessToken(refreshToken: string): Promise<AuthTokens> {
     try {
       // Verify refresh token
-      const decoded = jwt.verify(refreshToken, config.JWT_REFRESH_SECRET) as TokenPayload;
+      jwt.verify(refreshToken, config.JWT_REFRESH_SECRET) as TokenPayload;
 
       // Check if token exists and is not revoked
       const tokenRecord = await this.userRepository.findRefreshToken(refreshToken);

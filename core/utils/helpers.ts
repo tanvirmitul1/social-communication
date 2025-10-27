@@ -11,7 +11,7 @@ export class Helpers {
 
   static sanitizeUser(user: unknown): unknown {
     if (typeof user !== 'object' || user === null) return user;
-    const { passwordHash, ...sanitized } = user as Record<string, unknown>;
+    const { passwordHash: _passwordHash, ...sanitized } = user as Record<string, unknown>;
     return sanitized;
   }
 

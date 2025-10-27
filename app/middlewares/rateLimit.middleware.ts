@@ -28,7 +28,7 @@ export const createRateLimiter = (options?: {
     } else {
       logger.warn('Redis not available for rate limiting - using memory store');
     }
-  } catch (error) {
+  } catch (_error) {
     logger.warn('Failed to setup Redis rate limit store - using memory store');
   }
 
