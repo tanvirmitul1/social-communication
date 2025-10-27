@@ -3,7 +3,7 @@ import { container } from '@config/container.js';
 import { UserController } from '@controllers/UserController.js';
 import { authenticate } from '@middlewares/auth.middleware.js';
 
-const router = Router();
+const router: Router = Router();
 const userController = container.resolve(UserController);
 
 router.use(authenticate);

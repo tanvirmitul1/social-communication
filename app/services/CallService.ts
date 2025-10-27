@@ -1,11 +1,34 @@
 import { injectable, inject } from 'tsyringe';
-import { Call, CallType, CallStatus } from '@prisma/client';
+import { Call, CallType, CallStatus, Prisma } from '@prisma/client';
 import { CallRepository } from '@repositories/CallRepository.js';
 import { JitsiService } from './JitsiService.js';
 import { CacheService } from './CacheService.js';
 import { NotFoundError, ForbiddenError } from '@errors/index.js';
 import { CONSTANTS } from '@constants/index.js';
 import { Helpers } from '@utils/index.js';
+
+type CallWithParticipants = Prisma.CallGetPayload<{
+  include: {
+    initiator: {
+      select: {
+        id: true;
+        username: true;
+        avatar: true;
+      };
+    };
+    participants: {
+      include: {
+        user: {
+          select: {
+            id: true;
+            username: true;
+            avatar: true;
+          };
+        };
+      };
+    };
+  };
+}>;
 
 interface InitiateCallData {
   initiatorId: string;
@@ -136,12 +159,12 @@ export class CallService {
     return await this.callRepository.updateStatus(callId, CallStatus.REJECTED);
   }
 
-  async getCallById(id: string): Promise<Call> {
+  async getCallById(id: string): Promise<CallWithParticipants> {
     const call = await this.callRepository.findById(id);
     if (!call) {
       throw new NotFoundError('Call not found');
     }
-    return call;
+    return call as CallWithParticipants;
   }
 
   async getUserCalls(

@@ -25,7 +25,7 @@ class RedisClient {
         logger.info('Redis client connected');
       });
 
-      RedisClient.instance.on('error', (error) => {
+      RedisClient.instance.on('error', (error: Error & { code?: string }) => {
         if (error.code === 'ECONNREFUSED') {
           logger.debug('Redis connection refused - Redis server not available');
         } else {

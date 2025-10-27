@@ -5,7 +5,7 @@ import { messageRoutes } from './message.routes.js';
 import { groupRoutes } from './group.routes.js';
 import { callRoutes } from './call.routes.js';
 
-const router = Router();
+const router: Router = Router();
 
 router.use('/auth', authRoutes);
 router.use('/users', userRoutes);

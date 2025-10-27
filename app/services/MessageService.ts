@@ -1,5 +1,5 @@
 import { injectable, inject } from 'tsyringe';
-import { Message, MessageStatus, MessageType } from '@prisma/client';
+import { Message, MessageStatus, MessageType, Prisma } from '@prisma/client';
 import { MessageRepository } from '@repositories/MessageRepository.js';
 import { CacheService } from './CacheService.js';
 import { NotFoundError, ForbiddenError } from '@errors/index.js';
@@ -31,7 +31,7 @@ export class MessageService {
       ...(data.groupId && { group: { connect: { id: data.groupId } } }),
       ...(data.receiverId && { receiverId: data.receiverId }),
       ...(data.parentId && { parent: { connect: { id: data.parentId } } }),
-      ...(data.metadata && { metadata: data.metadata }),
+      ...(data.metadata && { metadata: data.metadata as Prisma.InputJsonValue }),
     });
 
     // Cache message

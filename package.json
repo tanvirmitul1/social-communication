@@ -83,6 +83,7 @@
     "@types/cors": "^2.8.17",
     "@types/express": "^4.17.21",
     "@types/jsonwebtoken": "^9.0.6",
+    "@types/ms": "^2.1.0",
     "@types/multer": "^1.4.12",
     "@types/node": "^22.5.0",
     "@types/supertest": "^6.0.2",

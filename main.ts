@@ -22,12 +22,13 @@ import './app/config/container.js';
 class Application {
   private app: ExpressApplication;
   private httpServer: ReturnType<typeof createServer>;
-  private socketManager: SocketManager;
+  private _socketManager: SocketManager;
 
   constructor() {
     this.app = express();
     this.httpServer = createServer(this.app);
-    this.socketManager = new SocketManager(this.httpServer);
+    this._socketManager = new SocketManager(this.httpServer);
+    void this._socketManager; // Initialized for side effects (WebSocket setup)
 
     this.setupMiddlewares();
     this.setupRoutes();

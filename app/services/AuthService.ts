@@ -153,16 +153,19 @@ export class AuthService {
     };
 
     // Generate access token
+    // @ts-expect-error - envsafe type incompatibility with jsonwebtoken
     const accessToken = jwt.sign(payload, config.JWT_ACCESS_SECRET, {
       expiresIn: config.JWT_ACCESS_EXPIRATION,
     });
 
     // Generate refresh token
+    // @ts-expect-error - envsafe type incompatibility with jsonwebtoken
     const refreshToken = jwt.sign(payload, config.JWT_REFRESH_SECRET, {
       expiresIn: config.JWT_REFRESH_EXPIRATION,
     });
 
     // Store refresh token
+    // @ts-expect-error - envsafe type incompatibility with ms
     const expiresIn = ms(config.JWT_REFRESH_EXPIRATION);
     const expiresAt = new Date(Date.now() + expiresIn);
     await this.userRepository.createRefreshToken(user.id, refreshToken, expiresAt);
@@ -170,7 +173,7 @@ export class AuthService {
     return {
       accessToken,
       refreshToken,
-      expiresIn: config.JWT_ACCESS_EXPIRATION,
+      expiresIn: config.JWT_ACCESS_EXPIRATION as string,
     };
   }
 

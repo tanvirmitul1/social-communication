@@ -6,7 +6,7 @@ import { authenticate } from '@middlewares/auth.middleware.js';
 import { authLimiter } from '@middlewares/rateLimit.middleware.js';
 import { registerSchema, loginSchema, refreshTokenSchema } from '@validations/index.js';
 
-const router = Router();
+const router: Router = Router();
 const authController = container.resolve(AuthController);
 
 router.post('/register', authLimiter, validate(registerSchema), authController.register);

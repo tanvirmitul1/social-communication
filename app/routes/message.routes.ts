@@ -6,7 +6,7 @@ import { validate } from '@middlewares/validation.middleware.js';
 import { messageLimiter } from '@middlewares/rateLimit.middleware.js';
 import { sendMessageSchema, editMessageSchema, reactToMessageSchema } from '@validations/index.js';
 
-const router = Router();
+const router: Router = Router();
 const messageController = container.resolve(MessageController);
 
 router.use(authenticate);

@@ -137,9 +137,15 @@ export class SocketManager {
 
   private async handleMessageSend(socket: AuthSocket, data: unknown): Promise<void> {
     try {
+      const messageData = data as { content: string; type?: string; groupId?: string; receiverId?: string; parentId?: string; metadata?: Record<string, unknown> };
       const message = await this.messageService.sendMessage({
         senderId: socket.userId!,
-        ...(data as Record<string, unknown>),
+        content: messageData.content,
+        ...(messageData.type && { type: messageData.type as any }),
+        ...(messageData.groupId && { groupId: messageData.groupId }),
+        ...(messageData.receiverId && { receiverId: messageData.receiverId }),
+        ...(messageData.parentId && { parentId: messageData.parentId }),
+        ...(messageData.metadata && { metadata: messageData.metadata }),
       });
 
       // Emit to recipient or group
@@ -308,7 +314,7 @@ export class SocketManager {
   }
 
   private handleCallEnd(
-    socket: AuthSocket,
+    _socket: AuthSocket,
     data: { callId: string; participantIds: string[] }
   ): void {
     // Notify all participants

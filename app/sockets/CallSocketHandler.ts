@@ -3,6 +3,13 @@ import { container } from '@config/container.js';
 import { CallService } from '@services/CallService.js';
 import { CONSTANTS } from '@constants/index.js';
 import { logger } from '@logger/index.js';
+import { Prisma } from '@prisma/client';
+
+type CallWithParticipants = Prisma.CallGetPayload<{
+  include: {
+    participants: true;
+  };
+}>;
 
 export class CallSocketHandler {
   private callService: CallService;
@@ -43,16 +50,17 @@ export class CallSocketHandler {
     socket.on(CONSTANTS.SOCKET_EVENTS.CALL_ANSWER, async (data) => {
       try {
         const { call, roomUrl, token } = await this.callService.joinCall(data.callId, userId);
+        const callWithParticipants = call as CallWithParticipants;
 
         socket.emit(CONSTANTS.SOCKET_EVENTS.CALL_ANSWER, { call, roomUrl, token });
 
         // Notify initiator and other participants
-        this.io.to(`user:${call.initiatorId}`).emit(CONSTANTS.SOCKET_EVENTS.CALL_PARTICIPANT_JOIN, {
-          callId: call.id,
+        this.io.to(`user:${callWithParticipants.initiatorId}`).emit(CONSTANTS.SOCKET_EVENTS.CALL_PARTICIPANT_JOIN, {
+          callId: callWithParticipants.id,
           userId,
         });
 
-        call.participants.forEach((participant) => {
+        callWithParticipants.participants.forEach((participant) => {
           if (participant.userId !== userId) {
             this.io
               .to(`user:${participant.userId}`)
@@ -88,9 +96,10 @@ export class CallSocketHandler {
     socket.on(CONSTANTS.SOCKET_EVENTS.CALL_END, async (data) => {
       try {
         const call = await this.callService.endCall(data.callId, userId);
+        const callWithParticipants = call as CallWithParticipants;
 
         // Notify all participants
-        call.participants.forEach((participant) => {
+        callWithParticipants.participants.forEach((participant) => {
           this.io.to(`user:${participant.userId}`).emit(CONSTANTS.SOCKET_EVENTS.CALL_END, {
             callId: call.id,
           });

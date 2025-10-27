@@ -5,7 +5,7 @@ import { authenticate } from '@middlewares/auth.middleware.js';
 import { validate } from '@middlewares/validation.middleware.js';
 import { createGroupSchema, updateGroupSchema, addGroupMemberSchema } from '@validations/index.js';
 
-const router = Router();
+const router: Router = Router();
 const groupController = container.resolve(GroupController);
 
 router.use(authenticate);
