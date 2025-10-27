@@ -68,11 +68,7 @@ export class UserRepository extends BaseRepository {
     return this.db.user.count({ where });
   }
 
-  async createRefreshToken(
-    userId: string,
-    token: string,
-    expiresAt: Date
-  ): Promise<void> {
+  async createRefreshToken(userId: string, token: string, expiresAt: Date): Promise<void> {
     await this.db.refreshToken.create({
       data: {
         userId,

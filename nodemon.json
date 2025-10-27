@@ -1,17 +1,7 @@
 {
-  "watch": [
-    "app",
-    "core",
-    "main.ts"
-  ],
+  "watch": ["app", "core", "main.ts"],
   "ext": "ts,json",
-  "ignore": [
-    "node_modules",
-    "dist",
-    "tests",
-    "**/*.test.ts",
-    "**/*.spec.ts"
-  ],
+  "ignore": ["node_modules", "dist", "tests", "**/*.test.ts", "**/*.spec.ts"],
   "exec": "tsx main.ts",
   "legacyWatch": false,
   "delay": 1000

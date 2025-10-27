@@ -24,7 +24,7 @@ export class SocketManager {
 
     this.setupRedisAdapter();
     this.setupAuthentication();
-    
+
     this.chatHandler = new ChatSocketHandler(this.io);
     this.callHandler = new CallSocketHandler(this.io);
 
@@ -60,7 +60,8 @@ export class SocketManager {
   private setupAuthentication() {
     this.io.use((socket, next) => {
       try {
-        const token = socket.handshake.auth.token || socket.handshake.headers.authorization?.split(' ')[1];
+        const token =
+          socket.handshake.auth.token || socket.handshake.headers.authorization?.split(' ')[1];
 
         if (!token) {
           return next(new Error('Authentication token missing'));

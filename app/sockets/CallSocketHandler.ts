@@ -54,10 +54,12 @@ export class CallSocketHandler {
 
         call.participants.forEach((participant) => {
           if (participant.userId !== userId) {
-            this.io.to(`user:${participant.userId}`).emit(CONSTANTS.SOCKET_EVENTS.CALL_PARTICIPANT_JOIN, {
-              callId: call.id,
-              userId,
-            });
+            this.io
+              .to(`user:${participant.userId}`)
+              .emit(CONSTANTS.SOCKET_EVENTS.CALL_PARTICIPANT_JOIN, {
+                callId: call.id,
+                userId,
+              });
           }
         });
       } catch (error) {
@@ -107,17 +109,21 @@ export class CallSocketHandler {
         const call = await this.callService.getCallById(data.callId);
 
         // Notify remaining participants
-        this.io.to(`user:${call.initiatorId}`).emit(CONSTANTS.SOCKET_EVENTS.CALL_PARTICIPANT_LEAVE, {
-          callId: call.id,
-          userId,
-        });
+        this.io
+          .to(`user:${call.initiatorId}`)
+          .emit(CONSTANTS.SOCKET_EVENTS.CALL_PARTICIPANT_LEAVE, {
+            callId: call.id,
+            userId,
+          });
 
         call.participants.forEach((participant) => {
           if (participant.userId !== userId) {
-            this.io.to(`user:${participant.userId}`).emit(CONSTANTS.SOCKET_EVENTS.CALL_PARTICIPANT_LEAVE, {
-              callId: call.id,
-              userId,
-            });
+            this.io
+              .to(`user:${participant.userId}`)
+              .emit(CONSTANTS.SOCKET_EVENTS.CALL_PARTICIPANT_LEAVE, {
+                callId: call.id,
+                userId,
+              });
           }
         });
       } catch (error) {

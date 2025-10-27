@@ -12,24 +12,24 @@ POST /api/v1/auth/register
 Content-Type: application/json
 
 {
-  "username": "john_doe",
-  "email": "john@example.com",
-  "password": "SecurePass123"
+"username": "john_doe",
+"email": "john@example.com",
+"password": "SecurePass123"
 }
 \`\`\`
 
 **Response:**
 \`\`\`json
 {
-  "success": true,
-  "message": "User registered successfully",
-  "data": {
-    "id": "uuid",
-    "username": "john_doe",
-    "email": "john@example.com",
-    "role": "USER",
-    "createdAt": "2024-01-01T00:00:00.000Z"
-  }
+"success": true,
+"message": "User registered successfully",
+"data": {
+"id": "uuid",
+"username": "john_doe",
+"email": "john@example.com",
+"role": "USER",
+"createdAt": "2024-01-01T00:00:00.000Z"
+}
 }
 \`\`\`
 
@@ -41,26 +41,26 @@ POST /api/v1/auth/login
 Content-Type: application/json
 
 {
-  "email": "john@example.com",
-  "password": "SecurePass123"
+"email": "john@example.com",
+"password": "SecurePass123"
 }
 \`\`\`
 
 **Response:**
 \`\`\`json
 {
-  "success": true,
-  "message": "Login successful",
-  "data": {
-    "user": {
-      "id": "uuid",
-      "username": "john_doe",
-      "email": "john@example.com"
-    },
-    "accessToken": "eyJhbGciOiJIUzI1NiIs...",
-    "refreshToken": "eyJhbGciOiJIUzI1NiIs...",
-    "expiresIn": "15m"
-  }
+"success": true,
+"message": "Login successful",
+"data": {
+"user": {
+"id": "uuid",
+"username": "john_doe",
+"email": "john@example.com"
+},
+"accessToken": "eyJhbGciOiJIUzI1NiIs...",
+"refreshToken": "eyJhbGciOiJIUzI1NiIs...",
+"expiresIn": "15m"
+}
 }
 \`\`\`
 
@@ -72,19 +72,19 @@ POST /api/v1/auth/refresh
 Content-Type: application/json
 
 {
-  "refreshToken": "eyJhbGciOiJIUzI1NiIs..."
+"refreshToken": "eyJhbGciOiJIUzI1NiIs..."
 }
 \`\`\`
 
 **Response:**
 \`\`\`json
 {
-  "success": true,
-  "data": {
-    "accessToken": "new-access-token",
-    "refreshToken": "new-refresh-token",
-    "expiresIn": "15m"
-  }
+"success": true,
+"data": {
+"accessToken": "new-access-token",
+"refreshToken": "new-refresh-token",
+"expiresIn": "15m"
+}
 }
 \`\`\`
 
@@ -101,16 +101,16 @@ Authorization: Bearer <access-token>
 **Response:**
 \`\`\`json
 {
-  "success": true,
-  "data": {
-    "id": "uuid",
-    "username": "john_doe",
-    "email": "john@example.com",
-    "avatar": null,
-    "statusMessage": "Hey there!",
-    "isOnline": true,
-    "lastSeen": "2024-01-01T00:00:00.000Z"
-  }
+"success": true,
+"data": {
+"id": "uuid",
+"username": "john_doe",
+"email": "john@example.com",
+"avatar": null,
+"statusMessage": "Hey there!",
+"isOnline": true,
+"lastSeen": "2024-01-01T00:00:00.000Z"
+}
 }
 \`\`\`
 
@@ -123,8 +123,8 @@ Authorization: Bearer <access-token>
 Content-Type: application/json
 
 {
-  "statusMessage": "Busy coding!",
-  "avatar": "https://example.com/avatar.jpg"
+"statusMessage": "Busy coding!",
+"avatar": "https://example.com/avatar.jpg"
 }
 \`\`\`
 
@@ -139,14 +139,14 @@ Authorization: Bearer <access-token>
 **Response:**
 \`\`\`json
 {
-  "success": true,
-  "data": [...],
-  "meta": {
-    "page": 1,
-    "limit": 20,
-    "total": 5,
-    "totalPages": 1
-  }
+"success": true,
+"data": [...],
+"meta": {
+"page": 1,
+"limit": 20,
+"total": 5,
+"totalPages": 1
+}
 }
 \`\`\`
 
@@ -161,26 +161,26 @@ Authorization: Bearer <access-token>
 Content-Type: application/json
 
 {
-  "content": "Hello! How are you?",
-  "type": "TEXT",
-  "receiverId": "recipient-user-id"
+"content": "Hello! How are you?",
+"type": "TEXT",
+"receiverId": "recipient-user-id"
 }
 \`\`\`
 
 **Response:**
 \`\`\`json
 {
-  "success": true,
-  "message": "Message sent successfully",
-  "data": {
-    "id": "message-uuid",
-    "senderId": "sender-uuid",
-    "receiverId": "recipient-uuid",
-    "content": "Hello! How are you?",
-    "type": "TEXT",
-    "status": "SENT",
-    "createdAt": "2024-01-01T00:00:00.000Z"
-  }
+"success": true,
+"message": "Message sent successfully",
+"data": {
+"id": "message-uuid",
+"senderId": "sender-uuid",
+"receiverId": "recipient-uuid",
+"content": "Hello! How are you?",
+"type": "TEXT",
+"status": "SENT",
+"createdAt": "2024-01-01T00:00:00.000Z"
+}
 }
 \`\`\`
 
@@ -193,9 +193,9 @@ Authorization: Bearer <access-token>
 Content-Type: application/json
 
 {
-  "content": "Hello team!",
-  "type": "TEXT",
-  "groupId": "group-uuid"
+"content": "Hello team!",
+"type": "TEXT",
+"groupId": "group-uuid"
 }
 \`\`\`
 
@@ -210,29 +210,29 @@ Authorization: Bearer <access-token>
 **Response:**
 \`\`\`json
 {
-  "success": true,
-  "data": [
-    {
-      "id": "message-uuid",
-      "senderId": "uuid",
-      "receiverId": "uuid",
-      "content": "Hello!",
-      "type": "TEXT",
-      "status": "SEEN",
-      "createdAt": "2024-01-01T00:00:00.000Z",
-      "sender": {
-        "id": "uuid",
-        "username": "john_doe",
-        "avatar": null
-      }
-    }
-  ],
-  "meta": {
-    "page": 1,
-    "limit": 20,
-    "total": 50,
-    "totalPages": 3
-  }
+"success": true,
+"data": [
+{
+"id": "message-uuid",
+"senderId": "uuid",
+"receiverId": "uuid",
+"content": "Hello!",
+"type": "TEXT",
+"status": "SEEN",
+"createdAt": "2024-01-01T00:00:00.000Z",
+"sender": {
+"id": "uuid",
+"username": "john_doe",
+"avatar": null
+}
+}
+],
+"meta": {
+"page": 1,
+"limit": 20,
+"total": 50,
+"totalPages": 3
+}
 }
 \`\`\`
 
@@ -245,7 +245,7 @@ Authorization: Bearer <access-token>
 Content-Type: application/json
 
 {
-  "content": "Updated message content"
+"content": "Updated message content"
 }
 \`\`\`
 
@@ -266,7 +266,7 @@ Authorization: Bearer <access-token>
 Content-Type: application/json
 
 {
-  "emoji": "❤️"
+"emoji": "❤️"
 }
 \`\`\`
 
@@ -289,35 +289,35 @@ Authorization: Bearer <access-token>
 Content-Type: application/json
 
 {
-  "title": "Development Team",
-  "description": "Team communication channel",
-  "type": "PRIVATE"
+"title": "Development Team",
+"description": "Team communication channel",
+"type": "PRIVATE"
 }
 \`\`\`
 
 **Response:**
 \`\`\`json
 {
-  "success": true,
-  "message": "Group created successfully",
-  "data": {
-    "id": "group-uuid",
-    "title": "Development Team",
-    "description": "Team communication channel",
-    "type": "PRIVATE",
-    "createdAt": "2024-01-01T00:00:00.000Z",
-    "members": [
-      {
-        "userId": "creator-uuid",
-        "role": "OWNER",
-        "user": {
-          "id": "uuid",
-          "username": "john_doe",
-          "avatar": null
-        }
-      }
-    ]
-  }
+"success": true,
+"message": "Group created successfully",
+"data": {
+"id": "group-uuid",
+"title": "Development Team",
+"description": "Team communication channel",
+"type": "PRIVATE",
+"createdAt": "2024-01-01T00:00:00.000Z",
+"members": [
+{
+"userId": "creator-uuid",
+"role": "OWNER",
+"user": {
+"id": "uuid",
+"username": "john_doe",
+"avatar": null
+}
+}
+]
+}
 }
 \`\`\`
 
@@ -338,8 +338,8 @@ Authorization: Bearer <access-token>
 Content-Type: application/json
 
 {
-  "userId": "user-uuid",
-  "role": "MEMBER"
+"userId": "user-uuid",
+"role": "MEMBER"
 }
 \`\`\`
 
@@ -370,28 +370,28 @@ Authorization: Bearer <access-token>
 Content-Type: application/json
 
 {
-  "type": "VIDEO",
-  "participantIds": ["user-id-1", "user-id-2"]
+"type": "VIDEO",
+"participantIds": ["user-id-1", "user-id-2"]
 }
 \`\`\`
 
 **Response:**
 \`\`\`json
 {
-  "success": true,
-  "message": "Call initiated successfully",
-  "data": {
-    "call": {
-      "id": "call-uuid",
-      "initiatorId": "uuid",
-      "roomId": "social-comm-xyz123",
-      "type": "VIDEO",
-      "status": "RINGING",
-      "createdAt": "2024-01-01T00:00:00.000Z"
-    },
-    "roomUrl": "https://meet.jit.si/social-comm-xyz123?jwt=...",
-    "token": "jwt-token-for-jitsi"
-  }
+"success": true,
+"message": "Call initiated successfully",
+"data": {
+"call": {
+"id": "call-uuid",
+"initiatorId": "uuid",
+"roomId": "social-comm-xyz123",
+"type": "VIDEO",
+"status": "RINGING",
+"createdAt": "2024-01-01T00:00:00.000Z"
+},
+"roomUrl": "https://meet.jit.si/social-comm-xyz123?jwt=...",
+"token": "jwt-token-for-jitsi"
+}
 }
 \`\`\`
 
@@ -406,13 +406,13 @@ Authorization: Bearer <access-token>
 **Response:**
 \`\`\`json
 {
-  "success": true,
-  "message": "Joined call successfully",
-  "data": {
-    "call": {...},
-    "roomUrl": "https://meet.jit.si/room?jwt=...",
-    "token": "jwt-token"
-  }
+"success": true,
+"message": "Joined call successfully",
+"data": {
+"call": {...},
+"roomUrl": "https://meet.jit.si/room?jwt=...",
+"token": "jwt-token"
+}
 }
 \`\`\`
 
@@ -441,17 +441,17 @@ Authorization: Bearer <access-token>
 import io from 'socket.io-client';
 
 const socket = io('http://localhost:3000', {
-  auth: {
-    token: 'your-jwt-access-token'
-  }
+auth: {
+token: 'your-jwt-access-token'
+}
 });
 
 socket.on('connect', () => {
-  console.log('Connected to server');
+console.log('Connected to server');
 });
 
 socket.on('disconnect', () => {
-  console.log('Disconnected from server');
+console.log('Disconnected from server');
 });
 \`\`\`
 
@@ -460,14 +460,14 @@ socket.on('disconnect', () => {
 **JavaScript:**
 \`\`\`javascript
 socket.emit('message:send', {
-  content: 'Hello from WebSocket!',
-  type: 'TEXT',
-  receiverId: 'recipient-uuid'
+content: 'Hello from WebSocket!',
+type: 'TEXT',
+receiverId: 'recipient-uuid'
 });
 
 // Listen for confirmation
 socket.on('message:sent', (message) => {
-  console.log('Message sent:', message);
+console.log('Message sent:', message);
 });
 \`\`\`
 
@@ -476,8 +476,8 @@ socket.on('message:sent', (message) => {
 **JavaScript:**
 \`\`\`javascript
 socket.on('message:received', (message) => {
-  console.log('New message:', message);
-  // Update UI with new message
+console.log('New message:', message);
+// Update UI with new message
 });
 \`\`\`
 
@@ -487,21 +487,21 @@ socket.on('message:received', (message) => {
 \`\`\`javascript
 // Start typing
 socket.emit('typing:start', {
-  userId: 'recipient-uuid'
+userId: 'recipient-uuid'
 });
 
 // Stop typing
 socket.emit('typing:stop', {
-  userId: 'recipient-uuid'
+userId: 'recipient-uuid'
 });
 
 // Listen for typing events
 socket.on('typing:start', ({ userId }) => {
-  console.log(`User ${userId} is typing...`);
+console.log(`User ${userId} is typing...`);
 });
 
 socket.on('typing:stop', ({ userId }) => {
-  console.log(`User ${userId} stopped typing`);
+console.log(`User ${userId} stopped typing`);
 });
 \`\`\`
 
@@ -511,21 +511,21 @@ socket.on('typing:stop', ({ userId }) => {
 \`\`\`javascript
 // Add reaction
 socket.emit('message:reaction', {
-  messageId: 'message-uuid',
-  emoji: '❤️',
-  action: 'add'
+messageId: 'message-uuid',
+emoji: '❤️',
+action: 'add'
 });
 
 // Remove reaction
 socket.emit('message:reaction', {
-  messageId: 'message-uuid',
-  emoji: '❤️',
-  action: 'remove'
+messageId: 'message-uuid',
+emoji: '❤️',
+action: 'remove'
 });
 
 // Listen for reactions
 socket.on('message:reaction', ({ messageId, userId, emoji, action }) => {
-  console.log(`${action} reaction ${emoji} to message ${messageId}`);
+console.log(`${action} reaction ${emoji} to message ${messageId}`);
 });
 \`\`\`
 
@@ -535,37 +535,37 @@ socket.on('message:reaction', ({ messageId, userId, emoji, action }) => {
 \`\`\`javascript
 // Initiate call
 socket.emit('call:initiate', {
-  callId: 'call-uuid',
-  participantIds: ['user-1', 'user-2']
+callId: 'call-uuid',
+participantIds: ['user-1', 'user-2']
 });
 
 // Listen for incoming call
 socket.on('call:ringing', ({ callId, initiatorId }) => {
-  console.log(`Incoming call from ${initiatorId}`);
-  // Show call notification UI
+console.log(`Incoming call from ${initiatorId}`);
+// Show call notification UI
 });
 
 // Answer call
 socket.emit('call:answer', {
-  callId: 'call-uuid'
+callId: 'call-uuid'
 });
 
 // Reject call
 socket.emit('call:reject', {
-  callId: 'call-uuid',
-  initiatorId: 'initiator-uuid'
+callId: 'call-uuid',
+initiatorId: 'initiator-uuid'
 });
 
 // End call
 socket.emit('call:end', {
-  callId: 'call-uuid',
-  participantIds: ['user-1', 'user-2']
+callId: 'call-uuid',
+participantIds: ['user-1', 'user-2']
 });
 
 // Listen for call end
 socket.on('call:end', ({ callId }) => {
-  console.log(`Call ${callId} ended`);
-  // Close call UI
+console.log(`Call ${callId} ended`);
+// Close call UI
 });
 \`\`\`
 
@@ -575,13 +575,13 @@ socket.on('call:end', ({ callId }) => {
 \`\`\`javascript
 // Listen for user online status
 socket.on('user:online', ({ userId }) => {
-  console.log(`User ${userId} is now online`);
-  // Update UI
+console.log(`User ${userId} is now online`);
+// Update UI
 });
 
 socket.on('user:offline', ({ userId }) => {
-  console.log(`User ${userId} is now offline`);
-  // Update UI
+console.log(`User ${userId} is now offline`);
+// Update UI
 });
 \`\`\`
 
@@ -591,15 +591,15 @@ socket.on('user:offline', ({ userId }) => {
 
 \`\`\`json
 {
-  "success": false,
-  "message": "Validation failed",
-  "code": "VALIDATION_ERROR",
-  "details": [
-    {
-      "field": "email",
-      "message": "Invalid email format"
-    }
-  ]
+"success": false,
+"message": "Validation failed",
+"code": "VALIDATION_ERROR",
+"details": [
+{
+"field": "email",
+"message": "Invalid email format"
+}
+]
 }
 \`\`\`
 
@@ -630,8 +630,8 @@ X-RateLimit-Reset: 1640000000
 **Response:**
 \`\`\`json
 {
-  "success": false,
-  "message": "Too many requests, please try again later"
+"success": false,
+"message": "Too many requests, please try again later"
 }
 \`\`\`
 
@@ -647,14 +647,14 @@ GET /api/v1/messages/group/{groupId}?page=2&limit=50
 
 \`\`\`json
 {
-  "success": true,
-  "data": [...],
-  "meta": {
-    "page": 2,
-    "limit": 50,
-    "total": 250,
-    "totalPages": 5
-  }
+"success": true,
+"data": [...],
+"meta": {
+"page": 2,
+"limit": 50,
+"total": 250,
+"totalPages": 5
+}
 }
 \`\`\`
 
@@ -667,33 +667,33 @@ import io from 'socket.io-client';
 import axios from 'axios';
 
 class SocialCommClient {
-  private apiUrl = 'http://localhost:3000/api/v1';
-  private socket: any;
-  private accessToken: string = '';
+private apiUrl = 'http://localhost:3000/api/v1';
+private socket: any;
+private accessToken: string = '';
 
-  async register(username: string, email: string, password: string) {
-    const response = await axios.post(\`\${this.apiUrl}/auth/register\`, {
-      username,
-      email,
-      password
-    });
-    return response.data;
-  }
+async register(username: string, email: string, password: string) {
+const response = await axios.post(\`\${this.apiUrl}/auth/register\`, {
+username,
+email,
+password
+});
+return response.data;
+}
 
-  async login(email: string, password: string) {
-    const response = await axios.post(\`\${this.apiUrl}/auth/login\`, {
-      email,
-      password
-    });
-    this.accessToken = response.data.data.accessToken;
-    this.connectWebSocket();
-    return response.data;
-  }
+async login(email: string, password: string) {
+const response = await axios.post(\`\${this.apiUrl}/auth/login\`, {
+email,
+password
+});
+this.accessToken = response.data.data.accessToken;
+this.connectWebSocket();
+return response.data;
+}
 
-  connectWebSocket() {
-    this.socket = io('http://localhost:3000', {
-      auth: { token: this.accessToken }
-    });
+connectWebSocket() {
+this.socket = io('http://localhost:3000', {
+auth: { token: this.accessToken }
+});
 
     this.socket.on('connect', () => {
       console.log('WebSocket connected');
@@ -702,24 +702,25 @@ class SocialCommClient {
     this.socket.on('message:received', (message: any) => {
       console.log('New message:', message);
     });
-  }
 
-  async sendMessage(content: string, receiverId: string) {
-    const response = await axios.post(
-      \`\${this.apiUrl}/messages\`,
-      { content, receiverId, type: 'TEXT' },
-      { headers: { Authorization: \`Bearer \${this.accessToken}\` } }
-    );
-    return response.data;
-  }
+}
 
-  async getMessages(otherUserId: string, page = 1) {
-    const response = await axios.get(
-      \`\${this.apiUrl}/messages/direct/\${otherUserId}?page=\${page}\`,
-      { headers: { Authorization: \`Bearer \${this.accessToken}\` } }
-    );
-    return response.data;
-  }
+async sendMessage(content: string, receiverId: string) {
+const response = await axios.post(
+\`\${this.apiUrl}/messages\`,
+{ content, receiverId, type: 'TEXT' },
+{ headers: { Authorization: \`Bearer \${this.accessToken}\` } }
+);
+return response.data;
+}
+
+async getMessages(otherUserId: string, page = 1) {
+const response = await axios.get(
+\`\${this.apiUrl}/messages/direct/\${otherUserId}?page=\${page}\`,
+{ headers: { Authorization: \`Bearer \${this.accessToken}\` } }
+);
+return response.data;
+}
 }
 
 // Usage

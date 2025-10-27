@@ -9,6 +9,7 @@ This is an enterprise-level real-time messaging and audio/video calling platform
 ## Essential Commands
 
 ### Development Workflow
+
 ```bash
 # Initial setup (after cloning)
 pnpm install
@@ -47,6 +48,7 @@ pnpm docker:logs            # View logs
 ### Layer Architecture (Bottom-Up)
 
 **1. Core Layer** (`core/`)
+
 - Independent utilities, no dependencies on other layers
 - `errors/` - Custom error classes (AppError, ValidationError, UnauthorizedError, etc.)
 - `logger/` - Pino logger configuration
@@ -55,18 +57,21 @@ pnpm docker:logs            # View logs
 - `constants/` - Application constants including WebSocket event names
 
 **2. Domain Layer** (`app/repositories/`)
+
 - Data access abstraction using Repository Pattern
 - Each repository extends `BaseRepository` which provides access to Prisma client
 - Repositories are responsible for ALL database operations
 - Never query Prisma directly from services - always use repositories
 
 **3. Application Layer** (`app/services/`)
+
 - Business logic implementation
 - Services consume repositories via dependency injection
 - Each service handles a specific domain (Auth, User, Message, Group, Call, Cache, Jitsi)
 - Services orchestrate complex operations across multiple repositories
 
 **4. Infrastructure Layer** (`app/config/`)
+
 - `container.ts` - Dependency injection configuration (tsyringe)
 - `database.ts` - Prisma client singleton
 - `redis.ts` - Redis client singleton
@@ -74,6 +79,7 @@ pnpm docker:logs            # View logs
 - `swagger.ts` - OpenAPI specification
 
 **5. Presentation Layer** (`app/controllers/` + `app/routes/`)
+
 - Controllers handle HTTP requests/responses
 - Controllers are thin - delegate to services immediately
 - Routes define endpoint structure and apply middleware
@@ -81,21 +87,25 @@ pnpm docker:logs            # View logs
 ### Key Design Patterns
 
 **Dependency Injection (tsyringe)**
+
 - All services and repositories are registered as singletons in `app/config/container.ts`
 - Use `@inject('ServiceName')` decorator in constructors
 - Controllers resolve dependencies via `container.resolve(ControllerClass)`
 
 **Repository Pattern**
+
 - All database access goes through repositories
 - Keeps Prisma queries isolated and testable
 - Example: `UserRepository.findById()` instead of `prisma.user.findUnique()`
 
 **Service Layer Pattern**
+
 - Business logic stays in services, not controllers
 - Services can call multiple repositories
 - Services handle transactions, caching, and complex workflows
 
 **WebSocket Architecture** (`app/sockets/`)
+
 - `SocketManager` - Initializes Socket.IO server with Redis adapter for horizontal scaling
 - `ChatSocketHandler` - Handles messaging events
 - `CallSocketHandler` - Handles call events
@@ -108,17 +118,18 @@ pnpm docker:logs            # View logs
 The project uses path aliases (defined in `tsconfig.json`). Always use these imports:
 
 ```typescript
-import { UserService } from '@services/UserService.js';     // Correct
-import { NotFoundError } from '@errors/index.js';           // Correct
-import { CONSTANTS } from '@constants/index.js';            // Correct
+import { UserService } from '@services/UserService.js'; // Correct
+import { NotFoundError } from '@errors/index.js'; // Correct
+import { CONSTANTS } from '@constants/index.js'; // Correct
 
 // NOT:
-import { UserService } from '../services/UserService.js';   // Wrong
+import { UserService } from '../services/UserService.js'; // Wrong
 ```
 
 **Critical**: All imports MUST include `.js` extension (ES modules requirement).
 
 Available aliases:
+
 - `@app/*` → `app/*`
 - `@core/*` → `core/*`
 - `@config/*` → `app/config/*`
@@ -139,24 +150,29 @@ Available aliases:
 ### Key Models & Relationships
 
 **User** - Central entity
+
 - Has many: devices, refreshTokens, messages, calls, groupMemberships
 - Relations: sentFriendRequests, receivedFriendRequests, followers, following
 
 **Message** - Supports group and direct messaging
+
 - Belongs to: sender (User), group (optional), receiver (optional)
 - Self-referential: parent/replies for threading
 - Has many: reactions
 
 **Group** - Chat groups with role-based permissions
+
 - Has many: members (GroupMember), messages
 - GroupMember roles: OWNER, ADMIN, MEMBER
 
 **Call** - Jitsi integration
+
 - Belongs to: initiator (User)
 - Has many: participants (CallParticipant)
 - Stores roomId for Jitsi room
 
 **Important**: After modifying `prisma/schema.prisma`, always run:
+
 ```bash
 pnpm prisma:generate  # Regenerate Prisma client
 pnpm prisma:migrate   # Create and apply migration
@@ -174,6 +190,7 @@ pnpm prisma:migrate   # Create and apply migration
 6. **Register in dependency injection** if new service/repository created
 
 Example flow for "Get User's Friends":
+
 ```typescript
 // 1. core/validations/userValidation.ts
 export const getUserFriendsSchema = z.object({
@@ -219,6 +236,7 @@ The `CacheService` provides a standard interface. Redis keys are defined in `CON
 - Blacklisted tokens: `blacklist:${token}`
 
 Always use `CacheService` methods, never access Redis directly:
+
 ```typescript
 await this.cacheService.get(CONSTANTS.REDIS_KEYS.CACHED_USER(userId));
 await this.cacheService.setWithExpiry(key, value, CONSTANTS.CACHE_TTL.USER);
@@ -227,26 +245,30 @@ await this.cacheService.setWithExpiry(key, value, CONSTANTS.CACHE_TTL.USER);
 ## Authentication & Authorization
 
 **JWT Flow**:
+
 - Access tokens: 15 minutes (default)
 - Refresh tokens: 7 days (default), stored in database
 - Tokens contain: `{ id, email, role }`
 
 **Middleware**:
+
 - `authenticate` - Validates JWT, populates `req.user`
 - `authorize(...roles)` - Checks user role (USER, MODERATOR, ADMIN)
 
 **Controllers using auth**:
+
 ```typescript
 import { AuthRequest } from '@middlewares/auth.middleware.js';
 
 someMethod = asyncHandler(async (req: AuthRequest, res: Response) => {
-  const userId = req.user!.id;  // Safe after authenticate middleware
+  const userId = req.user!.id; // Safe after authenticate middleware
 });
 ```
 
 ## Error Handling
 
 Use custom error classes from `core/errors/`:
+
 - `ValidationError` - 400 Bad Request
 - `UnauthorizedError` - 401 Unauthorized
 - `ForbiddenError` - 403 Forbidden
@@ -269,6 +291,7 @@ Errors are automatically caught by `express-async-errors` and handled by `errorH
 ## WebSocket Event Naming
 
 All WebSocket events follow pattern: `category:action`
+
 - Messaging: `message:send`, `message:received`, `message:edit`, `message:delete`
 - Calls: `call:initiate`, `call:answer`, `call:reject`, `call:end`
 - Typing: `typing:start`, `typing:stop`
@@ -277,6 +300,7 @@ All WebSocket events follow pattern: `category:action`
 ## Testing
 
 Tests use Vitest. Test files go in `tests/` directory:
+
 - Unit tests for services and repositories
 - Integration tests for API endpoints (use supertest)
 - Setup file at `tests/setup.ts` handles database/Redis connections
@@ -286,6 +310,7 @@ Run single test file: `pnpm test path/to/test.test.ts`
 ## Environment Variables
 
 All env vars are validated in `app/config/env.ts` using envsafe. If adding new vars:
+
 1. Add to `.env.example`
 2. Add validation in `app/config/env.ts`
 3. Update `docker-compose.yml` if needed
@@ -295,17 +320,20 @@ All env vars are validated in `app/config/env.ts` using envsafe. If adding new v
 The `JitsiService` handles video/audio call room creation and JWT token generation:
 
 **Key Methods**:
+
 - `generateRoomId()` - Creates unique room ID with configured prefix
 - `generateJitsiToken(config)` - Generates secure JWT for Jitsi room access
 - `getRoomUrl(roomId, token)` - Constructs full Jitsi meeting URL
 
 **Token Structure**:
+
 - Contains user context (id, name, avatar, email)
 - Sets moderator permissions (call initiator is always moderator)
 - Expires in 2 hours
 - Signed with `JITSI_APP_SECRET` from env vars
 
 **Call Flow**:
+
 1. User initiates call via `/api/v1/calls` endpoint
 2. `CallService` uses `JitsiService` to generate room + token
 3. Room info stored in PostgreSQL, active session cached in Redis
@@ -316,15 +344,17 @@ The `JitsiService` handles video/audio call room creation and JWT token generati
 ## WebSocket Connection & Authentication
 
 **Client Connection**:
+
 ```javascript
 const socket = io('http://localhost:3000', {
-  auth: { token: 'JWT_ACCESS_TOKEN' }
+  auth: { token: 'JWT_ACCESS_TOKEN' },
   // OR
   // headers: { authorization: 'Bearer JWT_ACCESS_TOKEN' }
 });
 ```
 
 **Server-side flow**:
+
 1. `SocketManager.setupAuthentication()` middleware runs on connection
 2. Extracts token from `socket.handshake.auth.token` or headers
 3. Verifies JWT using `JWT_ACCESS_SECRET`
@@ -332,6 +362,7 @@ const socket = io('http://localhost:3000', {
 5. Rejects connection if token invalid/missing
 
 **Room Management**:
+
 - Users auto-join personal room on connection: `socket.join('user:${userId}')`
 - Groups require explicit join: `chatHandler.joinGroupRoom(socket, groupId)`
 - Use `socket.to('room-name')` to emit to specific rooms
@@ -346,6 +377,7 @@ Three rate limiters defined in `app/middlewares/rateLimit.middleware.ts`:
 3. **apiLimiter** - 100 requests per 15 minutes (general API)
 
 **How it works**:
+
 - Uses Redis to track request counts per IP
 - Configured in routes: `router.post('/login', authLimiter, ...)`
 - Custom limiters: `createRateLimiter({ windowMs, max, message })`
@@ -364,6 +396,7 @@ return ResponseHandler.paginated(res, items, page, limit, total);
 ```
 
 **Defaults** (from `CONSTANTS.PAGINATION`):
+
 - Default page: 1
 - Default limit: 20
 - Max limit: 100
@@ -371,6 +404,7 @@ return ResponseHandler.paginated(res, items, page, limit, total);
 ## Constants Usage
 
 Import from `@constants/index.js` to access:
+
 - `CONSTANTS.SOCKET_EVENTS` - All WebSocket event names
 - `CONSTANTS.REDIS_KEYS` - Redis key generators (functions)
 - `CONSTANTS.CACHE_TTL` - Cache expiration times
@@ -379,9 +413,10 @@ Import from `@constants/index.js` to access:
 - `CONSTANTS.JWT` - JWT header names
 
 **Always use constants, never hardcode strings**:
+
 ```typescript
-socket.emit(CONSTANTS.SOCKET_EVENTS.MESSAGE_RECEIVED, data);  // ✓ Correct
-socket.emit('message:received', data);                        // ✗ Wrong
+socket.emit(CONSTANTS.SOCKET_EVENTS.MESSAGE_RECEIVED, data); // ✓ Correct
+socket.emit('message:received', data); // ✗ Wrong
 ```
 
 ## Swagger Documentation
@@ -391,6 +426,7 @@ Controller methods include JSDoc annotations for Swagger. Access docs at: `http:
 ## Application Startup & Graceful Shutdown
 
 **Startup sequence** (in `main.ts`):
+
 1. Import `reflect-metadata` and `express-async-errors` first
 2. Import and execute `app/config/container.ts` to register DI
 3. Initialize Express app with middleware
@@ -401,11 +437,13 @@ Controller methods include JSDoc annotations for Swagger. Access docs at: `http:
 8. Log success with port, env, and docs URL
 
 **Graceful shutdown** (SIGTERM/SIGINT):
+
 1. Close HTTP server (stops accepting new connections)
 2. Disconnect Prisma (`prisma.$disconnect()`)
 3. Disconnect Redis (`redis.quit()`)
 4. Exit process with code 0
 
 **Error handling**:
+
 - Unhandled rejections logged but don't crash
 - Uncaught exceptions logged then process exits

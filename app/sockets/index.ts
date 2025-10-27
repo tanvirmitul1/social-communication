@@ -144,9 +144,13 @@ export class SocketManager {
 
       // Emit to recipient or group
       if (message.groupId) {
-        this.io.to(`group:${message.groupId}`).emit(CONSTANTS.SOCKET_EVENTS.MESSAGE_RECEIVED, message);
+        this.io
+          .to(`group:${message.groupId}`)
+          .emit(CONSTANTS.SOCKET_EVENTS.MESSAGE_RECEIVED, message);
       } else if (message.receiverId) {
-        this.io.to(`user:${message.receiverId}`).emit(CONSTANTS.SOCKET_EVENTS.MESSAGE_RECEIVED, message);
+        this.io
+          .to(`user:${message.receiverId}`)
+          .emit(CONSTANTS.SOCKET_EVENTS.MESSAGE_RECEIVED, message);
       }
 
       // Confirm to sender
@@ -157,14 +161,23 @@ export class SocketManager {
     }
   }
 
-  private async handleMessageEdit(socket: AuthSocket, data: { messageId: string; content: string }): Promise<void> {
+  private async handleMessageEdit(
+    socket: AuthSocket,
+    data: { messageId: string; content: string }
+  ): Promise<void> {
     try {
-      const message = await this.messageService.editMessage(data.messageId, socket.userId!, data.content);
+      const message = await this.messageService.editMessage(
+        data.messageId,
+        socket.userId!,
+        data.content
+      );
 
       if (message.groupId) {
         this.io.to(`group:${message.groupId}`).emit(CONSTANTS.SOCKET_EVENTS.MESSAGE_EDIT, message);
       } else if (message.receiverId) {
-        this.io.to(`user:${message.receiverId}`).emit(CONSTANTS.SOCKET_EVENTS.MESSAGE_EDIT, message);
+        this.io
+          .to(`user:${message.receiverId}`)
+          .emit(CONSTANTS.SOCKET_EVENTS.MESSAGE_EDIT, message);
       }
     } catch (error) {
       logger.error({ error }, 'Error editing message');
@@ -172,14 +185,21 @@ export class SocketManager {
     }
   }
 
-  private async handleMessageDelete(socket: AuthSocket, data: { messageId: string }): Promise<void> {
+  private async handleMessageDelete(
+    socket: AuthSocket,
+    data: { messageId: string }
+  ): Promise<void> {
     try {
       const message = await this.messageService.deleteMessage(data.messageId, socket.userId!);
 
       if (message.groupId) {
-        this.io.to(`group:${message.groupId}`).emit(CONSTANTS.SOCKET_EVENTS.MESSAGE_DELETE, { messageId: data.messageId });
+        this.io
+          .to(`group:${message.groupId}`)
+          .emit(CONSTANTS.SOCKET_EVENTS.MESSAGE_DELETE, { messageId: data.messageId });
       } else if (message.receiverId) {
-        this.io.to(`user:${message.receiverId}`).emit(CONSTANTS.SOCKET_EVENTS.MESSAGE_DELETE, { messageId: data.messageId });
+        this.io
+          .to(`user:${message.receiverId}`)
+          .emit(CONSTANTS.SOCKET_EVENTS.MESSAGE_DELETE, { messageId: data.messageId });
       }
     } catch (error) {
       logger.error({ error }, 'Error deleting message');
@@ -220,7 +240,10 @@ export class SocketManager {
     }
   }
 
-  private async handleTypingStart(socket: AuthSocket, data: { groupId?: string; userId?: string }): Promise<void> {
+  private async handleTypingStart(
+    socket: AuthSocket,
+    data: { groupId?: string; userId?: string }
+  ): Promise<void> {
     const target = data.groupId ? `group:${data.groupId}` : `user:${data.userId}`;
     this.io.to(target).emit(CONSTANTS.SOCKET_EVENTS.TYPING_START, {
       userId: socket.userId,
@@ -228,11 +251,17 @@ export class SocketManager {
     });
 
     // Store in cache with TTL
-    const key = CONSTANTS.REDIS_KEYS.TYPING_INDICATOR(data.groupId || data.userId || '', socket.userId!);
+    const key = CONSTANTS.REDIS_KEYS.TYPING_INDICATOR(
+      data.groupId || data.userId || '',
+      socket.userId!
+    );
     await this.cacheService.setWithExpiry(key, true, CONSTANTS.CACHE_TTL.TYPING);
   }
 
-  private async handleTypingStop(socket: AuthSocket, data: { groupId?: string; userId?: string }): Promise<void> {
+  private async handleTypingStop(
+    socket: AuthSocket,
+    data: { groupId?: string; userId?: string }
+  ): Promise<void> {
     const target = data.groupId ? `group:${data.groupId}` : `user:${data.userId}`;
     this.io.to(target).emit(CONSTANTS.SOCKET_EVENTS.TYPING_STOP, {
       userId: socket.userId,
@@ -240,11 +269,17 @@ export class SocketManager {
     });
 
     // Remove from cache
-    const key = CONSTANTS.REDIS_KEYS.TYPING_INDICATOR(data.groupId || data.userId || '', socket.userId!);
+    const key = CONSTANTS.REDIS_KEYS.TYPING_INDICATOR(
+      data.groupId || data.userId || '',
+      socket.userId!
+    );
     await this.cacheService.delete(key);
   }
 
-  private handleCallInitiate(socket: AuthSocket, data: { callId: string; participantIds: string[] }): void {
+  private handleCallInitiate(
+    socket: AuthSocket,
+    data: { callId: string; participantIds: string[] }
+  ): void {
     // Notify participants
     data.participantIds.forEach((participantId) => {
       this.io.to(`user:${participantId}`).emit(CONSTANTS.SOCKET_EVENTS.CALL_RINGING, {
@@ -262,14 +297,20 @@ export class SocketManager {
     });
   }
 
-  private handleCallReject(socket: AuthSocket, data: { callId: string; initiatorId: string }): void {
+  private handleCallReject(
+    socket: AuthSocket,
+    data: { callId: string; initiatorId: string }
+  ): void {
     this.io.to(`user:${data.initiatorId}`).emit(CONSTANTS.SOCKET_EVENTS.CALL_REJECT, {
       callId: data.callId,
       userId: socket.userId,
     });
   }
 
-  private handleCallEnd(socket: AuthSocket, data: { callId: string; participantIds: string[] }): void {
+  private handleCallEnd(
+    socket: AuthSocket,
+    data: { callId: string; participantIds: string[] }
+  ): void {
     // Notify all participants
     data.participantIds.forEach((participantId) => {
       this.io.to(`user:${participantId}`).emit(CONSTANTS.SOCKET_EVENTS.CALL_END, {

@@ -39,11 +39,7 @@ export class UserController {
   async searchUsers(req: AuthRequest, res: Response): Promise<Response> {
     const { query, page = 1, limit = 20 } = req.query;
 
-    const result = await this.userService.searchUsers(
-      query as string,
-      Number(page),
-      Number(limit)
-    );
+    const result = await this.userService.searchUsers(query as string, Number(page), Number(limit));
 
     return ResponseHandler.paginated(
       res,

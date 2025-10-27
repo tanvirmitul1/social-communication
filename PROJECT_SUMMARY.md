@@ -122,34 +122,34 @@ A production-ready, enterprise-level backend for a real-time messaging and audio
 \`\`\`
 social-communication/
 ├── app/
-│   ├── config/              # Configuration (env, database, redis, swagger, DI)
-│   ├── controllers/         # HTTP request handlers (5 controllers)
-│   ├── services/            # Business logic (7 services)
-│   ├── repositories/        # Data access layer (5 repositories)
-│   ├── routes/              # API routes (5 route files)
-│   ├── sockets/             # WebSocket handlers
-│   └── middlewares/         # Express middleware (auth, validation, error, rate limit)
+│ ├── config/ # Configuration (env, database, redis, swagger, DI)
+│ ├── controllers/ # HTTP request handlers (5 controllers)
+│ ├── services/ # Business logic (7 services)
+│ ├── repositories/ # Data access layer (5 repositories)
+│ ├── routes/ # API routes (5 route files)
+│ ├── sockets/ # WebSocket handlers
+│ └── middlewares/ # Express middleware (auth, validation, error, rate limit)
 ├── core/
-│   ├── utils/               # Helper functions
-│   ├── errors/              # Custom error classes (6 error types)
-│   ├── logger/              # Logging configuration
-│   ├── validations/         # Zod validation schemas (3 schema files)
-│   └── constants/           # Application constants
+│ ├── utils/ # Helper functions
+│ ├── errors/ # Custom error classes (6 error types)
+│ ├── logger/ # Logging configuration
+│ ├── validations/ # Zod validation schemas (3 schema files)
+│ └── constants/ # Application constants
 ├── docs/
-│   ├── SETUP_GUIDE.md       # Detailed setup instructions
-│   ├── ARCHITECTURE.md      # Architecture documentation
-│   └── API_EXAMPLES.md      # API usage examples
+│ ├── SETUP_GUIDE.md # Detailed setup instructions
+│ ├── ARCHITECTURE.md # Architecture documentation
+│ └── API_EXAMPLES.md # API usage examples
 ├── prisma/
-│   ├── schema.prisma        # Database schema (14 models)
-│   └── seed.ts              # Database seeding
+│ ├── schema.prisma # Database schema (14 models)
+│ └── seed.ts # Database seeding
 ├── tests/
-│   └── auth.test.ts         # Test examples
+│ └── auth.test.ts # Test examples
 ├── .github/workflows/
-│   └── ci.yml               # CI/CD pipeline
-├── main.ts                  # Application entry point
-├── Dockerfile               # Container image
-├── docker-compose.yml       # Full stack setup
-└── package.json             # Dependencies and scripts
+│ └── ci.yml # CI/CD pipeline
+├── main.ts # Application entry point
+├── Dockerfile # Container image
+├── docker-compose.yml # Full stack setup
+└── package.json # Dependencies and scripts
 \`\`\`
 
 ## File Count
@@ -171,6 +171,7 @@ social-communication/
 ## API Endpoints
 
 ### Authentication (6 endpoints)
+
 - POST /api/v1/auth/register
 - POST /api/v1/auth/login
 - POST /api/v1/auth/logout
@@ -179,6 +180,7 @@ social-communication/
 - GET /api/v1/auth/profile
 
 ### Users (5 endpoints)
+
 - GET /api/v1/users/:id
 - GET /api/v1/users/search
 - GET /api/v1/users/:id/presence
@@ -186,6 +188,7 @@ social-communication/
 - DELETE /api/v1/users/me
 
 ### Messages (10 endpoints)
+
 - POST /api/v1/messages
 - GET /api/v1/messages/:id
 - GET /api/v1/messages/search
@@ -198,6 +201,7 @@ social-communication/
 - PATCH /api/v1/messages/:id/status
 
 ### Groups (8 endpoints)
+
 - POST /api/v1/groups
 - GET /api/v1/groups/:id
 - GET /api/v1/groups/my-groups
@@ -208,6 +212,7 @@ social-communication/
 - POST /api/v1/groups/:id/leave
 
 ### Calls (7 endpoints)
+
 - POST /api/v1/calls
 - GET /api/v1/calls/:id
 - GET /api/v1/calls/my-calls
@@ -217,6 +222,7 @@ social-communication/
 - POST /api/v1/calls/:id/reject
 
 ### System (3 endpoints)
+
 - GET /health
 - GET /metrics
 - GET /api/docs
@@ -226,11 +232,13 @@ social-communication/
 ## WebSocket Events
 
 ### Connection Events
+
 - connect
 - disconnect
 - authenticate
 
 ### Messaging Events (8)
+
 - message:send
 - message:sent
 - message:received
@@ -241,6 +249,7 @@ social-communication/
 - typing:stop
 
 ### Call Events (7)
+
 - call:initiate
 - call:ringing
 - call:answer
@@ -250,6 +259,7 @@ social-communication/
 - call:participant:leave
 
 ### Presence Events (2)
+
 - user:online
 - user:offline
 
@@ -279,53 +289,65 @@ social-communication/
 ## Technologies Used
 
 ### Core
+
 - Node.js 20+
 - Express.js 4
 - TypeScript 5
 - pnpm (package manager)
 
 ### Database
+
 - PostgreSQL 16
 - Prisma ORM 5
 
 ### Caching
+
 - Redis 7
 - ioredis
 
 ### Real-time
+
 - Socket.IO 4
 
 ### Authentication
+
 - jsonwebtoken
 - argon2
 
 ### Validation
+
 - Zod
 
 ### Documentation
+
 - Swagger/OpenAPI 3
 - swagger-jsdoc
 - swagger-ui-express
 
 ### Testing
+
 - Vitest
 - Supertest
 
 ### Security
+
 - Helmet
 - CORS
 - express-rate-limit
 
 ### Logging
+
 - Pino
 - pino-pretty
 
 ### DevOps
+
 - Docker
 - Docker Compose
 - GitHub Actions
 
 ### Code Quality
+
 - ESLint
 - Prettier
 - TypeScript strict mode
@@ -362,7 +384,9 @@ social-communication/
    \`\`\`bash
    pnpm install
    cp .env.example .env
+
    # Edit .env with your configuration
+
    pnpm prisma:generate
    pnpm prisma:migrate
    pnpm dev
@@ -445,6 +469,7 @@ social-communication/
 ## Estimated Development Time
 
 Building this from scratch would typically take:
+
 - Planning & Architecture: 1-2 days
 - Core Setup: 1 day
 - Authentication: 2 days
@@ -478,6 +503,7 @@ Building this from scratch would typically take:
 This is a complete, production-ready backend that demonstrates enterprise-level software engineering. It's ready to be deployed and scaled, with room for future enhancements.
 
 The codebase is clean, well-organized, fully typed, secure, and follows modern best practices. It can serve as:
+
 - A production backend for a messaging app
 - A learning resource for Node.js/TypeScript development
 - A foundation for building more features

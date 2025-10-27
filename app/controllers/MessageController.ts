@@ -34,19 +34,9 @@ export class MessageController {
     const { groupId } = req.params;
     const { page = 1, limit = 20 } = req.query;
 
-    const result = await this.messageService.getGroupMessages(
-      groupId,
-      Number(page),
-      Number(limit)
-    );
+    const result = await this.messageService.getGroupMessages(groupId, Number(page), Number(limit));
 
-    return ResponseHandler.paginated(
-      res,
-      result.messages,
-      result.page,
-      result.limit,
-      result.total
-    );
+    return ResponseHandler.paginated(res, result.messages, result.page, result.limit, result.total);
   }
 
   async getDirectMessages(req: AuthRequest, res: Response): Promise<Response> {
@@ -61,13 +51,7 @@ export class MessageController {
       Number(limit)
     );
 
-    return ResponseHandler.paginated(
-      res,
-      result.messages,
-      result.page,
-      result.limit,
-      result.total
-    );
+    return ResponseHandler.paginated(res, result.messages, result.page, result.limit, result.total);
   }
 
   async editMessage(req: AuthRequest, res: Response): Promise<Response> {
@@ -136,12 +120,6 @@ export class MessageController {
       Number(limit)
     );
 
-    return ResponseHandler.paginated(
-      res,
-      result.messages,
-      result.page,
-      result.limit,
-      result.total
-    );
+    return ResponseHandler.paginated(res, result.messages, result.page, result.limit, result.total);
   }
 }

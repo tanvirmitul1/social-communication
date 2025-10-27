@@ -45,11 +45,7 @@ export class MessageRepository extends BaseRepository {
     });
   }
 
-  async findGroupMessages(
-    groupId: string,
-    skip: number,
-    take: number
-  ): Promise<Message[]> {
+  async findGroupMessages(groupId: string, skip: number, take: number): Promise<Message[]> {
     return this.db.message.findMany({
       where: {
         groupId,

@@ -64,7 +64,10 @@ export class CallService {
     return { call, roomUrl, token };
   }
 
-  async joinCall(callId: string, userId: string): Promise<{
+  async joinCall(
+    callId: string,
+    userId: string
+  ): Promise<{
     call: Call;
     roomUrl: string;
     token: string;

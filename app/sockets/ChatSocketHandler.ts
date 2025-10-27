@@ -53,9 +53,13 @@ export class ChatSocketHandler {
 
         // Emit to group or direct recipient
         if (data.groupId) {
-          this.io.to(`group:${data.groupId}`).emit(CONSTANTS.SOCKET_EVENTS.MESSAGE_RECEIVED, message);
+          this.io
+            .to(`group:${data.groupId}`)
+            .emit(CONSTANTS.SOCKET_EVENTS.MESSAGE_RECEIVED, message);
         } else if (data.receiverId) {
-          this.io.to(`user:${data.receiverId}`).emit(CONSTANTS.SOCKET_EVENTS.MESSAGE_RECEIVED, message);
+          this.io
+            .to(`user:${data.receiverId}`)
+            .emit(CONSTANTS.SOCKET_EVENTS.MESSAGE_RECEIVED, message);
           socket.emit(CONSTANTS.SOCKET_EVENTS.MESSAGE_SENT, message);
         }
       } catch (error) {
@@ -68,12 +72,16 @@ export class ChatSocketHandler {
     socket.on(CONSTANTS.SOCKET_EVENTS.MESSAGE_EDIT, async (data) => {
       try {
         const message = await this.messageService.editMessage(data.messageId, userId, data.content);
-        
+
         // Emit to relevant users
         if (message.groupId) {
-          this.io.to(`group:${message.groupId}`).emit(CONSTANTS.SOCKET_EVENTS.MESSAGE_EDIT, message);
+          this.io
+            .to(`group:${message.groupId}`)
+            .emit(CONSTANTS.SOCKET_EVENTS.MESSAGE_EDIT, message);
         } else if (message.receiverId) {
-          this.io.to(`user:${message.receiverId}`).emit(CONSTANTS.SOCKET_EVENTS.MESSAGE_EDIT, message);
+          this.io
+            .to(`user:${message.receiverId}`)
+            .emit(CONSTANTS.SOCKET_EVENTS.MESSAGE_EDIT, message);
         }
       } catch (error) {
         logger.error({ error }, 'Error editing message');
@@ -85,12 +93,16 @@ export class ChatSocketHandler {
     socket.on(CONSTANTS.SOCKET_EVENTS.MESSAGE_DELETE, async (data) => {
       try {
         const message = await this.messageService.deleteMessage(data.messageId, userId);
-        
+
         // Emit to relevant users
         if (message.groupId) {
-          this.io.to(`group:${message.groupId}`).emit(CONSTANTS.SOCKET_EVENTS.MESSAGE_DELETE, { messageId: data.messageId });
+          this.io
+            .to(`group:${message.groupId}`)
+            .emit(CONSTANTS.SOCKET_EVENTS.MESSAGE_DELETE, { messageId: data.messageId });
         } else if (message.receiverId) {
-          this.io.to(`user:${message.receiverId}`).emit(CONSTANTS.SOCKET_EVENTS.MESSAGE_DELETE, { messageId: data.messageId });
+          this.io
+            .to(`user:${message.receiverId}`)
+            .emit(CONSTANTS.SOCKET_EVENTS.MESSAGE_DELETE, { messageId: data.messageId });
         }
       } catch (error) {
         logger.error({ error }, 'Error deleting message');
@@ -101,14 +113,16 @@ export class ChatSocketHandler {
     // Typing indicators
     socket.on(CONSTANTS.SOCKET_EVENTS.TYPING_START, async (data) => {
       const { groupId, receiverId } = data;
-      const key = groupId 
+      const key = groupId
         ? CONSTANTS.REDIS_KEYS.TYPING_INDICATOR(groupId, userId)
         : CONSTANTS.REDIS_KEYS.TYPING_INDICATOR(receiverId, userId);
 
       await this.cacheService.setWithExpiry(key, true, CONSTANTS.CACHE_TTL.TYPING);
 
       if (groupId) {
-        socket.to(`group:${groupId}`).emit(CONSTANTS.SOCKET_EVENTS.TYPING_START, { userId, groupId });
+        socket
+          .to(`group:${groupId}`)
+          .emit(CONSTANTS.SOCKET_EVENTS.TYPING_START, { userId, groupId });
       } else if (receiverId) {
         this.io.to(`user:${receiverId}`).emit(CONSTANTS.SOCKET_EVENTS.TYPING_START, { userId });
       }
@@ -116,14 +130,16 @@ export class ChatSocketHandler {
 
     socket.on(CONSTANTS.SOCKET_EVENTS.TYPING_STOP, async (data) => {
       const { groupId, receiverId } = data;
-      const key = groupId 
+      const key = groupId
         ? CONSTANTS.REDIS_KEYS.TYPING_INDICATOR(groupId, userId)
         : CONSTANTS.REDIS_KEYS.TYPING_INDICATOR(receiverId, userId);
 
       await this.cacheService.delete(key);
 
       if (groupId) {
-        socket.to(`group:${groupId}`).emit(CONSTANTS.SOCKET_EVENTS.TYPING_STOP, { userId, groupId });
+        socket
+          .to(`group:${groupId}`)
+          .emit(CONSTANTS.SOCKET_EVENTS.TYPING_STOP, { userId, groupId });
       } else if (receiverId) {
         this.io.to(`user:${receiverId}`).emit(CONSTANTS.SOCKET_EVENTS.TYPING_STOP, { userId });
       }

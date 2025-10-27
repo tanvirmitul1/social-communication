@@ -17,6 +17,7 @@ docker-compose --version
 ```
 
 If any are missing, install them:
+
 - **Node.js**: https://nodejs.org/
 - **pnpm**: `npm install -g pnpm`
 - **Docker**: https://docs.docker.com/get-docker/
@@ -34,6 +35,7 @@ pnpm install
 ```
 
 This will install all required packages including:
+
 - Express.js and middleware
 - Prisma ORM
 - Socket.IO
@@ -336,6 +338,7 @@ pnpm format
 ## Support
 
 If you encounter issues:
+
 1. Check the troubleshooting section above
 2. Review error logs
 3. Ensure all services are running

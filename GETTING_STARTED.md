@@ -25,6 +25,7 @@ chmod +x scripts/setup.sh
 \`\`\`
 
 The setup script will:
+
 - Install pnpm if needed
 - Create .env file with secure secrets
 - Install dependencies
@@ -55,6 +56,7 @@ cp .env.example .env
 \`\`\`
 
 Edit `.env` and set:
+
 - `DATABASE_URL` - Your PostgreSQL connection string
 - `JWT_ACCESS_SECRET` - Random secret (generate with: `openssl rand -base64 32`)
 - `JWT_REFRESH_SECRET` - Another random secret
@@ -64,7 +66,7 @@ Edit `.env` and set:
 \`\`\`bash
 pnpm prisma:generate
 pnpm prisma:migrate
-pnpm prisma:seed  # Optional: adds test data
+pnpm prisma:seed # Optional: adds test data
 \`\`\`
 
 ### 5. Start Development Server
@@ -80,19 +82,24 @@ The server will start at `http://localhost:3000`
 If you have Docker installed:
 
 \`\`\`bash
+
 # Copy environment file
+
 cp .env.example .env
 
 # Edit .env and set JWT secrets (the rest will work with defaults)
 
 # Start everything
+
 docker-compose up -d
 
 # View logs
+
 docker-compose logs -f app
 \`\`\`
 
 This starts:
+
 - PostgreSQL database
 - Redis cache
 - The application
@@ -108,10 +115,10 @@ curl http://localhost:3000/health
 Expected response:
 \`\`\`json
 {
-  "status": "ok",
-  "timestamp": "2024-01-01T00:00:00.000Z",
-  "uptime": 123.45,
-  "environment": "development"
+"status": "ok",
+"timestamp": "2024-01-01T00:00:00.000Z",
+"uptime": 123.45,
+"environment": "development"
 }
 \`\`\`
 
@@ -125,23 +132,23 @@ Open in browser: `http://localhost:3000/api/docs`
 
 \`\`\`bash
 curl -X POST http://localhost:3000/api/v1/auth/register \\
-  -H "Content-Type: application/json" \\
-  -d '{
-    "username": "testuser",
-    "email": "test@example.com",
-    "password": "Test1234"
-  }'
+-H "Content-Type: application/json" \\
+-d '{
+"username": "testuser",
+"email": "test@example.com",
+"password": "Test1234"
+}'
 \`\`\`
 
 #### Login
 
 \`\`\`bash
 curl -X POST http://localhost:3000/api/v1/auth/login \\
-  -H "Content-Type: application/json" \\
-  -d '{
-    "email": "test@example.com",
-    "password": "Test1234"
-  }'
+-H "Content-Type: application/json" \\
+-d '{
+"email": "test@example.com",
+"password": "Test1234"
+}'
 \`\`\`
 
 Save the `accessToken` from the response!
@@ -150,76 +157,80 @@ Save the `accessToken` from the response!
 
 \`\`\`bash
 curl http://localhost:3000/api/v1/auth/profile \\
-  -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+-H "Authorization: Bearer YOUR_ACCESS_TOKEN"
 \`\`\`
 
 ## Test Credentials (After Seeding)
 
 If you ran `pnpm prisma:seed`, you have these test accounts:
 
-| Email | Password | Role |
-|-------|----------|------|
+| Email             | Password  | Role  |
+| ----------------- | --------- | ----- |
 | admin@example.com | Admin1234 | ADMIN |
-| john@example.com | User1234 | USER |
-| jane@example.com | User1234 | USER |
-| bob@example.com | User1234 | USER |
+| john@example.com  | User1234  | USER  |
+| jane@example.com  | User1234  | USER  |
+| bob@example.com   | User1234  | USER  |
 
 ## Common Commands
 
 ### Development
+
 \`\`\`bash
-pnpm dev              # Start dev server with hot reload
-pnpm build            # Build for production
-pnpm start            # Start production server
+pnpm dev # Start dev server with hot reload
+pnpm build # Build for production
+pnpm start # Start production server
 \`\`\`
 
 ### Database
+
 \`\`\`bash
-pnpm prisma:generate  # Generate Prisma client
-pnpm prisma:migrate   # Run migrations
-pnpm prisma:studio    # Open database GUI
-pnpm prisma:seed      # Seed database
+pnpm prisma:generate # Generate Prisma client
+pnpm prisma:migrate # Run migrations
+pnpm prisma:studio # Open database GUI
+pnpm prisma:seed # Seed database
 \`\`\`
 
 ### Code Quality
+
 \`\`\`bash
-pnpm lint             # Lint code
-pnpm lint:fix         # Fix linting issues
-pnpm format           # Format code
-pnpm test             # Run tests
-pnpm test:coverage    # Run tests with coverage
+pnpm lint # Lint code
+pnpm lint:fix # Fix linting issues
+pnpm format # Format code
+pnpm test # Run tests
+pnpm test:coverage # Run tests with coverage
 \`\`\`
 
 ### Docker
+
 \`\`\`bash
-pnpm docker:build     # Build Docker image
-pnpm docker:up        # Start containers
-pnpm docker:down      # Stop containers
-pnpm docker:logs      # View logs
+pnpm docker:build # Build Docker image
+pnpm docker:up # Start containers
+pnpm docker:down # Stop containers
+pnpm docker:logs # View logs
 \`\`\`
 
 ## Project Structure
 
 \`\`\`
 social-communication/
-├── app/              # Application code
-│   ├── config/       # Configuration
-│   ├── controllers/  # HTTP handlers
-│   ├── services/     # Business logic
-│   ├── repositories/ # Data access
-│   ├── routes/       # API routes
-│   ├── sockets/      # WebSocket handlers
-│   └── middlewares/  # Express middleware
-├── core/             # Core utilities
-│   ├── utils/
-│   ├── errors/
-│   ├── logger/
-│   ├── validations/
-│   └── constants/
-├── docs/             # Documentation
-├── prisma/           # Database schema
-├── tests/            # Test files
-└── main.ts           # Entry point
+├── app/ # Application code
+│ ├── config/ # Configuration
+│ ├── controllers/ # HTTP handlers
+│ ├── services/ # Business logic
+│ ├── repositories/ # Data access
+│ ├── routes/ # API routes
+│ ├── sockets/ # WebSocket handlers
+│ └── middlewares/ # Express middleware
+├── core/ # Core utilities
+│ ├── utils/
+│ ├── errors/
+│ ├── logger/
+│ ├── validations/
+│ └── constants/
+├── docs/ # Documentation
+├── prisma/ # Database schema
+├── tests/ # Test files
+└── main.ts # Entry point
 \`\`\`
 
 ## Next Steps
@@ -266,8 +277,8 @@ PORT=4000
 ### TypeScript errors
 
 \`\`\`bash
-pnpm prisma:generate  # Regenerate Prisma client
-rm -rf node_modules   # Delete and reinstall
+pnpm prisma:generate # Regenerate Prisma client
+rm -rf node_modules # Delete and reinstall
 pnpm install
 \`\`\`
 

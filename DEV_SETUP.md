@@ -20,6 +20,7 @@ The server will start at http://localhost:3002 with warnings about missing servi
 ## Full Setup (With Services)
 
 ### Option 1: Using Docker (Recommended)
+
 ```bash
 # Start PostgreSQL and Redis
 docker compose up -d postgres redis
@@ -32,6 +33,7 @@ pnpm dev
 ```
 
 ### Option 2: Local Installation
+
 Install PostgreSQL and Redis locally, then:
 
 ```bash

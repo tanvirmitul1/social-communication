@@ -69,22 +69,26 @@ A production-ready, enterprise-level backend for a real-time messaging and audio
 ### Installation
 
 1. Clone the repository:
+
 ```bash
 git clone <repository-url>
 cd social-communication
 ```
 
 2. Install dependencies:
+
 ```bash
 pnpm install
 ```
 
 3. Copy environment variables:
+
 ```bash
 cp .env.example .env
 ```
 
 4. Configure environment variables in `.env`:
+
 ```env
 DATABASE_URL="postgresql://postgres:postgres@localhost:5432/social_communication"
 REDIS_HOST=localhost
@@ -95,11 +99,13 @@ JWT_REFRESH_SECRET=your-refresh-secret-key
 ```
 
 5. Run database migrations:
+
 ```bash
 pnpm prisma:migrate
 ```
 
 6. Generate Prisma client:
+
 ```bash
 pnpm prisma:generate
 ```
@@ -107,6 +113,7 @@ pnpm prisma:generate
 ### Development
 
 Start the development server:
+
 ```bash
 pnpm dev
 ```
@@ -116,16 +123,19 @@ The server will start at `http://localhost:3000`
 ### Running with Docker
 
 Start all services using Docker Compose:
+
 ```bash
 pnpm docker:up
 ```
 
 Stop services:
+
 ```bash
 pnpm docker:down
 ```
 
 View logs:
+
 ```bash
 pnpm docker:logs
 ```
@@ -133,6 +143,7 @@ pnpm docker:logs
 ## API Documentation
 
 Once the server is running, visit:
+
 - Swagger UI: `http://localhost:3000/api/docs`
 - OpenAPI Spec: `http://localhost:3000/api/docs/openapi.json`
 
@@ -157,6 +168,7 @@ Once the server is running, visit:
 ## API Endpoints
 
 ### Authentication
+
 - `POST /api/v1/auth/register` - Register new user
 - `POST /api/v1/auth/login` - Login user
 - `POST /api/v1/auth/logout` - Logout user
@@ -164,12 +176,14 @@ Once the server is running, visit:
 - `GET /api/v1/auth/me` - Get current user
 
 ### Users
+
 - `GET /api/v1/users` - Search users
 - `GET /api/v1/users/:id` - Get user by ID
 - `PATCH /api/v1/users/:id` - Update user
 - `DELETE /api/v1/users/:id` - Delete user
 
 ### Messages
+
 - `POST /api/v1/messages` - Send message
 - `GET /api/v1/messages/:id` - Get message
 - `GET /api/v1/messages/group/:groupId` - Get group messages
@@ -178,6 +192,7 @@ Once the server is running, visit:
 - `DELETE /api/v1/messages/:id` - Delete message
 
 ### Groups
+
 - `POST /api/v1/groups` - Create group
 - `GET /api/v1/groups` - Get user's groups
 - `GET /api/v1/groups/:id` - Get group
@@ -185,6 +200,7 @@ Once the server is running, visit:
 - `DELETE /api/v1/groups/:id` - Delete group
 
 ### Calls
+
 - `POST /api/v1/calls` - Initiate call
 - `POST /api/v1/calls/:id/join` - Join call
 - `POST /api/v1/calls/:id/end` - End call
@@ -193,6 +209,7 @@ Once the server is running, visit:
 ## WebSocket Events
 
 ### Messaging
+
 - `message:send` - Send a message
 - `message:received` - Receive a message
 - `message:edit` - Edit a message
@@ -201,6 +218,7 @@ Once the server is running, visit:
 - `typing:stop` - User stopped typing
 
 ### Calls
+
 - `call:initiate` - Initiate a call
 - `call:ringing` - Incoming call
 - `call:answer` - Answer a call
@@ -221,16 +239,19 @@ Once the server is running, visit:
 ## Testing
 
 Run tests:
+
 ```bash
 pnpm test
 ```
 
 Run tests with coverage:
+
 ```bash
 pnpm test:coverage
 ```
 
 Run tests with UI:
+
 ```bash
 pnpm test:ui
 ```
@@ -240,11 +261,13 @@ pnpm test:ui
 ### Docker Deployment
 
 1. Build the Docker image:
+
 ```bash
 docker build -t social-communication-backend .
 ```
 
 2. Run with Docker Compose:
+
 ```bash
 docker-compose up -d
 ```
@@ -252,16 +275,19 @@ docker-compose up -d
 ### Manual Deployment
 
 1. Build the application:
+
 ```bash
 pnpm build
 ```
 
 2. Run database migrations:
+
 ```bash
 pnpm prisma:migrate
 ```
 
 3. Start the application:
+
 ```bash
 pnpm start
 ```

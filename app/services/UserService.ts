@@ -58,7 +58,11 @@ export class UserService {
     return user;
   }
 
-  async searchUsers(query: string, page: number = 1, limit: number = 20): Promise<{
+  async searchUsers(
+    query: string,
+    page: number = 1,
+    limit: number = 20
+  ): Promise<{
     users: User[];
     total: number;
     page: number;

@@ -36,15 +36,19 @@ class Application {
 
   private setupMiddlewares(): void {
     // Security
-    this.app.use(helmet({
-      contentSecurityPolicy: false, // Allow Swagger UI
-    }));
+    this.app.use(
+      helmet({
+        contentSecurityPolicy: false, // Allow Swagger UI
+      })
+    );
 
     // CORS
-    this.app.use(cors({
-      origin: config.CORS_ORIGINS.split(','),
-      credentials: true,
-    }));
+    this.app.use(
+      cors({
+        origin: config.CORS_ORIGINS.split(','),
+        credentials: true,
+      })
+    );
 
     // Compression
     this.app.use(compression());
@@ -59,11 +63,14 @@ class Application {
 
     // Request logging
     this.app.use((req, _res, next) => {
-      logger.info({
-        method: req.method,
-        url: req.url,
-        ip: req.ip,
-      }, 'Incoming request');
+      logger.info(
+        {
+          method: req.method,
+          url: req.url,
+          ip: req.ip,
+        },
+        'Incoming request'
+      );
       next();
     });
   }
@@ -75,10 +82,14 @@ class Application {
     this.app.get('/metrics', HealthController.metrics);
 
     // API Documentation
-    this.app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
-      customCss: '.swagger-ui .topbar { display: none }',
-      customSiteTitle: 'Social Communication API Docs',
-    }));
+    this.app.use(
+      '/api/docs',
+      swaggerUi.serve,
+      swaggerUi.setup(swaggerSpec, {
+        customCss: '.swagger-ui .topbar { display: none }',
+        customSiteTitle: 'Social Communication API Docs',
+      })
+    );
 
     // API Routes
     this.app.use(`/api/${config.API_VERSION}`, apiRoutes);
@@ -122,7 +133,9 @@ class Application {
 
       await Promise.race([
         redis.ping(),
-        new Promise((_, reject) => setTimeout(() => reject(new Error('Redis connection timeout')), 2000))
+        new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('Redis connection timeout')), 2000)
+        ),
       ]);
 
       redis.off('error', errorHandler);
@@ -135,7 +148,9 @@ class Application {
     // Start server
     this.httpServer.on('error', (error: any) => {
       if (error.code === 'EADDRINUSE') {
-        logger.error(`Port ${config.PORT} is already in use. Please change the PORT in your .env file.`);
+        logger.error(
+          `Port ${config.PORT} is already in use. Please change the PORT in your .env file.`
+        );
         process.exit(1);
       } else {
         logger.error({ error }, 'Server startup error');
@@ -144,15 +159,18 @@ class Application {
     });
 
     this.httpServer.listen(config.PORT, () => {
-      logger.info({
-        port: config.PORT,
-        env: config.NODE_ENV,
-        apiVersion: config.API_VERSION,
-        dbConnected,
-        redisConnected,
-      }, 'Server started successfully');
+      logger.info(
+        {
+          port: config.PORT,
+          env: config.NODE_ENV,
+          apiVersion: config.API_VERSION,
+          dbConnected,
+          redisConnected,
+        },
+        'Server started successfully'
+      );
       logger.info(`API Documentation available at http://localhost:${config.PORT}/api/docs`);
-      
+
       if (!dbConnected) {
         logger.warn('⚠️  Database not connected - some features may not work');
       }

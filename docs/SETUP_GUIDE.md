@@ -10,19 +10,25 @@
 
 2. **Setup**
    \`\`\`bash
+
    # Clone and navigate to project
+
    cd social-communication
 
    # Copy environment file
+
    cp .env.example .env
 
    # Edit .env and set required variables:
+
    # JWT_ACCESS_SECRET, JWT_REFRESH_SECRET, JITSI_APP_ID, JITSI_APP_SECRET
 
    # Start all services
+
    docker-compose up -d
 
    # View logs
+
    docker-compose logs -f app
    \`\`\`
 
@@ -77,22 +83,29 @@
 
    **Generate secure secrets:**
    \`\`\`bash
+
    # On Linux/Mac
+
    openssl rand -base64 32
 
    # On Windows (PowerShell)
+
    [Convert]::ToBase64String((1..32 | ForEach-Object { Get-Random -Maximum 256 }))
    \`\`\`
 
 6. **Database Migration**
    \`\`\`bash
+
    # Generate Prisma Client
+
    pnpm prisma:generate
 
    # Run migrations
+
    pnpm prisma:migrate
 
    # Seed database (optional)
+
    pnpm prisma:seed
    \`\`\`
 
@@ -140,10 +153,13 @@ For video calling features, you need to configure Jitsi:
 ### Running the App
 
 \`\`\`bash
+
 # Development with hot reload
+
 pnpm dev
 
 # Production build
+
 pnpm build
 pnpm start
 \`\`\`
@@ -151,45 +167,59 @@ pnpm start
 ### Database Operations
 
 \`\`\`bash
+
 # Create migration
+
 pnpm prisma:migrate
 
 # Reset database
+
 pnpm prisma migrate reset
 
 # Open Prisma Studio
+
 pnpm prisma:studio
 
 # Seed database
+
 pnpm prisma:seed
 \`\`\`
 
 ### Code Quality
 
 \`\`\`bash
+
 # Lint code
+
 pnpm lint
 
 # Fix linting issues
+
 pnpm lint:fix
 
 # Format code
+
 pnpm format
 
 # Check formatting
+
 pnpm format:check
 \`\`\`
 
 ### Testing
 
 \`\`\`bash
+
 # Run tests
+
 pnpm test
 
 # Run tests with coverage
+
 pnpm test:coverage
 
 # Run tests in UI mode
+
 pnpm test:ui
 \`\`\`
 
@@ -200,28 +230,28 @@ pnpm test:ui
 **Register User:**
 \`\`\`bash
 curl -X POST http://localhost:3000/api/v1/auth/register \\
-  -H "Content-Type: application/json" \\
-  -d '{
-    "username": "john_doe",
-    "email": "john@example.com",
-    "password": "SecurePass123"
-  }'
+-H "Content-Type: application/json" \\
+-d '{
+"username": "john_doe",
+"email": "john@example.com",
+"password": "SecurePass123"
+}'
 \`\`\`
 
 **Login:**
 \`\`\`bash
 curl -X POST http://localhost:3000/api/v1/auth/login \\
-  -H "Content-Type: application/json" \\
-  -d '{
-    "email": "john@example.com",
-    "password": "SecurePass123"
-  }'
+-H "Content-Type: application/json" \\
+-d '{
+"email": "john@example.com",
+"password": "SecurePass123"
+}'
 \`\`\`
 
 **Get Profile:**
 \`\`\`bash
 curl -X GET http://localhost:3000/api/v1/auth/profile \\
-  -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+-H "Authorization: Bearer YOUR_ACCESS_TOKEN"
 \`\`\`
 
 ### Using Swagger UI
@@ -245,22 +275,22 @@ curl -X GET http://localhost:3000/api/v1/auth/profile \\
 import io from 'socket.io-client';
 
 const socket = io('http://localhost:3000', {
-  auth: {
-    token: 'YOUR_JWT_TOKEN'
-  }
+auth: {
+token: 'YOUR_JWT_TOKEN'
+}
 });
 
 socket.on('connect', () => {
-  console.log('Connected');
+console.log('Connected');
 });
 
 socket.emit('message:send', {
-  content: 'Hello!',
-  receiverId: 'user-id-here'
+content: 'Hello!',
+receiverId: 'user-id-here'
 });
 
 socket.on('message:received', (message) => {
-  console.log('New message:', message);
+console.log('New message:', message);
 });
 \`\`\`
 
@@ -297,12 +327,12 @@ socket.on('message:received', (message) => {
 2. **Run Container**
    \`\`\`bash
    docker run -d \\
-     -p 3000:3000 \\
-     -e DATABASE_URL="postgresql://..." \\
-     -e REDIS_HOST="..." \\
-     -e JWT_ACCESS_SECRET="..." \\
-     -e JWT_REFRESH_SECRET="..." \\
-     social-communication-backend
+   -p 3000:3000 \\
+   -e DATABASE_URL="postgresql://..." \\
+   -e REDIS_HOST="..." \\
+   -e JWT_ACCESS_SECRET="..." \\
+   -e JWT_REFRESH_SECRET="..." \\
+   social-communication-backend
    \`\`\`
 
 3. **Or use Docker Compose**
@@ -317,6 +347,7 @@ socket.on('message:received', (message) => {
 **Problem**: Can't connect to PostgreSQL
 
 **Solutions**:
+
 - Verify PostgreSQL is running: \`pg_isready\`
 - Check DATABASE_URL is correct
 - Verify database exists
@@ -327,6 +358,7 @@ socket.on('message:received', (message) => {
 **Problem**: Can't connect to Redis
 
 **Solutions**:
+
 - Verify Redis is running: \`redis-cli ping\`
 - Check REDIS_HOST and REDIS_PORT
 - Verify Redis password if set
@@ -337,6 +369,7 @@ socket.on('message:received', (message) => {
 **Problem**: Port 3000 already in use
 
 **Solutions**:
+
 - Change PORT in .env
 - Kill process using port: \`lsof -ti:3000 | xargs kill\`
 
@@ -345,6 +378,7 @@ socket.on('message:received', (message) => {
 **Problem**: Type errors during build
 
 **Solutions**:
+
 - Run \`pnpm prisma:generate\` to regenerate Prisma Client
 - Delete node_modules and reinstall: \`pnpm install\`
 - Clear TypeScript cache: \`rm -rf dist\`
@@ -354,6 +388,7 @@ socket.on('message:received', (message) => {
 **Problem**: WebSocket connection fails
 
 **Solutions**:
+
 - Verify JWT token is valid
 - Check CORS configuration
 - Ensure WebSocket port is accessible
@@ -386,23 +421,30 @@ socket.on('message:received', (message) => {
 ### Health Checks
 
 \`\`\`bash
+
 # Application health
+
 curl http://localhost:3000/health
 
 # Metrics
+
 curl http://localhost:3000/metrics
 \`\`\`
 
 ### Logs
 
 \`\`\`bash
+
 # View logs (development)
+
 pnpm dev
 
 # View Docker logs
+
 docker-compose logs -f app
 
 # View production logs
+
 pm2 logs
 \`\`\`
 
@@ -420,6 +462,7 @@ pm2 logs
 ## Support
 
 For issues and questions:
+
 - Check documentation
 - Review error logs
 - Open GitHub issue

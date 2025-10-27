@@ -62,11 +62,7 @@ export class GroupService {
     return { groups, total, page, limit };
   }
 
-  async updateGroup(
-    groupId: string,
-    userId: string,
-    data: Partial<Group>
-  ): Promise<Group> {
+  async updateGroup(groupId: string, userId: string, data: Partial<Group>): Promise<Group> {
     await this.checkGroupPermission(groupId, userId, [
       GroupMemberRole.OWNER,
       GroupMemberRole.ADMIN,
@@ -95,11 +91,7 @@ export class GroupService {
     await this.groupRepository.addMember(groupId, targetUserId, role);
   }
 
-  async removeMember(
-    groupId: string,
-    userId: string,
-    targetUserId: string
-  ): Promise<void> {
+  async removeMember(groupId: string, userId: string, targetUserId: string): Promise<void> {
     await this.checkGroupPermission(groupId, userId, [
       GroupMemberRole.OWNER,
       GroupMemberRole.ADMIN,

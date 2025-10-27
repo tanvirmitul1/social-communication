@@ -1,6 +1,7 @@
 # PostgreSQL Setup Guide for Windows
 
 ## Current Status
+
 - ✅ PostgreSQL 18 is installed at: `C:\Program Files\PostgreSQL\18`
 - ✅ PostgreSQL service is running: `postgresql-x64-18`
 - ❌ Database connection failing: Authentication error
@@ -31,11 +32,13 @@
 If PostgreSQL is configured for "trust" authentication on localhost:
 
 1. **Connect without password to create user**:
+
    ```bash
    "C:\Program Files\PostgreSQL\18\bin\psql.exe" -U postgres
    ```
 
 2. **Create database**:
+
    ```sql
    CREATE DATABASE social_communication;
    ```
@@ -48,11 +51,13 @@ If PostgreSQL is configured for "trust" authentication on localhost:
 ### Option 3: Create New Database User
 
 1. **Connect as postgres superuser**:
+
    ```bash
    "C:\Program Files\PostgreSQL\18\bin\psql.exe" -U postgres
    ```
 
 2. **Create new user and database**:
+
    ```sql
    CREATE USER social_app WITH PASSWORD 'secure_password_here';
    CREATE DATABASE social_communication OWNER social_app;
@@ -89,6 +94,7 @@ powershell -ExecutionPolicy Bypass -File scripts/setup-postgres-path.ps1
 ```
 
 Then restart your terminal and you can use:
+
 ```bash
 psql --version
 ```
@@ -108,14 +114,17 @@ pnpm prisma:studio
 ## Common Issues
 
 ### Authentication Failed
+
 - **Cause**: Wrong password in DATABASE_URL
 - **Fix**: Update password in .env file
 
 ### Database Does Not Exist
+
 - **Cause**: Database not created yet
 - **Fix**: Create database using psql or pgAdmin
 
 ### Connection Refused
+
 - **Cause**: PostgreSQL service not running
 - **Fix**: Start service via Services app or:
   ```bash
