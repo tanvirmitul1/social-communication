@@ -37,11 +37,11 @@ COPY package.json pnpm-lock.yaml* pnpm-workspace.yaml ./
 # Copy prisma schema
 COPY --from=builder /app/prisma ./prisma
 
-# Install production dependencies
+# Install production dependencies (includes prisma for client generation)
 RUN pnpm install --frozen-lockfile --prod
 
-# Generate Prisma client using npx (doesn't require prisma to be installed)
-RUN npx prisma generate
+# Generate Prisma client
+RUN pnpm prisma:generate
 
 # Copy built files
 COPY --from=builder /app/dist ./dist
