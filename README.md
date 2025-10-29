@@ -35,27 +35,39 @@ A production-ready, enterprise-level backend for a real-time messaging and audio
 
 ```
 .
-├── app/
-│   ├── config/          # Configuration files
-│   ├── controllers/     # Request handlers
-│   ├── services/        # Business logic layer
-│   ├── repositories/    # Data access layer
-│   ├── routes/          # API routes
-│   ├── sockets/         # WebSocket handlers
-│   └── middlewares/     # Express middlewares
-├── core/
-│   ├── utils/           # Utility functions
-│   ├── errors/          # Custom error classes
-│   ├── logger/          # Logging configuration
-│   ├── validations/     # Validation schemas
-│   └── constants/       # Application constants
+├── main.ts              # Application entry point
+├── application/         # App initialization & DI container
+├── config/              # Configuration (env, logger, prisma, redis, swagger)
+├── infrastructure/      # Base classes & external services (cache, jitsi, sockets)
+├── middlewares/         # Express middlewares (auth, error handler, validation)
+├── common/              # Shared utilities, types, errors, constants
+├── modules/             # Feature modules (business logic)
+│   ├── auth/           # Authentication module
+│   ├── user/           # User management module
+│   ├── message/        # Messaging module
+│   ├── group/          # Group management module
+│   ├── call/           # Video calling module
+│   └── health/         # Health checks module
 ├── docs/                # Documentation
 ├── tests/               # Test files
 ├── prisma/              # Database schema and migrations
-├── main.ts              # Application entry point
+├── scripts/             # Build and utility scripts
 ├── Dockerfile           # Docker configuration
 └── docker-compose.yml   # Docker Compose configuration
 ```
+
+> **Note**: This project follows a clean, modular architecture with feature-based organization. Each module in `modules/` contains its own controller, service, repository, routes, and validation files.
+
+## 📚 Documentation
+
+Comprehensive documentation is available in the [docs/](docs/) directory:
+
+- [Quick Start Guide](docs/guides/QUICKSTART.md) - Get started in 5 minutes
+- [Installation Guide](docs/setup/INSTALLATION.md) - Complete setup instructions
+- [API Documentation](docs/API.md) - Full REST API and WebSocket reference
+- [Architecture Guide](docs/ARCHITECTURE.md) - System design and patterns
+
+For a complete list of documentation, see [docs/README.md](docs/README.md).
 
 ## Getting Started
 
