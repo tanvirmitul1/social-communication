@@ -8,7 +8,14 @@ import { Helpers } from '@common/utils.js';
 
 @injectable()
 export class AuthController {
-  constructor(@inject('AuthService') private authService: AuthService) {}
+  constructor(@inject('AuthService') private authService: AuthService) {
+    this.register = this.register.bind(this);
+    this.login = this.login.bind(this);
+    this.logout = this.logout.bind(this);
+    this.logoutAll = this.logoutAll.bind(this);
+    this.refreshToken = this.refreshToken.bind(this);
+    this.getProfile = this.getProfile.bind(this);
+  }
 
   /**
    * @swagger
