@@ -1,6 +1,6 @@
 import fs from 'fs/promises';
 import path from 'path';
-import { swaggerSpec } from '../app/config/swagger.js';
+import { swaggerSpec } from '../src/config/swagger.js';
 
 async function generateMarkdownDocs() {
   const docsDir = path.join(process.cwd(), 'docs', 'markdown');
