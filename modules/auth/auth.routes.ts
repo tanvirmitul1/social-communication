@@ -4,7 +4,7 @@ import { AuthController } from '@modules/auth/auth.controller.js';
 import { validate } from '@middlewares/validation.js';
 import { authenticate } from '@middlewares/auth-guard.js';
 import { authLimiter } from '@config/rate-limiter.js';
-import { registerSchema, loginSchema, refreshTokenSchema } from '@validations/index.js';
+import { registerSchema, loginSchema, refreshTokenSchema } from './auth.validation.js';
 
 const router: Router = Router();
 const authController = container.resolve(AuthController);

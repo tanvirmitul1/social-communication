@@ -2,7 +2,7 @@
   "name": "social-communication-backend",
   "version": "1.0.0",
   "description": "Enterprise-level real-time messaging and audio/video calling platform",
-  "main": "dist/src/main.js",
+  "main": "dist/main.js",
   "type": "module",
   "engines": {
     "node": ">=20.0.0",
@@ -10,10 +10,10 @@
   },
   "packageManager": "pnpm@10.18.2",
   "scripts": {
-    "dev": "nodemon --exec tsx src/main.ts",
-    "dev:watch": "tsx watch src/main.ts",
+    "dev": "nodemon --exec tsx main.ts",
+    "dev:watch": "tsx watch main.ts",
     "build": "tsc && tsc-alias",
-    "start": "node dist/src/main.js",
+    "start": "node dist/main.js",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:studio": "prisma studio",

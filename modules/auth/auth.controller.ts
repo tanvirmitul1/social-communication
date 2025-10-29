@@ -3,7 +3,7 @@ import { Request, Response } from 'express';
 import { AuthService } from '@modules/auth/auth.service.js';
 import { ResponseHandler } from '@common/utils.js';
 import { AuthRequest } from '@middlewares/auth-guard.js';
-import { LoginInput, RegisterInput } from '@validations/index.js';
+import { LoginInput, RegisterInput } from './auth.validation.js';
 import { Helpers } from '@common/utils.js';
 
 @injectable()

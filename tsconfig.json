@@ -8,13 +8,12 @@
     "outDir": "./dist",
     "baseUrl": "./",
     "paths": {
-      "@application/*": ["src/application/*"],
-      "@config/*": ["src/config/*"],
-      "@modules/*": ["src/modules/*"],
-      "@common/*": ["src/common/*"],
-      "@infrastructure/*": ["src/infrastructure/*"],
-      "@middlewares/*": ["src/middlewares/*"],
-      "@validations/*": ["src/common/validations/*"]
+      "@application/*": ["application/*"],
+      "@config/*": ["config/*"],
+      "@modules/*": ["modules/*"],
+      "@common/*": ["common/*"],
+      "@infrastructure/*": ["infrastructure/*"],
+      "@middlewares/*": ["middlewares/*"]
     },
     "resolveJsonModule": true,
     "allowJs": true,
@@ -34,8 +33,8 @@
     "allowSyntheticDefaultImports": true,
     "strictPropertyInitialization": false
   },
-  "include": ["src/**/*.ts", "prisma/**/*.ts", "scripts/**/*.ts", "tests/**/*.ts"],
-  "exclude": ["node_modules", "dist", "app", "core", "main.ts", "**/*.spec.ts", "**/*.test.ts"],
+  "include": ["**/*.ts", "prisma/**/*.ts"],
+  "exclude": ["node_modules", "dist", "**/*.spec.ts", "**/*.test.ts"],
   "ts-node": {
     "esm": true,
     "experimentalSpecifierResolution": "node"

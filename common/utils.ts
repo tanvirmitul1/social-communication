@@ -1,7 +1,7 @@
 import { nanoid } from 'nanoid';
 
 export { ResponseHandler } from './response.js';
-export { asyncHandler } from './asyncHandler.js';
+export { asyncHandler } from './async-handler.js';
 
 export class Helpers {
   static generateId(size: number = 21): string {

@@ -3,7 +3,7 @@ import { Response } from 'express';
 import { GroupService } from '@modules/group/group.service.js';
 import { ResponseHandler } from '@common/utils.js';
 import { AuthRequest } from '@middlewares/auth-guard.js';
-import { CreateGroupInput, UpdateGroupInput, AddGroupMemberInput } from '@validations/index.js';
+import { CreateGroupInput, UpdateGroupInput, AddGroupMemberInput } from './group.validation.js';
 
 @injectable()
 export class GroupController {

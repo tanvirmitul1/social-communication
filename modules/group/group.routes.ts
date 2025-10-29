@@ -3,7 +3,7 @@ import { container } from '@application/container.js';
 import { GroupController } from '@modules/group/group.controller.js';
 import { authenticate } from '@middlewares/auth-guard.js';
 import { validate } from '@middlewares/validation.js';
-import { createGroupSchema, updateGroupSchema, addGroupMemberSchema } from '@validations/index.js';
+import { createGroupSchema, updateGroupSchema, addGroupMemberSchema } from './group.validation.js';
 
 const router: Router = Router();
 const groupController = container.resolve(GroupController);

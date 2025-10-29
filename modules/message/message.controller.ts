@@ -3,7 +3,7 @@ import { Response } from 'express';
 import { MessageService } from '@modules/message/message.service.js';
 import { ResponseHandler } from '@common/utils.js';
 import { AuthRequest } from '@middlewares/auth-guard.js';
-import { SendMessageInput, EditMessageInput } from '@validations/index.js';
+import { SendMessageInput, EditMessageInput } from './message.validation.js';
 import { MessageStatus } from '@prisma/client';
 
 @injectable()
