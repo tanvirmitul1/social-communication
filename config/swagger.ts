@@ -7,7 +7,41 @@ const options: swaggerJsdoc.Options = {
     info: {
       title: 'Social Communication API',
       version: '1.0.0',
-      description: 'Enterprise-level real-time messaging and audio/video calling platform API',
+      description: `Enterprise-level real-time messaging and audio/video calling platform API
+
+## WebSocket Events
+
+This API also supports real-time communication via WebSocket (Socket.IO).
+
+### Connection
+- Connect to: \`http://localhost:3000\`
+- Authentication: Pass JWT token in handshake auth
+
+### Message Events
+- \`message:send\` - Send a message
+- \`message:received\` - Message received
+- \`message:edit\` - Edit a message
+- \`message:delete\` - Delete a message
+- \`message:reaction\` - Add/remove reaction
+- \`typing:start\` - User started typing
+- \`typing:stop\` - User stopped typing
+
+### Call Events
+- \`call:initiate\` - Initiate a call
+- \`call:ringing\` - Call is ringing
+- \`call:answer\` - Answer a call
+- \`call:reject\` - Reject a call
+- \`call:end\` - End a call
+- \`call:participant:join\` - Participant joined
+- \`call:participant:leave\` - Participant left
+
+### Presence Events
+- \`user:online\` - User came online
+- \`user:offline\` - User went offline
+- \`presence:update\` - Update user presence
+
+For detailed WebSocket documentation, see: [API Documentation](../docs/API.md)
+`,
       contact: {
         name: 'API Support',
         email: 'support@socialcomm.com',
@@ -98,7 +132,7 @@ const options: swaggerJsdoc.Options = {
       },
     ],
   },
-  apis: ['./app/controllers/*.ts', './app/routes/*.ts'],
+  apis: ['./modules/**/*.controller.ts', './modules/**/*.routes.ts', './modules/**/*.gateway.ts'],
 };
 
 export const swaggerSpec = swaggerJsdoc(options);
