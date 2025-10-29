@@ -1,7 +1,7 @@
 import { Server, Socket } from 'socket.io';
-import { container } from '@config/container.js';
-import { CallService } from '@services/CallService.js';
-import { CONSTANTS } from '@constants/index.js';
+import { container } from '@application/container.js';
+import { CallService } from '@modules/call/call.service.js';
+import { CONSTANTS } from '@common/constants.js';
 import { logger } from '@config/logger.js';
 import { Prisma } from '@prisma/client';
 

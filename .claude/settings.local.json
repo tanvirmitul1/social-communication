@@ -10,7 +10,15 @@
       "Bash(powershell -Command:*)",
       "Bash(net start)",
       "Bash(\"C:\\Program Files\\PostgreSQL\\18\\bin\\psql.exe\" --version)",
-      "Bash(\"C:\\Program Files\\PostgreSQL\\18\\bin\\psql.exe\" -U postgres -l)"
+      "Bash(\"C:\\Program Files\\PostgreSQL\\18\\bin\\psql.exe\" -U postgres -l)",
+      "Bash(pnpm add:*)",
+      "Bash(git push)",
+      "Bash(tree:*)",
+      "Bash(git checkout:*)",
+      "Bash(tsx scripts/migrate-structure.ts:*)",
+      "Bash(pnpm exec tsx:*)",
+      "Bash(find:*)",
+      "Bash(pnpm build:*)"
     ],
     "deny": [],
     "ask": []

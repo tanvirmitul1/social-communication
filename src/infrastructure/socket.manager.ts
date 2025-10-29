@@ -4,8 +4,8 @@ import jwt from 'jsonwebtoken';
 import { createAdapter } from '@socket.io/redis-adapter';
 import { createClient } from 'redis';
 import { config } from '@config/env.js';
-import { ChatSocketHandler } from './ChatSocketHandler.js';
-import { CallSocketHandler } from './CallSocketHandler.js';
+import { ChatSocketHandler } from '@modules/message/message.gateway.js';
+import { CallSocketHandler } from '@modules/call/call.gateway.js';
 import { logger } from '@config/logger.js';
 
 export class SocketManager {

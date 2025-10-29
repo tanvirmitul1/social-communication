@@ -1,7 +1,7 @@
 import { Server as SocketIOServer, Socket } from 'socket.io';
 import { Server as HTTPServer } from 'http';
 import { config } from '@config/env.js';
-import { logger } from '@logger/index.js';
+import { logger } from '@config/logger.js';
 import { CONSTANTS } from '@constants/index.js';
 import { container } from 'tsyringe';
 import { MessageService } from '@services/MessageService.js';

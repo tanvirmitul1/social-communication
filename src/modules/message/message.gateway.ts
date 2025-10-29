@@ -1,9 +1,9 @@
 import { Server, Socket } from 'socket.io';
-import { container } from '@config/container.js';
-import { MessageService } from '@services/MessageService.js';
-import { UserService } from '@services/UserService.js';
-import { CacheService } from '@services/CacheService.js';
-import { CONSTANTS } from '@constants/index.js';
+import { container } from '@application/container.js';
+import { MessageService } from '@modules/message/message.service.js';
+import { UserService } from '@modules/user/user.service.js';
+import { CacheService } from '@infrastructure/cache.service.js';
+import { CONSTANTS } from '@common/constants.js';
 import { logger } from '@config/logger.js';
 
 export class ChatSocketHandler {

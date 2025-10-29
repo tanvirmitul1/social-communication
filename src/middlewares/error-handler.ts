@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { StatusCodes } from 'http-status-codes';
-import { AppError } from '@errors/index.js';
+import { AppError } from '@common/errors.js';
 import { logger } from '@config/logger.js';
 
 export const errorHandler = (
