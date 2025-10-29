@@ -12,6 +12,7 @@ const authController = container.resolve(AuthController);
 router.post('/register', authLimiter, validate(registerSchema), authController.register);
 router.post('/login', authLimiter, validate(loginSchema), authController.login);
 router.post('/logout', authenticate, validate(refreshTokenSchema), authController.logout);
+router.post('/logout-all', authenticate, authController.logoutAll);
 router.post('/refresh', validate(refreshTokenSchema), authController.refreshToken);
 router.get('/me', authenticate, authController.getProfile);
 
