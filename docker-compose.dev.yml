@@ -1,0 +1,92 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database - Development
+  postgres:
+    image: postgres:16-alpine
+    container_name: social-comm-postgres-dev
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: social_communication
+      # Enable better logging for development
+      POSTGRES_INITDB_ARGS: "-E UTF8 --locale=en_US.UTF-8"
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data_dev:/var/lib/postgresql/data
+      # Optional: Add init scripts
+      # - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - social-comm-network
+    restart: unless-stopped
+
+  # Redis Cache - Development
+  redis:
+    image: redis:7-alpine
+    container_name: social-comm-redis-dev
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data_dev:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
+    networks:
+      - social-comm-network
+    restart: unless-stopped
+
+  # Application - Development (Optional - can run locally with npm run dev)
+  # Uncomment this if you want to run the app in Docker for development
+  # app:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile
+  #     target: builder
+  #   container_name: social-comm-app-dev
+  #   ports:
+  #     - "3000:3000"
+  #   environment:
+  #     NODE_ENV: development
+  #     PORT: 3000
+  #     DATABASE_URL: postgresql://postgres:postgres@postgres:5432/social_communication?schema=public
+  #     REDIS_HOST: redis
+  #     REDIS_PORT: 6379
+  #     JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:-dev-secret-change-in-production}
+  #     JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-dev-refresh-secret-change-in-production}
+  #     CORS_ORIGINS: http://localhost:3000,http://localhost:5173
+  #     LOG_LEVEL: debug
+  #   depends_on:
+  #     postgres:
+  #       condition: service_healthy
+  #     redis:
+  #       condition: service_healthy
+  #   volumes:
+  #     - .:/app
+  #     - /app/node_modules
+  #     - ./uploads:/app/uploads
+  #     - ./logs:/app/logs
+  #   networks:
+  #     - social-comm-network
+  #   command: pnpm dev
+
+volumes:
+  postgres_data_dev:
+    name: social-comm-postgres-dev
+  redis_data_dev:
+    name: social-comm-redis-dev
+
+networks:
+  social-comm-network:
+    name: social-comm-network-dev
+    driver: bridge
