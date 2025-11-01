@@ -89,6 +89,7 @@ pnpm docker:dev:up
 This starts:
 - ✅ PostgreSQL database on port 5432
 - ✅ Redis cache on port 6379
+- ✅ pgAdmin4 (Database GUI) on port 5050
 
 ### Step 5: Wait for Services to be Ready
 
@@ -300,8 +301,29 @@ pnpm test:ui
 
 ### View Database
 
+You have two options for viewing your database:
+
+**Option 1: pgAdmin4 (Recommended for PostgreSQL)**
+
+1. Open browser: http://localhost:5050
+2. Login:
+   - Email: `admin@localhost.com`
+   - Password: `admin`
+3. Add PostgreSQL server:
+   - Right-click "Servers" → Register → Server
+   - **General**: Name = `Local Development`
+   - **Connection**:
+     - Host: `postgres`
+     - Port: `5432`
+     - Database: `social_communication`
+     - Username: `postgres`
+     - Password: `postgres`
+   - Click "Save"
+
+**Option 2: Prisma Studio (Prisma ORM GUI)**
+
 ```bash
-# Open Prisma Studio (GUI)
+# Open Prisma Studio
 pnpm prisma:studio
 
 # Opens at: http://localhost:5555
