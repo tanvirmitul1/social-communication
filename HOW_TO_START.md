@@ -161,10 +161,11 @@ When you use `pnpm docker:dev:up`:
 |---------|------|----------------|---------|
 | PostgreSQL | 5432 | social-comm-postgres-dev | Database |
 | Redis | 6379 | social-comm-redis-dev | Cache |
+| pgAdmin4 | 5050 | social-comm-pgadmin-dev | Database GUI |
 | Your App | 3000 | (runs locally) | Backend API |
 
 **Important**:
-- Database & cache run in Docker
+- Database, cache & pgAdmin run in Docker
 - Your app runs locally (for hot reload)
 - No local PostgreSQL/Redis installation needed!
 
@@ -208,10 +209,67 @@ social-communication/
 
 ---
 
+## 🗄️ Using pgAdmin4 (Database GUI)
+
+### Access pgAdmin4
+
+1. **Start Docker services** (if not already running):
+   ```bash
+   pnpm docker:dev:up
+   ```
+
+2. **Open pgAdmin4** in your browser:
+   - URL: http://localhost:5050
+   - Email: `admin@localhost.com`
+   - Password: `admin`
+
+### Connect to PostgreSQL Database
+
+After logging into pgAdmin4:
+
+1. **Right-click "Servers"** → **Register** → **Server**
+
+2. **General Tab**:
+   - Name: `Local Development` (or any name you prefer)
+
+3. **Connection Tab**:
+   - Host: `postgres` (this is the Docker container name)
+   - Port: `5432`
+   - Database: `social_communication`
+   - Username: `postgres`
+   - Password: `postgres`
+
+4. **Click "Save"**
+
+Now you can browse your database, run SQL queries, view tables, and manage data visually!
+
+**Useful pgAdmin4 Features**:
+- View all tables and relationships
+- Run custom SQL queries
+- Export/import data
+- View query execution plans
+- Monitor database activity
+
+---
+
 ## 🐛 Troubleshooting
 
 ### "Docker is not running"
 **Solution**: Start Docker Desktop
+
+### "Cannot access pgAdmin4"
+**Solution**:
+```bash
+# Check if pgAdmin4 container is running
+docker ps | findstr pgadmin
+
+# Restart services
+pnpm docker:dev:down
+pnpm docker:dev:up
+
+# Check logs
+pnpm docker:dev:logs
+```
 
 ### "Port 3000 already in use"
 ```bash

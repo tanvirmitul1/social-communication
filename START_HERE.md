@@ -67,6 +67,7 @@ When you run the startup script:
 
 - ✅ **PostgreSQL Database** - Running in Docker on port 5432
 - ✅ **Redis Cache** - Running in Docker on port 6379
+- ✅ **pgAdmin4** - Database GUI in Docker on port 5050
 - ✅ **Your App** - Running locally on port 3000
 
 You don't need to configure anything - it just works!
@@ -106,10 +107,21 @@ pnpm docker:dev:down
 
 ### View Database
 
-```bash
-# Open Prisma Studio (visual database editor)
-pnpm prisma:studio
+You have two options for viewing your database:
 
+**Option 1: pgAdmin4 (Recommended for PostgreSQL)**
+- URL: http://localhost:5050
+- Login: `admin@localhost.com` / `admin`
+- Connect to server:
+  - Host: `postgres`
+  - Port: `5432`
+  - Database: `social_communication`
+  - Username: `postgres`
+  - Password: `postgres`
+
+**Option 2: Prisma Studio (Prisma ORM GUI)**
+```bash
+pnpm prisma:studio
 # Opens at: http://localhost:5555
 ```
 

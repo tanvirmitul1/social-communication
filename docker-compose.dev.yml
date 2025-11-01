@@ -46,6 +46,24 @@ services:
       - social-comm-network
     restart: unless-stopped
 
+  # pgAdmin4 - PostgreSQL Database GUI
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: social-comm-pgadmin-dev
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@localhost.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    ports:
+      - "5050:80"
+    volumes:
+      - pgadmin_data_dev:/var/lib/pgadmin
+    networks:
+      - social-comm-network
+    restart: unless-stopped
+    depends_on:
+      - postgres
+
   # Application - Development (Optional - can run locally with npm run dev)
   # Uncomment this if you want to run the app in Docker for development
   # app:
@@ -85,6 +103,8 @@ volumes:
     name: social-comm-postgres-dev
   redis_data_dev:
     name: social-comm-redis-dev
+  pgadmin_data_dev:
+    name: social-comm-pgadmin-dev
 
 networks:
   social-comm-network:
