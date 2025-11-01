@@ -1,5 +1,7 @@
 # Installation Guide
 
+Complete installation guide for setting up the Social Communication backend.
+
 ## Prerequisites Check
 
 Before starting, verify you have the required tools installed:
@@ -14,6 +16,12 @@ pnpm --version
 # Check Docker (if using Docker)
 docker --version
 docker-compose --version
+
+# Check PostgreSQL (if installing locally)
+psql --version
+
+# Check Redis (if installing locally)
+redis-cli --version
 ```
 
 If any are missing, install them:
@@ -21,13 +29,16 @@ If any are missing, install them:
 - **Node.js**: https://nodejs.org/
 - **pnpm**: `npm install -g pnpm`
 - **Docker**: https://docs.docker.com/get-docker/
+- **PostgreSQL**: https://www.postgresql.org/download/
+- **Redis**: https://redis.io/download/
 
 ## Installation Steps
 
 ### Step 1: Clone and Install Dependencies
 
 ```bash
-# Navigate to project directory
+# Clone the repository
+git clone <repository-url>
 cd social-communication
 
 # Install dependencies
@@ -35,11 +46,10 @@ pnpm install
 ```
 
 This will install all required packages including:
-
 - Express.js and middleware
 - Prisma ORM
 - Socket.IO
-- Redis client
+- Redis client (ioredis)
 - JWT and Argon2
 - And many more...
 
@@ -68,6 +78,8 @@ REDIS_PASSWORD=
 # JWT - Generate secure secrets for production
 JWT_ACCESS_SECRET=your-super-secret-access-token-key-change-in-production
 JWT_REFRESH_SECRET=your-super-secret-refresh-token-key-change-in-production
+JWT_ACCESS_EXPIRY=15m
+JWT_REFRESH_EXPIRY=7d
 
 # CORS - Add your frontend URLs
 CORS_ORIGINS=http://localhost:3000,http://localhost:5173
@@ -76,6 +88,17 @@ CORS_ORIGINS=http://localhost:3000,http://localhost:5173
 JITSI_DOMAIN=meet.jit.si
 JITSI_APP_ID=
 JITSI_APP_SECRET=
+JITSI_ROOM_PREFIX=social-comm-
+```
+
+**Generate secure JWT secrets:**
+
+```bash
+# On Linux/Mac
+openssl rand -base64 32
+
+# On Windows (PowerShell)
+[Convert]::ToBase64String((1..32 | ForEach-Object { Get-Random -Maximum 256 }))
 ```
 
 ### Step 3: Database Setup
@@ -92,19 +115,29 @@ docker-compose logs -f postgres redis
 
 #### Option B: Local Installation
 
-Install PostgreSQL and Redis locally, then create the database:
+**PostgreSQL:**
 
 ```bash
-# PostgreSQL
+# Create database
 createdb social_communication
 
 # Or using psql
 psql -U postgres
 CREATE DATABASE social_communication;
 \q
+```
 
-# Start Redis
+For Windows-specific PostgreSQL setup, see [postgres-setup.md](postgres-setup.md).
+
+**Redis:**
+
+```bash
+# Start Redis server
 redis-server
+
+# Verify Redis is running
+redis-cli ping
+# Should return: PONG
 ```
 
 ### Step 4: Run Database Migrations
@@ -119,6 +152,13 @@ pnpm prisma:migrate
 # Seed database with test data (optional)
 pnpm prisma:seed
 ```
+
+The migration will create all necessary database tables:
+- Users and authentication
+- Messages and groups
+- Calls and participants
+- Friend requests and follows
+- And more...
 
 ### Step 5: Verify Installation
 
@@ -135,7 +175,7 @@ pnpm build
 
 ### Step 6: Start the Server
 
-#### Development Mode
+#### Development Mode (with hot reload)
 
 ```bash
 pnpm dev
@@ -153,7 +193,7 @@ pnpm build
 pnpm start
 ```
 
-### Step 7: Verify Installation
+### Step 7: Verify Everything Works
 
 Visit these URLs to confirm everything is working:
 
@@ -163,11 +203,17 @@ Visit these URLs to confirm everything is working:
 
 You should see JSON responses indicating the services are healthy.
 
-## Docker Installation (Alternative)
+## Docker Installation (Complete Setup)
 
-For a completely containerized setup:
+For a completely containerized setup with all services:
 
 ```bash
+# Copy environment file
+cp .env.example .env
+
+# Edit .env and set JWT secrets
+# (DATABASE_URL and Redis settings will use Docker defaults)
+
 # Build and start all services
 docker-compose up -d --build
 
@@ -182,6 +228,9 @@ docker-compose logs -f app
 
 # Stop services
 docker-compose down
+
+# Stop and remove volumes (clean slate)
+docker-compose down -v
 ```
 
 ## Troubleshooting
@@ -255,6 +304,18 @@ rm -rf dist
 pnpm build
 ```
 
+### TypeScript Errors
+
+```bash
+# Regenerate Prisma client (fixes type errors)
+pnpm prisma:generate
+
+# Clear and rebuild
+rm -rf dist node_modules
+pnpm install
+pnpm build
+```
+
 ## Post-Installation
 
 ### 1. Test API Endpoints
@@ -278,7 +339,10 @@ Visit http://localhost:3000/api/docs and try out the endpoints using Swagger UI.
 ### 3. Monitor Logs
 
 ```bash
-# View application logs
+# View application logs (development)
+# Logs will appear in console when running pnpm dev
+
+# View log files
 tail -f logs/app.log
 
 # Docker logs
@@ -306,7 +370,7 @@ pnpm dev
 
 # In separate terminals:
 # Run tests in watch mode
-pnpm test:watch
+pnpm test --watch
 
 # Run linter
 pnpm lint
@@ -317,23 +381,55 @@ pnpm format
 
 ## Production Deployment
 
-1. Set `NODE_ENV=production` in `.env`
-2. Use strong secrets for JWT tokens
-3. Configure proper CORS origins
-4. Set up PostgreSQL with backups
-5. Configure Redis persistence
-6. Use a process manager (PM2, systemd)
-7. Set up reverse proxy (Nginx, Caddy)
-8. Enable HTTPS
-9. Configure logging and monitoring
-10. Set up CI/CD pipeline
+### Pre-deployment Checklist
+
+1. ✅ Set `NODE_ENV=production` in `.env`
+2. ✅ Use strong secrets for JWT tokens
+3. ✅ Configure proper CORS origins
+4. ✅ Set up PostgreSQL with backups
+5. ✅ Configure Redis persistence
+6. ✅ Use a process manager (PM2, systemd)
+7. ✅ Set up reverse proxy (Nginx, Caddy)
+8. ✅ Enable HTTPS
+9. ✅ Configure logging and monitoring
+10. ✅ Set up CI/CD pipeline
+
+### Production Build
+
+```bash
+# Build application
+pnpm build
+
+# Run migrations (deployment mode)
+pnpm prisma migrate deploy
+
+# Start with PM2
+pm2 start dist/main.js --name social-comm-api
+
+# Or use the npm script
+pnpm start
+```
+
+### Environment Variables for Production
+
+```env
+NODE_ENV=production
+DATABASE_URL=postgresql://user:password@prod-host:5432/social_communication
+REDIS_HOST=prod-redis-host
+REDIS_PORT=6379
+REDIS_PASSWORD=strong-redis-password
+JWT_ACCESS_SECRET=very-strong-production-secret
+JWT_REFRESH_SECRET=very-strong-production-refresh-secret
+CORS_ORIGINS=https://yourdomain.com,https://www.yourdomain.com
+```
 
 ## Next Steps
 
-- Read [QUICKSTART.md](QUICKSTART.md) for quick usage examples
-- Review [README.md](README.md) for detailed documentation
-- Check [PROJECT_SUMMARY.md](PROJECT_SUMMARY.md) for architecture overview
+- Read the [Quick Start Guide](quickstart.md) for quick testing
+- Review the [Architecture Documentation](../development/architecture.md) for code structure
+- Check the [API Reference](../api/overview.md) for endpoint documentation
 - Explore the API at http://localhost:3000/api/docs
+- Build your frontend application
 
 ## Support
 
@@ -343,4 +439,5 @@ If you encounter issues:
 2. Review error logs
 3. Ensure all services are running
 4. Verify environment variables
-5. Check GitHub issues
+5. Check [postgres-setup.md](postgres-setup.md) for database-specific issues
+6. Open a GitHub issue with error details

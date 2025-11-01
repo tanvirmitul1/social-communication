@@ -10,7 +10,16 @@
       "Bash(powershell -Command:*)",
       "Bash(net start)",
       "Bash(\"C:\\Program Files\\PostgreSQL\\18\\bin\\psql.exe\" --version)",
-      "Bash(\"C:\\Program Files\\PostgreSQL\\18\\bin\\psql.exe\" -U postgres -l)"
+      "Bash(\"C:\\Program Files\\PostgreSQL\\18\\bin\\psql.exe\" -U postgres -l)",
+      "Bash(docker exec social-comm-postgres sh -c \"cat /var/lib/postgresql/data/pg_hba.conf | tail -10\")",
+      "Bash(docker exec:*)",
+      "Bash(docker restart:*)",
+      "Bash(pnpm dev)",
+      "Bash(netstat:*)",
+      "Bash(taskkill //F //PID 5068)",
+      "Bash(node test-db-connection.js:*)",
+      "Bash(find:*)",
+      "Bash(git -C \"c:\\eblict\\social-communication\" status --short)"
     ],
     "deny": [],
     "ask": []

@@ -2,14 +2,15 @@
 
 This guide will help you get the Social Communication backend up and running in minutes.
 
-## Option 1: Docker (Recommended)
+## Prerequisites
+
+- **Node.js** 20 or higher
+- **pnpm** 8 or higher
+- **Docker & Docker Compose** (for easiest setup)
+
+## Option 1: Docker (Recommended - Fastest)
 
 The fastest way to get started is using Docker Compose, which sets up everything for you.
-
-### Prerequisites
-
-- Docker
-- Docker Compose
 
 ### Steps
 
@@ -26,47 +27,66 @@ cd social-communication
 cp .env.example .env
 ```
 
-3. **Start all services**
+3. **Edit .env and set JWT secrets** (the rest will work with defaults)
+
+Generate secure secrets:
+
+```bash
+# On Linux/Mac
+openssl rand -base64 32
+
+# On Windows (PowerShell)
+[Convert]::ToBase64String((1..32 | ForEach-Object { Get-Random -Maximum 256 }))
+```
+
+Update `.env`:
+```env
+JWT_ACCESS_SECRET=<generated-secret-1>
+JWT_REFRESH_SECRET=<generated-secret-2>
+```
+
+4. **Start all services**
 
 ```bash
 docker-compose up -d
 ```
 
 This will start:
-
 - PostgreSQL database on port 5432
 - Redis cache on port 6379
 - Application server on port 3000
 
-4. **Wait for services to be healthy** (about 30 seconds)
+5. **Wait for services to be healthy** (about 30 seconds)
 
 ```bash
 docker-compose ps
 ```
 
-5. **Run database migrations**
+6. **Run database migrations**
 
 ```bash
 docker-compose exec app pnpm prisma:migrate
 ```
 
-6. **Seed the database** (optional)
+7. **Seed the database** (optional - adds test data)
 
 ```bash
 docker-compose exec app pnpm prisma:seed
 ```
 
-7. **Access the application**
+8. **Access the application**
 
-- API: http://localhost:3000
-- API Docs: http://localhost:3000/api/docs
-- Health: http://localhost:3000/health
+- **API**: http://localhost:3000
+- **API Docs**: http://localhost:3000/api/docs
+- **Health**: http://localhost:3000/health
 
 ### Test Credentials (after seeding)
 
-- Admin: `admin@socialcomm.com` / `Admin@123`
-- User 1: `alice@example.com` / `User@123`
-- User 2: `bob@example.com` / `User@123`
+| Email                  | Password   | Role      |
+|------------------------|------------|-----------|
+| admin@socialcomm.com   | Admin@123  | ADMIN     |
+| alice@example.com      | User@123   | USER      |
+| bob@example.com        | User@123   | USER      |
 
 ## Option 2: Local Development
 
@@ -101,11 +121,17 @@ CREATE DATABASE social_communication;
 \q
 ```
 
+See [postgres-setup.md](postgres-setup.md) for Windows-specific PostgreSQL setup.
+
 3. **Setup Redis**
 
 ```bash
 # Start Redis server
 redis-server
+
+# Verify Redis is running
+redis-cli ping
+# Should return: PONG
 ```
 
 4. **Configure environment**
@@ -115,11 +141,18 @@ cp .env.example .env
 # Edit .env with your database and Redis credentials
 ```
 
+Update at minimum:
+```env
+DATABASE_URL="postgresql://postgres:YOUR_PASSWORD@localhost:5432/social_communication?schema=public"
+JWT_ACCESS_SECRET=<generated-secret>
+JWT_REFRESH_SECRET=<generated-secret>
+```
+
 5. **Run migrations**
 
 ```bash
-pnpm prisma:migrate
 pnpm prisma:generate
+pnpm prisma:migrate
 ```
 
 6. **Seed database** (optional)
@@ -214,10 +247,41 @@ socket.on('message:received', (data) => {
 
 ## Next Steps
 
-- Explore the API documentation at http://localhost:3000/api/docs
-- Read the main [README.md](README.md) for detailed information
-- Check out the [docs/markdown/README.md](docs/markdown/README.md) for API reference
-- Review the Prisma schema in [prisma/schema.prisma](prisma/schema.prisma)
+- **Explore the API documentation** at http://localhost:3000/api/docs
+- **Read the [Installation Guide](installation.md)** for detailed setup instructions
+- **Check the [API Reference](../api/overview.md)** for complete API documentation
+- **Review the [Architecture docs](../development/architecture.md)** to understand the codebase
+
+## Common Commands
+
+### Development
+```bash
+pnpm dev          # Start dev server with hot reload
+pnpm build        # Build for production
+pnpm start        # Start production server
+```
+
+### Database
+```bash
+pnpm prisma:generate   # Generate Prisma client
+pnpm prisma:migrate    # Run migrations
+pnpm prisma:studio     # Open database GUI
+pnpm prisma:seed       # Seed database
+```
+
+### Code Quality
+```bash
+pnpm lint         # Lint code
+pnpm format       # Format code
+pnpm test         # Run tests
+```
+
+### Docker
+```bash
+pnpm docker:up    # Start containers
+pnpm docker:down  # Stop containers
+pnpm docker:logs  # View logs
+```
 
 ## Troubleshooting
 
@@ -257,4 +321,7 @@ docker-compose up -d --build
 
 ## Support
 
-For issues and questions, please open an issue in the repository.
+For issues and questions, please open an issue in the repository or refer to:
+- [Installation Guide](installation.md) - Detailed installation instructions
+- [PostgreSQL Setup](postgres-setup.md) - Database-specific setup
+- [Troubleshooting Guide](../guides/troubleshooting.md) - Common issues and solutions

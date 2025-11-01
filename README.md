@@ -140,12 +140,43 @@ View logs:
 pnpm docker:logs
 ```
 
-## API Documentation
+## Documentation
+
+### Quick Links
+
+- **[Quick Start Guide](docs/getting-started/quickstart.md)** - Get up and running in minutes
+- **[Installation Guide](docs/getting-started/installation.md)** - Detailed installation instructions
+- **[API Overview](docs/api/overview.md)** - Complete API reference
+- **[API Examples](docs/api/examples.md)** - Practical code examples
+- **[Architecture](docs/development/architecture.md)** - System architecture and design
+- **[Troubleshooting](docs/guides/troubleshooting.md)** - Common issues and solutions
+
+### Interactive API Documentation
 
 Once the server is running, visit:
 
-- Swagger UI: `http://localhost:3000/api/docs`
-- OpenAPI Spec: `http://localhost:3000/api/docs/openapi.json`
+- **Swagger UI**: http://localhost:3000/api/docs
+- **OpenAPI Spec**: http://localhost:3000/api/docs/openapi.json
+
+### Getting Started Guides
+
+- [Quick Start](docs/getting-started/quickstart.md) - Fast setup with Docker or local
+- [Installation](docs/getting-started/installation.md) - Comprehensive installation guide
+- [PostgreSQL Setup](docs/getting-started/postgres-setup.md) - Database setup (Windows)
+
+### API Documentation
+
+- [API Overview](docs/api/overview.md) - All endpoints, events, and reference
+- [API Examples](docs/api/examples.md) - Practical usage examples with cURL and JavaScript
+
+### Development Guides
+
+- [Architecture](docs/development/architecture.md) - Clean architecture, layers, and patterns
+- [Setup Guide](docs/development/setup.md) - Development environment setup
+
+### Additional Resources
+
+- [Troubleshooting Guide](docs/guides/troubleshooting.md) - Solutions to common problems
 
 ## Available Scripts
 
