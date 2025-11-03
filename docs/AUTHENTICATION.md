@@ -90,6 +90,7 @@ Create a new user account.
 **Rate Limit**: 5 requests per 15 minutes
 
 **Request Body**:
+
 ```json
 {
   "username": "john_doe",
@@ -99,11 +100,13 @@ Create a new user account.
 ```
 
 **Validation Rules**:
+
 - `username`: 3-50 characters, alphanumeric and underscore only
 - `email`: Valid email format
 - `password`: Minimum 8 characters
 
 **Success Response** (201 Created):
+
 ```json
 {
   "success": true,
@@ -121,6 +124,7 @@ Create a new user account.
 ```
 
 **Error Responses**:
+
 - `400 Bad Request`: Validation error
 - `409 Conflict`: Email or username already exists
 - `429 Too Many Requests`: Rate limit exceeded
@@ -136,6 +140,7 @@ Authenticate and receive tokens.
 **Rate Limit**: 5 requests per 15 minutes
 
 **Request Body**:
+
 ```json
 {
   "email": "john@example.com",
@@ -144,6 +149,7 @@ Authenticate and receive tokens.
 ```
 
 **Success Response** (200 OK):
+
 ```json
 {
   "success": true,
@@ -163,6 +169,7 @@ Authenticate and receive tokens.
 ```
 
 **Error Responses**:
+
 - `400 Bad Request`: Validation error
 - `401 Unauthorized`: Invalid credentials
 - `429 Too Many Requests`: Rate limit exceeded
@@ -178,11 +185,13 @@ Retrieve the authenticated user's profile.
 **Authentication**: Required (Bearer token)
 
 **Headers**:
+
 ```
 Authorization: Bearer <accessToken>
 ```
 
 **Success Response** (200 OK):
+
 ```json
 {
   "success": true,
@@ -200,6 +209,7 @@ Authorization: Bearer <accessToken>
 ```
 
 **Error Responses**:
+
 - `401 Unauthorized`: Missing or invalid token
 
 ---
@@ -211,6 +221,7 @@ Obtain new access and refresh tokens.
 **Endpoint**: `POST /api/v1/auth/refresh`
 
 **Request Body**:
+
 ```json
 {
   "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
@@ -218,6 +229,7 @@ Obtain new access and refresh tokens.
 ```
 
 **Success Response** (200 OK):
+
 ```json
 {
   "success": true,
@@ -230,10 +242,12 @@ Obtain new access and refresh tokens.
 ```
 
 **Notes**:
+
 - The old refresh token is automatically revoked
 - Both tokens are rotated for security
 
 **Error Responses**:
+
 - `401 Unauthorized`: Invalid or expired refresh token
 
 ---
@@ -247,11 +261,13 @@ Logout from the current device/session.
 **Authentication**: Required (Bearer token)
 
 **Headers**:
+
 ```
 Authorization: Bearer <accessToken>
 ```
 
 **Request Body**:
+
 ```json
 {
   "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
@@ -259,6 +275,7 @@ Authorization: Bearer <accessToken>
 ```
 
 **Success Response** (200 OK):
+
 ```json
 {
   "success": true,
@@ -267,6 +284,7 @@ Authorization: Bearer <accessToken>
 ```
 
 **Error Responses**:
+
 - `401 Unauthorized`: Missing or invalid token
 
 ---
@@ -280,11 +298,13 @@ Logout from all devices/sessions.
 **Authentication**: Required (Bearer token)
 
 **Headers**:
+
 ```
 Authorization: Bearer <accessToken>
 ```
 
 **Success Response** (200 OK):
+
 ```json
 {
   "success": true,
@@ -293,10 +313,12 @@ Authorization: Bearer <accessToken>
 ```
 
 **Notes**:
+
 - Revokes all refresh tokens for the user
 - User must login again on all devices
 
 **Error Responses**:
+
 - `401 Unauthorized`: Missing or invalid token
 
 ---
@@ -319,10 +341,10 @@ Both tokens are JWTs containing:
 
 ### Token Lifetimes
 
-| Token Type | Lifetime | Purpose |
-|------------|----------|---------|
-| Access Token | 15 minutes | API requests |
-| Refresh Token | 7 days | Token refresh |
+| Token Type    | Lifetime   | Purpose       |
+| ------------- | ---------- | ------------- |
+| Access Token  | 15 minutes | API requests  |
+| Refresh Token | 7 days     | Token refresh |
 
 ### Token Storage
 
@@ -401,6 +423,7 @@ class ApiClient {
 ### 2. Rate Limiting
 
 All auth endpoints are rate-limited:
+
 - **Register/Login**: 5 requests per 15 minutes per IP
 - Prevents brute force attacks
 
@@ -419,7 +442,7 @@ All auth endpoints are rate-limited:
 ### 5. CORS Configuration
 
 - Configure proper CORS origins
-- Don't use wildcard (*) in production
+- Don't use wildcard (\*) in production
 
 ## Error Handling
 
@@ -435,13 +458,13 @@ All auth endpoints are rate-limited:
 
 ### Common Error Codes
 
-| Status | Code | Description |
-|--------|------|-------------|
-| 400 | VALIDATION_ERROR | Invalid request data |
-| 401 | UNAUTHORIZED | Invalid or missing credentials |
-| 403 | FORBIDDEN | Insufficient permissions |
-| 409 | CONFLICT | Resource already exists |
-| 429 | RATE_LIMIT_EXCEEDED | Too many requests |
+| Status | Code                | Description                    |
+| ------ | ------------------- | ------------------------------ |
+| 400    | VALIDATION_ERROR    | Invalid request data           |
+| 401    | UNAUTHORIZED        | Invalid or missing credentials |
+| 403    | FORBIDDEN           | Insufficient permissions       |
+| 409    | CONFLICT            | Resource already exists        |
+| 429    | RATE_LIMIT_EXCEEDED | Too many requests              |
 
 ### Handling Token Expiration
 
@@ -459,8 +482,8 @@ async function apiRequest(url, options) {
         ...options,
         headers: {
           ...options.headers,
-          'Authorization': `Bearer ${newAccessToken}`
-        }
+          Authorization: `Bearer ${newAccessToken}`,
+        },
       });
     } else {
       // Redirect to login
@@ -486,7 +509,7 @@ async function register(username: string, email: string, password: string) {
   const response = await fetch(`${API_URL}/auth/register`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ username, email, password })
+    body: JSON.stringify({ username, email, password }),
   });
 
   if (!response.ok) {
@@ -502,7 +525,7 @@ async function login(email: string, password: string) {
   const response = await fetch(`${API_URL}/auth/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, password })
+    body: JSON.stringify({ email, password }),
   });
 
   if (!response.ok) {
@@ -523,8 +546,8 @@ async function login(email: string, password: string) {
 async function getProfile(accessToken: string) {
   const response = await fetch(`${API_URL}/auth/me`, {
     headers: {
-      'Authorization': `Bearer ${accessToken}`
-    }
+      Authorization: `Bearer ${accessToken}`,
+    },
   });
 
   if (!response.ok) {
@@ -540,7 +563,7 @@ async function refreshToken(refreshToken: string) {
   const response = await fetch(`${API_URL}/auth/refresh`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ refreshToken })
+    body: JSON.stringify({ refreshToken }),
   });
 
   if (!response.ok) {
@@ -561,10 +584,10 @@ async function logout(accessToken: string, refreshToken: string) {
   const response = await fetch(`${API_URL}/auth/logout`, {
     method: 'POST',
     headers: {
-      'Authorization': `Bearer ${accessToken}`,
-      'Content-Type': 'application/json'
+      Authorization: `Bearer ${accessToken}`,
+      'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ refreshToken })
+    body: JSON.stringify({ refreshToken }),
   });
 
   // Clear tokens
@@ -612,7 +635,7 @@ function useAuth() {
 import axios from 'axios';
 
 const apiClient = axios.create({
-  baseURL: 'http://localhost:3000/api/v1'
+  baseURL: 'http://localhost:3000/api/v1',
 });
 
 // Request interceptor - add token
@@ -638,10 +661,9 @@ apiClient.interceptors.response.use(
 
       try {
         const refreshToken = localStorage.getItem('refreshToken');
-        const { data } = await axios.post(
-          'http://localhost:3000/api/v1/auth/refresh',
-          { refreshToken }
-        );
+        const { data } = await axios.post('http://localhost:3000/api/v1/auth/refresh', {
+          refreshToken,
+        });
 
         localStorage.setItem('accessToken', data.data.accessToken);
         localStorage.setItem('refreshToken', data.data.refreshToken);

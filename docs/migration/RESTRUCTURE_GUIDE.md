@@ -12,6 +12,7 @@ This guide provides a step-by-step approach to restructure the Social Communicat
 ## 📋 Current vs New Structure
 
 ### Current Structure (Problematic)
+
 ```
 .
 ├── app/
@@ -32,6 +33,7 @@ This guide provides a step-by-step approach to restructure the Social Communicat
 ```
 
 ### New Structure (Scalable)
+
 ```
 src/
 ├── application/          # App initialization & DI
@@ -128,6 +130,7 @@ cp app/repositories/BaseRepository.ts src/infrastructure/base.repository.ts
 ### Phase 6: Move Module Files
 
 #### Auth Module
+
 ```bash
 cp app/controllers/AuthController.ts src/modules/auth/auth.controller.ts
 cp app/services/AuthService.ts src/modules/auth/auth.service.ts
@@ -138,6 +141,7 @@ cp core/validations/authValidation.ts src/modules/auth/auth.validation.ts
 ```
 
 #### User Module
+
 ```bash
 cp app/controllers/UserController.ts src/modules/user/user.controller.ts
 cp app/services/UserService.ts src/modules/user/user.service.ts
@@ -148,6 +152,7 @@ cp app/routes/user.routes.ts src/modules/user/user.routes.ts
 ```
 
 #### Message Module
+
 ```bash
 cp app/controllers/MessageController.ts src/modules/message/message.controller.ts
 cp app/services/MessageService.ts src/modules/message/message.service.ts
@@ -159,6 +164,7 @@ cp core/validations/messageValidation.ts src/modules/message/message.validation.
 ```
 
 #### Group Module
+
 ```bash
 cp app/controllers/GroupController.ts src/modules/group/group.controller.ts
 cp app/services/GroupService.ts src/modules/group/group.service.ts
@@ -169,6 +175,7 @@ cp core/validations/groupValidation.ts src/modules/group/group.validation.ts
 ```
 
 #### Call Module
+
 ```bash
 cp app/controllers/CallController.ts src/modules/call/call.controller.ts
 cp app/services/CallService.ts src/modules/call/call.service.ts
@@ -180,6 +187,7 @@ cp app/sockets/CallSocketHandler.ts src/modules/call/call.gateway.ts
 ```
 
 #### Health Module
+
 ```bash
 cp app/controllers/HealthController.ts src/modules/health/health.controller.ts
 # Create health.routes.ts (extract from routes/index.ts)
@@ -188,6 +196,7 @@ cp app/controllers/HealthController.ts src/modules/health/health.controller.ts
 ### Phase 7: Create Application Layer
 
 Create new files:
+
 - `src/application/app.ts` - Express app setup (extract from main.ts)
 - `src/application/server.ts` - HTTP + Socket server startup
 - `src/main.ts` - Entry point (minimal, just calls server.ts)
@@ -195,6 +204,7 @@ Create new files:
 ### Phase 8: Update tsconfig.json
 
 Update path mappings:
+
 ```json
 {
   "compilerOptions": {
@@ -216,6 +226,7 @@ Update path mappings:
 This is the most tedious part. Use find and replace:
 
 **Old → New Mappings:**
+
 - `@config/database` → `@config/prisma`
 - `@config/container` → `@application/container`
 - `@logger/` → `@config/logger`
@@ -238,6 +249,7 @@ This is the most tedious part. Use find and replace:
 ### Phase 10: Update Container Registration
 
 Update `src/application/container.ts` to reflect new paths:
+
 ```typescript
 import { CacheService } from '@infrastructure/cache.service.js';
 import { JitsiService } from '@infrastructure/jitsi.service.js';
@@ -248,6 +260,7 @@ import { AuthService } from '@modules/auth/auth.service.js';
 ### Phase 11: Update package.json Scripts
 
 Update build paths if needed:
+
 ```json
 {
   "scripts": {
@@ -261,6 +274,7 @@ Update build paths if needed:
 ### Phase 12: Clean Up
 
 After successful migration:
+
 ```bash
 # Remove old directories
 rm -rf app/
@@ -272,6 +286,7 @@ rm -rf core/
 ## 🔧 Automated Migration Script
 
 I can create a Node.js script that:
+
 1. Creates the new structure
 2. Copies files to new locations
 3. Updates all import paths automatically
@@ -283,6 +298,7 @@ Would you like me to create this automated script?
 ## ⚠️ Important Considerations
 
 1. **Backup First**: Create a git branch before starting
+
    ```bash
    git checkout -b refactor/modular-structure
    ```

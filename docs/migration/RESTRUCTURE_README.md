@@ -5,22 +5,25 @@
 I've created everything you need to migrate your project to a clean, modular architecture:
 
 ### 1. **MIGRATION_SUMMARY.md** ⭐ START HERE
-   - Quick overview
-   - Step-by-step instructions
-   - Copy-paste code snippets
-   - Common issues & fixes
+
+- Quick overview
+- Step-by-step instructions
+- Copy-paste code snippets
+- Common issues & fixes
 
 ### 2. **RESTRUCTURE_GUIDE.md**
-   - Detailed explanation
-   - Manual migration steps
-   - Architecture benefits
-   - Before/after comparisons
+
+- Detailed explanation
+- Manual migration steps
+- Architecture benefits
+- Before/after comparisons
 
 ### 3. **scripts/migrate-structure.ts**
-   - Automated migration script
-   - Copies 40+ files to new locations
-   - Updates import paths automatically
-   - Creates common files
+
+- Automated migration script
+- Copies 40+ files to new locations
+- Updates import paths automatically
+- Creates common files
 
 ## 🚀 How to Run Migration
 
@@ -127,16 +130,16 @@ All code snippets are provided in **MIGRATION_SUMMARY.md**.
 
 ## 📊 File Movement Summary
 
-| Old Location | New Location | Count |
-|--------------|--------------|-------|
-| `app/config/` → | `src/config/` + `src/application/` | 5 files |
-| `app/controllers/` → | `src/modules/*/` | 6 files |
-| `app/services/` → | `src/modules/*/` + `src/infrastructure/` | 7 files |
-| `app/repositories/` → | `src/modules/*/` + `src/infrastructure/` | 6 files |
-| `app/routes/` → | `src/modules/*/` | 6 files |
-| `app/middlewares/` → | `src/middlewares/` + `src/config/` | 4 files |
-| `app/sockets/` → | `src/modules/*/` + `src/infrastructure/` | 3 files |
-| `core/` → | `src/common/` + `src/middlewares/` | 10+ files |
+| Old Location          | New Location                             | Count     |
+| --------------------- | ---------------------------------------- | --------- |
+| `app/config/` →       | `src/config/` + `src/application/`       | 5 files   |
+| `app/controllers/` →  | `src/modules/*/`                         | 6 files   |
+| `app/services/` →     | `src/modules/*/` + `src/infrastructure/` | 7 files   |
+| `app/repositories/` → | `src/modules/*/` + `src/infrastructure/` | 6 files   |
+| `app/routes/` →       | `src/modules/*/`                         | 6 files   |
+| `app/middlewares/` →  | `src/middlewares/` + `src/config/`       | 4 files   |
+| `app/sockets/` →      | `src/modules/*/` + `src/infrastructure/` | 3 files   |
+| `core/` →             | `src/common/` + `src/middlewares/`       | 10+ files |
 
 **Total: 40+ files migrated**
 

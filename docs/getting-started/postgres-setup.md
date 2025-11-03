@@ -242,11 +242,13 @@ This will open a GUI at http://localhost:5555 to view your database.
 If you get authentication errors even with correct password:
 
 1. Find `pg_hba.conf`:
+
    ```
    C:\Program Files\PostgreSQL\18\data\pg_hba.conf
    ```
 
 2. Edit the file (as Administrator) and ensure this line exists:
+
    ```
    host    all             all             127.0.0.1/32            scram-sha-256
    ```
@@ -296,6 +298,7 @@ Once PostgreSQL is set up:
 ## Support
 
 For PostgreSQL-specific issues:
+
 - Check official docs: https://www.postgresql.org/docs/
 - Stack Overflow: https://stackoverflow.com/questions/tagged/postgresql
 - Project issues: Open a GitHub issue with your error details

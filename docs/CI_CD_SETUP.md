@@ -12,6 +12,7 @@ Add these secrets in your GitHub repository:
 2. Click **New repository secret** and add:
 
 ### Required Secrets:
+
 - **`SERVER_HOST`**: Your Oracle Cloud server IP (e.g., `40.233.122.142`)
 - **`SERVER_USER`**: SSH username (usually `ubuntu`)
 - **`SERVER_SSH_KEY`**: Your private SSH key content
@@ -20,6 +21,7 @@ Add these secrets in your GitHub repository:
 ## SSH Key Setup
 
 ### Generate SSH Key (if you don't have one):
+
 ```bash
 # On your local machine
 ssh-keygen -t rsa -b 4096 -C "github-actions" -f ~/.ssh/github_actions
@@ -32,6 +34,7 @@ ssh -i ~/.ssh/github_actions ubuntu@your-server-ip
 ```
 
 ### Add Private Key to GitHub:
+
 ```bash
 # Copy private key content
 cat ~/.ssh/github_actions
@@ -43,11 +46,13 @@ cat ~/.ssh/github_actions
 ## How It Works
 
 ### Pipeline Triggers:
+
 - **Push to `main`**: Runs tests + deploys to production
 - **Push to `develop`**: Runs tests only
 - **Pull Requests**: Runs tests only
 
 ### Deployment Process:
+
 1. ✅ Run tests and linting
 2. ✅ Build Docker image
 3. 🚀 SSH into your server
@@ -62,6 +67,7 @@ cat ~/.ssh/github_actions
 ## Usage
 
 ### Automatic Deployment:
+
 ```bash
 # Make changes to your code
 git add .
@@ -70,6 +76,7 @@ git push origin main  # This triggers automatic deployment
 ```
 
 ### Monitor Deployment:
+
 - Go to **GitHub Actions** tab in your repository
 - Watch the deployment progress in real-time
 - Check logs if deployment fails
@@ -77,6 +84,7 @@ git push origin main  # This triggers automatic deployment
 ## Deployment Status
 
 After pushing to `main`, you can:
+
 1. Check GitHub Actions for deployment status
 2. Visit your API: `http://your-server-ip:3000/health`
 3. View deployment logs in GitHub Actions
@@ -117,19 +125,23 @@ docker compose up --build -d
 ### Common Issues:
 
 **1. SSH Connection Failed**
+
 - Check `SERVER_HOST`, `SERVER_USER`, `SERVER_SSH_KEY` secrets
 - Verify SSH key is added to server: `ssh-copy-id ubuntu@server-ip`
 
 **2. Permission Denied**
+
 - Ensure SSH key has correct permissions
 - Check if user has Docker permissions: `sudo usermod -aG docker ubuntu`
 
 **3. Health Check Failed**
+
 - Check server firewall: `sudo ufw status`
 - Verify Oracle Cloud Security List allows port 3000
 - Check container logs: `docker compose logs app`
 
 **4. Database Migration Failed**
+
 - Check database connection
 - Verify `.env` file exists on server
 - Check PostgreSQL container is running
@@ -137,6 +149,7 @@ docker compose up --build -d
 ## Manual Override
 
 If you need to deploy manually:
+
 ```bash
 # SSH into server
 ssh ubuntu@your-server-ip
