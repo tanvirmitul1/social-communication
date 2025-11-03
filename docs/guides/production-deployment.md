@@ -66,6 +66,7 @@ Complete guide for deploying the Social Communication backend to Oracle Cloud VM
    - Click your VCN → Security Lists → Default Security List
 
 2. **Add Ingress Rules:**
+
    ```
    Source: 0.0.0.0/0
    Protocol: TCP
@@ -601,19 +602,23 @@ See the main [Troubleshooting Guide](./troubleshooting.md) for common issues.
 ### Production-Specific Issues
 
 **Can't access from domain:**
+
 - Check DNS settings (may take 24-48 hours to propagate)
 - Verify Nginx configuration: `sudo nginx -t`
 - Check Nginx logs: `sudo tail -f /var/log/nginx/error.log`
 
 **SSL certificate issues:**
+
 - Renew manually: `sudo certbot renew`
 - Check expiry: `sudo certbot certificates`
 
 **Out of memory:**
+
 - Check with: `free -h`
 - Increase VM memory or optimize Docker resource limits
 
 **High CPU usage:**
+
 - Check with: `htop`
 - Review application logs for issues
 - Consider scaling up VM or optimizing code

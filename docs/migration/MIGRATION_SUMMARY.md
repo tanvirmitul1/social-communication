@@ -7,6 +7,7 @@ This document provides a quick summary of the project restructuring process.
 ## 🎯 What Changes?
 
 ### Before (Current)
+
 ```
 project/
 ├── app/          # All application code mixed together
@@ -15,6 +16,7 @@ project/
 ```
 
 ### After (New)
+
 ```
 project/
 ├── src/
@@ -210,7 +212,6 @@ export async function startServer() {
 
     process.on('SIGTERM', shutdown);
     process.on('SIGINT', shutdown);
-
   } catch (error) {
     logger.error('Failed to start server:', error);
     process.exit(1);
@@ -276,6 +277,7 @@ pnpm dev
 ### Issue: Import errors after migration
 
 **Solution**: Make sure all imports end with `.js` extension:
+
 ```typescript
 // ✅ Correct
 import { UserService } from '@modules/user/user.service.js';
@@ -287,6 +289,7 @@ import { UserService } from '@modules/user/user.service';
 ### Issue: Module not found errors
 
 **Solution**:
+
 1. Check tsconfig.json paths are correct
 2. Run `pnpm build` to regenerate path aliases
 3. Restart your IDE/TypeScript server
@@ -294,6 +297,7 @@ import { UserService } from '@modules/user/user.service';
 ### Issue: Circular dependency warnings
 
 **Solution**: Use `import type` for type-only imports:
+
 ```typescript
 import type { User } from '@prisma/client';
 import { type SomeType } from './types.js';
@@ -337,6 +341,7 @@ After migration, you'll have:
 ## ❓ Need Help?
 
 If you encounter issues:
+
 1. Check the detailed guide
 2. Review common issues section
 3. Check git diff to see what changed

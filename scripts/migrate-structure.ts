@@ -76,10 +76,16 @@ const fileMappings: FileMapping[] = [
   // Message module
   { from: 'app/controllers/MessageController.ts', to: 'src/modules/message/message.controller.ts' },
   { from: 'app/services/MessageService.ts', to: 'src/modules/message/message.service.ts' },
-  { from: 'app/repositories/MessageRepository.ts', to: 'src/modules/message/message.repository.ts' },
+  {
+    from: 'app/repositories/MessageRepository.ts',
+    to: 'src/modules/message/message.repository.ts',
+  },
   { from: 'app/routes/message.routes.ts', to: 'src/modules/message/message.routes.ts' },
   { from: 'app/sockets/ChatSocketHandler.ts', to: 'src/modules/message/message.gateway.ts' },
-  { from: 'core/validations/messageValidation.ts', to: 'src/modules/message/message.validation.ts' },
+  {
+    from: 'core/validations/messageValidation.ts',
+    to: 'src/modules/message/message.validation.ts',
+  },
 
   // Group module
   { from: 'app/controllers/GroupController.ts', to: 'src/modules/group/group.controller.ts' },
@@ -99,7 +105,10 @@ const fileMappings: FileMapping[] = [
   { from: 'app/controllers/HealthController.ts', to: 'src/modules/health/health.controller.ts' },
 
   // Other repositories
-  { from: 'app/repositories/FriendRequestRepository.ts', to: 'src/modules/user/friend-request.repository.ts' },
+  {
+    from: 'app/repositories/FriendRequestRepository.ts',
+    to: 'src/modules/user/friend-request.repository.ts',
+  },
 ];
 
 // Import path replacements
@@ -361,7 +370,7 @@ async function main() {
 
     // Step 4: Update imports in all new files
     log('Step 4: Updating import paths...', 'yellow');
-    const allNewFiles = fileMappings.map(m => m.to);
+    const allNewFiles = fileMappings.map((m) => m.to);
     allNewFiles.push('src/common/errors.ts', 'src/common/types.ts');
 
     for (const file of allNewFiles) {
@@ -378,7 +387,6 @@ async function main() {
     log('5. Fix any remaining import issues', 'reset');
     log('6. Delete old app/ and core/ directories', 'reset');
     log('7. Commit changes\n', 'reset');
-
   } catch (error) {
     log('\n❌ Migration failed!', 'red');
     console.error(error);

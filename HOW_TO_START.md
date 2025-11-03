@@ -3,23 +3,27 @@
 ## ✅ What We Fixed & Improved
 
 ### 1. **Environment Configuration** ✨
+
 - Created `.env.development` - Pre-configured for local development
 - Created `.env.production.example` - Template for production
 - Improved `.env.example` with better security notes
 - **No manual configuration needed for development!**
 
 ### 2. **Docker Setup** 🐳
+
 - **docker-compose.dev.yml** - Development (PostgreSQL + Redis only)
 - **docker-compose.prod.yml** - Production (full stack with security)
 - Improved **Dockerfile** with security (non-root user, health checks)
 
 ### 3. **Documentation** 📚
+
 - **START_HERE.md** - Quick 5-minute setup guide
 - **docs/guides/development-setup.md** - Complete development guide
 - **docs/guides/production-deployment.md** - Oracle Cloud deployment guide
 - All reorganized and consolidated
 
 ### 4. **Package.json Scripts** 🚀
+
 Added 15+ new scripts for easier workflow (see below)
 
 ---
@@ -27,6 +31,7 @@ Added 15+ new scripts for easier workflow (see below)
 ## 🚀 QUICK START (First Time Setup)
 
 ### Prerequisites
+
 1. **Docker Desktop** - [Download](https://www.docker.com/products/docker-desktop/)
 2. **Node.js 20+** - [Download](https://nodejs.org/)
 3. **pnpm** - Run: `npm install -g pnpm`
@@ -53,6 +58,7 @@ pnpm dev
 ### Verify It Works
 
 Open browser:
+
 - **Health**: http://localhost:3000/health
 - **API Docs**: http://localhost:3000/api/docs
 
@@ -63,6 +69,7 @@ Open browser:
 ## 📋 All Available Commands
 
 ### Development Commands
+
 ```bash
 pnpm dev                  # Start development server (hot reload)
 pnpm dev:watch            # Alternative dev server with tsx watch
@@ -71,6 +78,7 @@ pnpm start                # Start production server
 ```
 
 ### Docker Commands (Development)
+
 ```bash
 pnpm docker:dev:up        # Start PostgreSQL + Redis
 pnpm docker:dev:down      # Stop services
@@ -78,6 +86,7 @@ pnpm docker:dev:logs      # View logs
 ```
 
 ### Docker Commands (Production)
+
 ```bash
 pnpm docker:prod:up       # Start production stack
 pnpm docker:prod:down     # Stop production stack
@@ -85,6 +94,7 @@ pnpm docker:prod:logs     # View production logs
 ```
 
 ### Database Commands
+
 ```bash
 pnpm prisma:generate      # Generate Prisma client
 pnpm prisma:migrate       # Run migrations (dev)
@@ -95,6 +105,7 @@ pnpm prisma:reset         # Reset database (WARNING: deletes data!)
 ```
 
 ### Testing Commands
+
 ```bash
 pnpm test                 # Run tests
 pnpm test:watch           # Run tests in watch mode
@@ -103,6 +114,7 @@ pnpm test:ui              # Open Vitest UI
 ```
 
 ### Code Quality Commands
+
 ```bash
 pnpm lint                 # Run ESLint
 pnpm lint:fix             # Fix ESLint issues
@@ -111,6 +123,7 @@ pnpm format:check         # Check formatting
 ```
 
 ### Utility Commands
+
 ```bash
 pnpm setup:dev            # Quick setup (install + generate + migrate)
 pnpm setup:check          # Check if prerequisites are installed
@@ -124,12 +137,14 @@ pnpm clean:all            # Remove dist, node_modules, .env, logs, uploads
 ## 🎯 Daily Development Workflow
 
 ### Morning - Start Work
+
 ```bash
 pnpm docker:dev:up        # Start Docker services
 pnpm dev                  # Start development server
 ```
 
 ### During Development
+
 ```bash
 # Make code changes
 # Server auto-reloads
@@ -145,6 +160,7 @@ pnpm test:watch
 ```
 
 ### Evening - Stop Work
+
 ```bash
 # Press Ctrl+C to stop dev server
 
@@ -157,14 +173,15 @@ pnpm docker:dev:down      # Stop Docker services
 
 When you use `pnpm docker:dev:up`:
 
-| Service | Port | Container Name | Purpose |
-|---------|------|----------------|---------|
-| PostgreSQL | 5432 | social-comm-postgres-dev | Database |
-| Redis | 6379 | social-comm-redis-dev | Cache |
-| pgAdmin4 | 5050 | social-comm-pgadmin-dev | Database GUI |
-| Your App | 3000 | (runs locally) | Backend API |
+| Service    | Port | Container Name           | Purpose      |
+| ---------- | ---- | ------------------------ | ------------ |
+| PostgreSQL | 5432 | social-comm-postgres-dev | Database     |
+| Redis      | 6379 | social-comm-redis-dev    | Cache        |
+| pgAdmin4   | 5050 | social-comm-pgadmin-dev  | Database GUI |
+| Your App   | 3000 | (runs locally)           | Backend API  |
 
 **Important**:
+
 - Database, cache & pgAdmin run in Docker
 - Your app runs locally (for hot reload)
 - No local PostgreSQL/Redis installation needed!
@@ -214,6 +231,7 @@ social-communication/
 ### Access pgAdmin4
 
 1. **Start Docker services** (if not already running):
+
    ```bash
    pnpm docker:dev:up
    ```
@@ -244,6 +262,7 @@ After logging into pgAdmin4:
 Now you can browse your database, run SQL queries, view tables, and manage data visually!
 
 **Useful pgAdmin4 Features**:
+
 - View all tables and relationships
 - Run custom SQL queries
 - Export/import data
@@ -255,10 +274,13 @@ Now you can browse your database, run SQL queries, view tables, and manage data 
 ## 🐛 Troubleshooting
 
 ### "Docker is not running"
+
 **Solution**: Start Docker Desktop
 
 ### "Cannot access pgAdmin4"
+
 **Solution**:
+
 ```bash
 # Check if pgAdmin4 container is running
 docker ps | findstr pgadmin
@@ -272,6 +294,7 @@ pnpm docker:dev:logs
 ```
 
 ### "Port 3000 already in use"
+
 ```bash
 # Find what's using it
 netstat -ano | findstr :3000
@@ -281,6 +304,7 @@ PORT=4000
 ```
 
 ### "Cannot connect to database"
+
 ```bash
 # Restart Docker services
 pnpm docker:dev:down
@@ -291,6 +315,7 @@ pnpm docker:dev:logs
 ```
 
 ### "Module not found" errors
+
 ```bash
 rm -rf node_modules dist
 pnpm install
@@ -298,6 +323,7 @@ pnpm prisma:generate
 ```
 
 ### More Issues?
+
 Check [docs/guides/troubleshooting.md](docs/guides/troubleshooting.md)
 
 ---
@@ -309,6 +335,7 @@ Check [docs/guides/troubleshooting.md](docs/guides/troubleshooting.md)
 Follow the complete guide: [docs/guides/production-deployment.md](docs/guides/production-deployment.md)
 
 **Quick Overview:**
+
 1. Create Oracle Cloud VM (Ubuntu 22.04)
 2. Install Docker on VM
 3. Clone repository
@@ -321,35 +348,38 @@ Follow the complete guide: [docs/guides/production-deployment.md](docs/guides/pr
 
 ## 📚 Documentation
 
-| Document | Description |
-|----------|-------------|
-| [START_HERE.md](START_HERE.md) | Quick 5-minute setup |
-| [docs/getting-started/quickstart.md](docs/getting-started/quickstart.md) | Fast setup with Docker |
-| [docs/getting-started/installation.md](docs/getting-started/installation.md) | Detailed installation |
-| [docs/guides/development-setup.md](docs/guides/development-setup.md) | Complete dev guide |
-| [docs/guides/production-deployment.md](docs/guides/production-deployment.md) | Production deployment |
-| [docs/guides/troubleshooting.md](docs/guides/troubleshooting.md) | Common issues |
-| [docs/api/overview.md](docs/api/overview.md) | API reference |
-| [docs/api/examples.md](docs/api/examples.md) | Code examples |
-| [docs/development/architecture.md](docs/development/architecture.md) | System architecture |
+| Document                                                                     | Description            |
+| ---------------------------------------------------------------------------- | ---------------------- |
+| [START_HERE.md](START_HERE.md)                                               | Quick 5-minute setup   |
+| [docs/getting-started/quickstart.md](docs/getting-started/quickstart.md)     | Fast setup with Docker |
+| [docs/getting-started/installation.md](docs/getting-started/installation.md) | Detailed installation  |
+| [docs/guides/development-setup.md](docs/guides/development-setup.md)         | Complete dev guide     |
+| [docs/guides/production-deployment.md](docs/guides/production-deployment.md) | Production deployment  |
+| [docs/guides/troubleshooting.md](docs/guides/troubleshooting.md)             | Common issues          |
+| [docs/api/overview.md](docs/api/overview.md)                                 | API reference          |
+| [docs/api/examples.md](docs/api/examples.md)                                 | Code examples          |
+| [docs/development/architecture.md](docs/development/architecture.md)         | System architecture    |
 
 ---
 
 ## 🔐 Environment Files Explained
 
 ### .env.development (Use this for local dev)
+
 - ✅ Pre-configured for Docker
 - ✅ Uses localhost for database/Redis
 - ✅ Development-friendly settings
 - ⚠️ NOT secure for production
 
 ### .env.production.example (Template for production)
+
 - 📝 Copy to `.env.prod`
 - 🔐 Requires strong secrets
 - 🌐 Configure with your domain
 - 🛡️ Production security settings
 
 ### .env.example (General template)
+
 - 📚 Documentation purposes
 - 💡 Shows all available options
 - ⚙️ Default values
@@ -383,11 +413,13 @@ Follow the complete guide: [docs/guides/production-deployment.md](docs/guides/pr
 ## ✅ Security Checklist
 
 ### Development
+
 - [x] Use `.env.development` (not `.env.example`)
 - [x] Never commit `.env` to git
 - [x] Use Docker for isolation
 
 ### Production
+
 - [ ] Generate strong JWT secrets (64+ characters)
 - [ ] Set strong database password
 - [ ] Configure Redis password
@@ -442,5 +474,5 @@ pnpm dev
 
 ---
 
-*Last updated: 2025-11-01*
-*For latest documentation, check the /docs folder*
+_Last updated: 2025-11-01_
+_For latest documentation, check the /docs folder_

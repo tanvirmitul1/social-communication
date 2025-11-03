@@ -23,7 +23,7 @@ export async function startServer() {
 
     // Initialize WebSocket
     new SocketManager(server);
-    
+
     logger.info('✓ WebSocket initialized');
 
     // Connect to databases
@@ -141,7 +141,6 @@ export async function startServer() {
       logger.error({ error }, 'Uncaught Exception');
       process.exit(1);
     });
-
   } catch (error) {
     logger.error({ error }, 'Failed to start server');
     process.exit(1);

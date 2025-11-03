@@ -4,7 +4,11 @@ import { MessageController } from '@modules/message/message.controller.js';
 import { authenticate } from '@middlewares/auth-guard.js';
 import { validate } from '@middlewares/validation.js';
 import { messageLimiter } from '@config/rate-limiter.js';
-import { sendMessageSchema, editMessageSchema, reactToMessageSchema } from './message.validation.js';
+import {
+  sendMessageSchema,
+  editMessageSchema,
+  reactToMessageSchema,
+} from './message.validation.js';
 
 const router: Router = Router();
 const messageController = container.resolve(MessageController);

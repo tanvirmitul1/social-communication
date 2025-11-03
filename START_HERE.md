@@ -7,6 +7,7 @@ Welcome! This guide will help you set up and run the Social Communication backen
 ### Prerequisites
 
 You only need:
+
 1. **Docker Desktop** - [Download Here](https://www.docker.com/products/docker-desktop/)
 2. **Node.js 20+** - [Download Here](https://nodejs.org/)
 3. **pnpm** - Install with: `npm install -g pnpm`
@@ -110,6 +111,7 @@ pnpm docker:dev:down
 You have two options for viewing your database:
 
 **Option 1: pgAdmin4 (Recommended for PostgreSQL)**
+
 - URL: http://localhost:5050
 - Login: `admin@localhost.com` / `admin`
 - Connect to server:
@@ -120,6 +122,7 @@ You have two options for viewing your database:
   - Password: `postgres`
 
 **Option 2: Prisma Studio (Prisma ORM GUI)**
+
 ```bash
 pnpm prisma:studio
 # Opens at: http://localhost:5555
@@ -170,6 +173,7 @@ pnpm format
 ### "Port 3000 is already in use"
 
 **Solution**:
+
 ```bash
 # Windows
 netstat -ano | findstr :3000
@@ -184,6 +188,7 @@ PORT=4000
 ### "Module not found" errors
 
 **Solution**:
+
 ```bash
 rm -rf node_modules dist
 pnpm install

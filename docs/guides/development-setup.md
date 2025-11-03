@@ -87,6 +87,7 @@ pnpm docker:dev:up
 ```
 
 This starts:
+
 - ✅ PostgreSQL database on port 5432
 - ✅ Redis cache on port 6379
 - ✅ pgAdmin4 (Database GUI) on port 5050
@@ -150,17 +151,20 @@ If you prefer to install PostgreSQL and Redis locally instead of using Docker.
 ### 1. Install PostgreSQL
 
 **Windows:**
+
 - Download from: https://www.postgresql.org/download/windows/
 - Run installer, set password for `postgres` user
 - Remember the password!
 
 **Mac:**
+
 ```bash
 brew install postgresql@16
 brew services start postgresql@16
 ```
 
 **Linux:**
+
 ```bash
 sudo apt update
 sudo apt install postgresql postgresql-contrib
@@ -170,16 +174,19 @@ sudo systemctl start postgresql
 ### 2. Install Redis
 
 **Windows:**
+
 - Download from: https://github.com/microsoftarchive/redis/releases
 - Or use WSL2 with Linux instructions
 
 **Mac:**
+
 ```bash
 brew install redis
 brew services start redis
 ```
 
 **Linux:**
+
 ```bash
 sudo apt update
 sudo apt install redis-server
@@ -465,6 +472,7 @@ social-communication/
 **Error:** `Port 3000 is already in use`
 
 **Solution:**
+
 ```bash
 # Find process using port
 netstat -ano | findstr :3000  # Windows
@@ -479,6 +487,7 @@ PORT=4000
 **Error:** `Cannot connect to Docker daemon`
 
 **Solution:**
+
 1. Make sure Docker Desktop is running
 2. Check Docker Desktop settings
 3. Restart Docker Desktop
@@ -488,6 +497,7 @@ PORT=4000
 **Error:** `Can't reach database server`
 
 **Solution:**
+
 ```bash
 # Check if PostgreSQL container is running
 docker-compose -f docker-compose.dev.yml ps
@@ -504,6 +514,7 @@ docker-compose -f docker-compose.dev.yml restart postgres
 **Error:** `Error connecting to Redis`
 
 **Solution:**
+
 ```bash
 # Test Redis
 docker-compose -f docker-compose.dev.yml exec redis redis-cli ping
@@ -518,6 +529,7 @@ docker-compose -f docker-compose.dev.yml restart redis
 **Error:** `Cannot find module '@prisma/client'`
 
 **Solution:**
+
 ```bash
 pnpm prisma:generate
 ```
@@ -525,6 +537,7 @@ pnpm prisma:generate
 ### Hot Reload Not Working
 
 **Solution:**
+
 ```bash
 # Make sure you're using dev mode
 pnpm dev
@@ -538,6 +551,7 @@ pnpm start  # This is for production
 **Error:** `Cannot find module '@services/...'`
 
 **Solution:**
+
 ```bash
 # Clear and reinstall
 rm -rf node_modules dist

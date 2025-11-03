@@ -15,10 +15,10 @@ The API uses JWT (JSON Web Tokens) for authentication.
 
 ### Token Types
 
-| Type | Lifespan | Purpose |
-|------|----------|---------|
-| **Access Token** | 15 minutes (default) | Used for API requests |
-| **Refresh Token** | 7 days (default) | Used to obtain new access tokens |
+| Type              | Lifespan             | Purpose                          |
+| ----------------- | -------------------- | -------------------------------- |
+| **Access Token**  | 15 minutes (default) | Used for API requests            |
+| **Refresh Token** | 7 days (default)     | Used to obtain new access tokens |
 
 ### Using Tokens
 
@@ -35,8 +35,8 @@ For WebSocket connections:
 ```javascript
 const socket = io('http://localhost:3000', {
   auth: {
-    token: 'YOUR_ACCESS_TOKEN'
-  }
+    token: 'YOUR_ACCESS_TOKEN',
+  },
 });
 ```
 
@@ -44,76 +44,76 @@ const socket = io('http://localhost:3000', {
 
 ### Authentication (6 endpoints)
 
-| Method | Endpoint | Description | Auth Required |
-|--------|----------|-------------|---------------|
-| POST | `/auth/register` | Register a new user | No |
-| POST | `/auth/login` | Login with email and password | No |
-| POST | `/auth/logout` | Logout current device | Yes |
-| POST | `/auth/logout-all` | Logout all devices | Yes |
-| POST | `/auth/refresh` | Refresh access token | No |
-| GET | `/auth/me` | Get current user profile | Yes |
+| Method | Endpoint           | Description                   | Auth Required |
+| ------ | ------------------ | ----------------------------- | ------------- |
+| POST   | `/auth/register`   | Register a new user           | No            |
+| POST   | `/auth/login`      | Login with email and password | No            |
+| POST   | `/auth/logout`     | Logout current device         | Yes           |
+| POST   | `/auth/logout-all` | Logout all devices            | Yes           |
+| POST   | `/auth/refresh`    | Refresh access token          | No            |
+| GET    | `/auth/me`         | Get current user profile      | Yes           |
 
 **Rate Limit**: 5 requests per 15 minutes for login/register
 
 ### Users (5 endpoints)
 
-| Method | Endpoint | Description | Auth Required |
-|--------|----------|-------------|---------------|
-| GET | `/users/:id` | Get user by ID | Yes |
-| GET | `/users/search` | Search users | Yes |
-| GET | `/users/:id/presence` | Get user presence status | Yes |
-| PATCH | `/users/me` | Update current user profile | Yes |
-| DELETE | `/users/me` | Delete current user account | Yes |
+| Method | Endpoint              | Description                 | Auth Required |
+| ------ | --------------------- | --------------------------- | ------------- |
+| GET    | `/users/:id`          | Get user by ID              | Yes           |
+| GET    | `/users/search`       | Search users                | Yes           |
+| GET    | `/users/:id/presence` | Get user presence status    | Yes           |
+| PATCH  | `/users/me`           | Update current user profile | Yes           |
+| DELETE | `/users/me`           | Delete current user account | Yes           |
 
 ### Messages (10 endpoints)
 
-| Method | Endpoint | Description | Auth Required |
-|--------|----------|-------------|---------------|
-| POST | `/messages` | Send a message | Yes |
-| GET | `/messages/:id` | Get message by ID | Yes |
-| GET | `/messages/search` | Search messages | Yes |
-| GET | `/messages/group/:groupId` | Get group messages | Yes |
-| GET | `/messages/direct/:otherUserId` | Get direct messages | Yes |
-| PATCH | `/messages/:id` | Edit a message | Yes |
-| DELETE | `/messages/:id` | Delete a message | Yes |
-| POST | `/messages/:id/reaction` | Add reaction to message | Yes |
-| DELETE | `/messages/:id/reaction` | Remove reaction from message | Yes |
-| PATCH | `/messages/:id/status` | Update message status | Yes |
+| Method | Endpoint                        | Description                  | Auth Required |
+| ------ | ------------------------------- | ---------------------------- | ------------- |
+| POST   | `/messages`                     | Send a message               | Yes           |
+| GET    | `/messages/:id`                 | Get message by ID            | Yes           |
+| GET    | `/messages/search`              | Search messages              | Yes           |
+| GET    | `/messages/group/:groupId`      | Get group messages           | Yes           |
+| GET    | `/messages/direct/:otherUserId` | Get direct messages          | Yes           |
+| PATCH  | `/messages/:id`                 | Edit a message               | Yes           |
+| DELETE | `/messages/:id`                 | Delete a message             | Yes           |
+| POST   | `/messages/:id/reaction`        | Add reaction to message      | Yes           |
+| DELETE | `/messages/:id/reaction`        | Remove reaction from message | Yes           |
+| PATCH  | `/messages/:id/status`          | Update message status        | Yes           |
 
 **Rate Limit**: 30 requests per minute
 
 ### Groups (8 endpoints)
 
-| Method | Endpoint | Description | Auth Required |
-|--------|----------|-------------|---------------|
-| POST | `/groups` | Create a group | Yes |
-| GET | `/groups/:id` | Get group by ID | Yes |
-| GET | `/groups/my-groups` | Get user's groups | Yes |
-| PATCH | `/groups/:id` | Update group | Yes |
-| DELETE | `/groups/:id` | Delete group | Yes |
-| POST | `/groups/:id/members` | Add member to group | Yes |
-| DELETE | `/groups/:id/members/:memberId` | Remove member from group | Yes |
-| POST | `/groups/:id/leave` | Leave group | Yes |
+| Method | Endpoint                        | Description              | Auth Required |
+| ------ | ------------------------------- | ------------------------ | ------------- |
+| POST   | `/groups`                       | Create a group           | Yes           |
+| GET    | `/groups/:id`                   | Get group by ID          | Yes           |
+| GET    | `/groups/my-groups`             | Get user's groups        | Yes           |
+| PATCH  | `/groups/:id`                   | Update group             | Yes           |
+| DELETE | `/groups/:id`                   | Delete group             | Yes           |
+| POST   | `/groups/:id/members`           | Add member to group      | Yes           |
+| DELETE | `/groups/:id/members/:memberId` | Remove member from group | Yes           |
+| POST   | `/groups/:id/leave`             | Leave group              | Yes           |
 
 ### Calls (7 endpoints)
 
-| Method | Endpoint | Description | Auth Required |
-|--------|----------|-------------|---------------|
-| POST | `/calls` | Initiate a call | Yes |
-| GET | `/calls/:id` | Get call details | Yes |
-| GET | `/calls/my-calls` | Get user's call history | Yes |
-| POST | `/calls/:id/join` | Join a call | Yes |
-| POST | `/calls/:id/end` | End a call | Yes |
-| POST | `/calls/:id/leave` | Leave a call | Yes |
-| POST | `/calls/:id/reject` | Reject a call | Yes |
+| Method | Endpoint            | Description             | Auth Required |
+| ------ | ------------------- | ----------------------- | ------------- |
+| POST   | `/calls`            | Initiate a call         | Yes           |
+| GET    | `/calls/:id`        | Get call details        | Yes           |
+| GET    | `/calls/my-calls`   | Get user's call history | Yes           |
+| POST   | `/calls/:id/join`   | Join a call             | Yes           |
+| POST   | `/calls/:id/end`    | End a call              | Yes           |
+| POST   | `/calls/:id/leave`  | Leave a call            | Yes           |
+| POST   | `/calls/:id/reject` | Reject a call           | Yes           |
 
 ### System (3 endpoints)
 
-| Method | Endpoint | Description | Auth Required |
-|--------|----------|-------------|---------------|
-| GET | `/health` | Health check | No |
-| GET | `/metrics` | System metrics | No |
-| GET | `/api/docs` | Swagger documentation | No |
+| Method | Endpoint    | Description           | Auth Required |
+| ------ | ----------- | --------------------- | ------------- |
+| GET    | `/health`   | Health check          | No            |
+| GET    | `/metrics`  | System metrics        | No            |
+| GET    | `/api/docs` | Swagger documentation | No            |
 
 **Total Endpoints**: 39
 
@@ -127,34 +127,34 @@ const socket = io('http://localhost:3000', {
 
 ### Messaging Events
 
-| Event | Direction | Description |
-|-------|-----------|-------------|
-| `message:send` | Client → Server | Send a message |
-| `message:sent` | Server → Client | Message sent confirmation |
-| `message:received` | Server → Client | New message received |
-| `message:edit` | Both | Message edited |
-| `message:delete` | Both | Message deleted |
-| `message:reaction` | Both | Reaction added/removed |
-| `typing:start` | Both | User started typing |
-| `typing:stop` | Both | User stopped typing |
+| Event              | Direction       | Description               |
+| ------------------ | --------------- | ------------------------- |
+| `message:send`     | Client → Server | Send a message            |
+| `message:sent`     | Server → Client | Message sent confirmation |
+| `message:received` | Server → Client | New message received      |
+| `message:edit`     | Both            | Message edited            |
+| `message:delete`   | Both            | Message deleted           |
+| `message:reaction` | Both            | Reaction added/removed    |
+| `typing:start`     | Both            | User started typing       |
+| `typing:stop`      | Both            | User stopped typing       |
 
 ### Call Events
 
-| Event | Direction | Description |
-|-------|-----------|-------------|
-| `call:initiate` | Client → Server | Initiate a call |
-| `call:ringing` | Server → Client | Incoming call |
-| `call:answer` | Both | Call answered |
-| `call:reject` | Both | Call rejected |
-| `call:end` | Both | Call ended |
-| `call:participant:join` | Server → Client | Participant joined |
-| `call:participant:leave` | Server → Client | Participant left |
+| Event                    | Direction       | Description        |
+| ------------------------ | --------------- | ------------------ |
+| `call:initiate`          | Client → Server | Initiate a call    |
+| `call:ringing`           | Server → Client | Incoming call      |
+| `call:answer`            | Both            | Call answered      |
+| `call:reject`            | Both            | Call rejected      |
+| `call:end`               | Both            | Call ended         |
+| `call:participant:join`  | Server → Client | Participant joined |
+| `call:participant:leave` | Server → Client | Participant left   |
 
 ### Presence Events
 
-| Event | Direction | Description |
-|-------|-----------|-------------|
-| `user:online` | Server → Client | User came online |
+| Event          | Direction       | Description       |
+| -------------- | --------------- | ----------------- |
+| `user:online`  | Server → Client | User came online  |
 | `user:offline` | Server → Client | User went offline |
 
 **Total Events**: 20+
@@ -227,26 +227,26 @@ Example: `/users/search?search=john&limit=10`
 
 ## Error Codes
 
-| Status Code | Error Type | Description |
-|-------------|------------|-------------|
-| 400 | Bad Request | Invalid request parameters |
-| 401 | Unauthorized | Missing or invalid authentication |
-| 403 | Forbidden | Insufficient permissions |
-| 404 | Not Found | Resource not found |
-| 409 | Conflict | Resource conflict (e.g., duplicate) |
-| 422 | Validation Error | Request validation failed |
-| 429 | Rate Limit Exceeded | Too many requests |
-| 500 | Internal Server Error | Server error |
+| Status Code | Error Type            | Description                         |
+| ----------- | --------------------- | ----------------------------------- |
+| 400         | Bad Request           | Invalid request parameters          |
+| 401         | Unauthorized          | Missing or invalid authentication   |
+| 403         | Forbidden             | Insufficient permissions            |
+| 404         | Not Found             | Resource not found                  |
+| 409         | Conflict              | Resource conflict (e.g., duplicate) |
+| 422         | Validation Error      | Request validation failed           |
+| 429         | Rate Limit Exceeded   | Too many requests                   |
+| 500         | Internal Server Error | Server error                        |
 
 ## Rate Limiting
 
 Different endpoints have different rate limits:
 
-| Endpoint Type | Limit | Window |
-|---------------|-------|--------|
-| Authentication | 5 requests | 15 minutes |
-| Messaging | 30 requests | 1 minute |
-| General API | 100 requests | 15 minutes |
+| Endpoint Type  | Limit        | Window     |
+| -------------- | ------------ | ---------- |
+| Authentication | 5 requests   | 15 minutes |
+| Messaging      | 30 requests  | 1 minute   |
+| General API    | 100 requests | 15 minutes |
 
 Rate limit headers are included in responses:
 
@@ -262,9 +262,9 @@ X-RateLimit-Reset: 1640000000
 
 ```typescript
 {
-  username: string;  // 3-50 chars, alphanumeric and underscores
-  email: string;     // Valid email format
-  password: string;  // Min 8 chars, must contain uppercase, lowercase, number
+  username: string; // 3-50 chars, alphanumeric and underscores
+  email: string; // Valid email format
+  password: string; // Min 8 chars, must contain uppercase, lowercase, number
 }
 ```
 
@@ -313,8 +313,8 @@ localStorage.setItem('accessToken', token);
 
 // Include in requests
 const headers = {
-  'Authorization': `Bearer ${accessToken}`,
-  'Content-Type': 'application/json'
+  Authorization: `Bearer ${accessToken}`,
+  'Content-Type': 'application/json',
 };
 
 // Refresh when expired
@@ -329,7 +329,7 @@ if (response.status === 401) {
 ```javascript
 try {
   const response = await fetch('/api/v1/users/me', {
-    headers: { Authorization: `Bearer ${token}` }
+    headers: { Authorization: `Bearer ${token}` },
   });
 
   if (!response.ok) {
@@ -351,7 +351,7 @@ const socket = io('http://localhost:3000', {
   auth: { token: accessToken },
   reconnection: true,
   reconnectionAttempts: 5,
-  reconnectionDelay: 1000
+  reconnectionDelay: 1000,
 });
 
 socket.on('connect_error', (error) => {
@@ -372,9 +372,7 @@ async function getAllMessages(userId) {
   const allMessages = [];
 
   while (true) {
-    const response = await fetch(
-      `/api/v1/messages/direct/${userId}?page=${page}&limit=${limit}`
-    );
+    const response = await fetch(`/api/v1/messages/direct/${userId}?page=${page}&limit=${limit}`);
     const data = await response.json();
 
     allMessages.push(...data.data);
@@ -397,6 +395,7 @@ async function getAllMessages(userId) {
 ## Support
 
 For API-related questions:
+
 - Check the interactive Swagger docs at `/api/docs`
 - Review the [examples documentation](examples.md)
 - Open a GitHub issue with your question

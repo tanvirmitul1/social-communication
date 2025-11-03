@@ -1,6 +1,7 @@
 # Social Communication Backend - Deployment Guide
 
 ## Table of Contents
+
 - [Development Setup](#development-setup)
 - [Production Deployment (Oracle Cloud)](#production-deployment-oracle-cloud)
 - [CI/CD Pipeline](#cicd-pipeline)
@@ -14,23 +15,27 @@
 ## Development Setup
 
 ### Prerequisites
+
 - Node.js 20+
 - pnpm 10+
 - Docker Desktop
 - Git
 
 ### 1. Clone Repository
+
 ```bash
 git clone https://github.com/yourusername/social-communication.git
 cd social-communication
 ```
 
 ### 2. Install Dependencies
+
 ```bash
 pnpm install
 ```
 
 ### 3. Environment Setup
+
 ```bash
 # Copy environment file
 cp .env.example .env
@@ -42,6 +47,7 @@ cp .env.example .env
 ```
 
 ### 4. Start Database Services
+
 ```bash
 # Start PostgreSQL and Redis in Docker
 docker compose up postgres redis -d
@@ -51,6 +57,7 @@ docker compose ps
 ```
 
 ### 5. Database Setup
+
 ```bash
 # Generate Prisma client
 pnpm prisma:generate
@@ -63,6 +70,7 @@ pnpm prisma:seed
 ```
 
 ### 6. Start Development Server
+
 ```bash
 # Start development server with hot reload
 pnpm dev
@@ -72,6 +80,7 @@ pnpm dev
 ```
 
 ### 7. Database Management
+
 ```bash
 # Open Prisma Studio (GUI for database)
 pnpm prisma:studio
@@ -88,11 +97,13 @@ pnpm prisma:studio
 ## Production Deployment (Oracle Cloud)
 
 ### Prerequisites
+
 - Oracle Cloud Ubuntu VM with root access
 - Domain name (optional)
 - GitHub repository
 
 ### 1. Server Initial Setup
+
 ```bash
 # Update system
 sudo apt update && sudo apt upgrade -y
@@ -117,6 +128,7 @@ exit
 ```
 
 ### 2. Clone and Setup Project
+
 ```bash
 # Clone repository
 git clone https://github.com/yourusername/social-communication.git
@@ -127,6 +139,7 @@ pnpm install
 ```
 
 ### 3. Production Environment
+
 ```bash
 # Copy environment file
 cp .env.example .env
@@ -136,6 +149,7 @@ nano .env
 ```
 
 **Production .env configuration:**
+
 ```env
 NODE_ENV=production
 PORT=3000
@@ -165,6 +179,7 @@ RATE_LIMIT_MAX_REQUESTS=100
 ```
 
 ### 4. Update Docker Compose for Production
+
 ```bash
 # Update docker-compose.yml passwords to match .env
 nano docker-compose.yml
@@ -173,6 +188,7 @@ nano docker-compose.yml
 ```
 
 ### 5. Build and Deploy
+
 ```bash
 # Build Docker image
 pnpm docker:build
@@ -185,6 +201,7 @@ docker compose ps
 ```
 
 ### 6. Database Setup
+
 ```bash
 # Generate Prisma client
 pnpm prisma:generate
@@ -197,6 +214,7 @@ pnpm prisma:seed
 ```
 
 ### 7. Firewall Configuration
+
 ```bash
 # Configure Ubuntu firewall
 sudo ufw allow ssh
@@ -208,6 +226,7 @@ sudo ufw status
 ```
 
 ### 8. Oracle Cloud Security List
+
 1. Go to **Oracle Cloud Console**
 2. **Networking** → **Virtual Cloud Networks**
 3. Click your VCN → **Security Lists**
@@ -218,6 +237,7 @@ sudo ufw status
    - Destination Port Range: `3000`
 
 ### 9. Verify Deployment
+
 ```bash
 # Test locally on server
 curl http://localhost:3000/health
@@ -234,6 +254,7 @@ docker compose logs app
 ## CI/CD Pipeline
 
 ### Current Status
+
 Your project has **GitHub Actions CI/CD** configured but **manual deployment**:
 
 ✅ **Automated Testing**: Runs on every push/PR to `main` and `develop`
@@ -242,6 +263,7 @@ Your project has **GitHub Actions CI/CD** configured but **manual deployment**:
 ❌ **Auto Deployment**: Manual deployment required
 
 ### CI/CD Workflow
+
 ```yaml
 # Triggers on:
 - Push to main/develop branches
@@ -256,6 +278,7 @@ Your project has **GitHub Actions CI/CD** configured but **manual deployment**:
 ```
 
 ### View CI/CD Status
+
 - **GitHub Actions**: `https://github.com/yourusername/social-communication/actions`
 - **Build Status**: Check green ✅ before deploying
 
@@ -264,6 +287,7 @@ Your project has **GitHub Actions CI/CD** configured but **manual deployment**:
 ## Update Deployment
 
 ### Method 1: Quick Update (Recommended)
+
 ```bash
 # Navigate to project directory
 cd ~/project/social-communication
@@ -289,6 +313,7 @@ curl http://localhost:3000/health
 ```
 
 ### Method 2: Zero-Downtime Update
+
 ```bash
 # Pull latest code
 git pull origin main
@@ -306,6 +331,7 @@ docker image prune -f
 ```
 
 ### Method 3: Complete Rebuild
+
 ```bash
 # Stop all services
 docker compose down
@@ -326,7 +352,9 @@ pnpm prisma:migrate
 ```
 
 ### Automated Update Script
+
 Create `update.sh` for easy updates:
+
 ```bash
 #!/bin/bash
 echo "🔄 Updating Social Communication Backend..."
@@ -362,18 +390,21 @@ fi
 ```
 
 **Make it executable:**
+
 ```bash
 chmod +x update.sh
 ./update.sh
 ```
 
 ### Pre-Update Checklist
+
 - [ ] Check GitHub Actions build status (must be ✅)
 - [ ] Backup database: `docker compose exec postgres pg_dump -U postgres social_communication > backup.sql`
 - [ ] Note current version: `git log --oneline -1`
 - [ ] Verify disk space: `df -h`
 
 ### Post-Update Verification
+
 ```bash
 # Check all services are running
 docker compose ps
@@ -390,6 +421,7 @@ docker compose exec postgres psql -U postgres -d social_communication -c "SELECT
 ```
 
 ### Rollback (if needed)
+
 ```bash
 # Find previous commit
 git log --oneline -5
@@ -410,6 +442,7 @@ docker compose exec postgres psql -U postgres -d social_communication < backup.s
 ## Available Scripts
 
 ### Development Scripts
+
 ```bash
 pnpm dev              # Start development server with hot reload
 pnpm build            # Build for production
@@ -420,6 +453,7 @@ pnpm format           # Format code with Prettier
 ```
 
 ### Database Scripts
+
 ```bash
 pnpm prisma:generate  # Generate Prisma client
 pnpm prisma:migrate   # Run database migrations
@@ -428,6 +462,7 @@ pnpm prisma:seed      # Seed database with test data
 ```
 
 ### Docker Scripts
+
 ```bash
 pnpm docker:build     # Build Docker image
 pnpm docker:up        # Start Docker containers
@@ -440,32 +475,39 @@ pnpm docker:logs      # View container logs
 ## API Endpoints
 
 ### Base URLs
+
 - **Development**: `http://localhost:3000`
 - **Production**: `http://your-server-ip:3000`
 
 ### Health Checks
+
 - `GET /health` - Basic health check
 - `GET /health/ready` - Readiness probe
 
 ### API Documentation
+
 - `GET /api/docs` - Swagger UI documentation
 - `GET /api/docs/openapi.json` - OpenAPI specification
 
 ### Authentication
+
 - `POST /api/v1/auth/register` - Register new user
 - `POST /api/v1/auth/login` - Login user
 - `POST /api/v1/auth/logout` - Logout user
 - `GET /api/v1/auth/me` - Get current user
 
 ### Users
+
 - `GET /api/v1/users` - Search users
 - `GET /api/v1/users/:id` - Get user by ID
 
 ### Messages
+
 - `POST /api/v1/messages` - Send message
 - `GET /api/v1/messages/group/:groupId` - Get group messages
 
 ### Groups
+
 - `POST /api/v1/groups` - Create group
 - `GET /api/v1/groups` - Get user's groups
 
@@ -476,12 +518,14 @@ pnpm docker:logs      # View container logs
 ### Common Development Issues
 
 **1. Prisma Client Import Error**
+
 ```bash
 # Solution: Generate Prisma client
 pnpm prisma:generate
 ```
 
 **2. Database Connection Error**
+
 ```bash
 # Check if PostgreSQL container is running
 docker compose ps
@@ -491,6 +535,7 @@ docker compose restart postgres redis
 ```
 
 **3. Port Already in Use**
+
 ```bash
 # Find process using port 3000
 sudo lsof -i :3000
@@ -502,11 +547,13 @@ sudo kill -9 <PID>
 ### Common Production Issues
 
 **1. External Access Not Working**
+
 - Check Ubuntu firewall: `sudo ufw status`
 - Check Oracle Cloud Security List ingress rules
 - Verify correct port in URL: `http://ip:3000/health`
 
 **2. Container Permission Issues**
+
 ```bash
 # Run Prisma commands from host, not inside container
 pnpm prisma:migrate  # ✅ Correct
@@ -514,6 +561,7 @@ docker compose exec app pnpm prisma:migrate  # ❌ May fail
 ```
 
 **3. Database Migration Fails**
+
 ```bash
 # Check database connection
 docker compose exec postgres psql -U postgres -l
@@ -560,6 +608,7 @@ pnpm prisma:studio
 ## Security Considerations
 
 ### Production Checklist
+
 - [ ] Change default passwords in docker-compose.yml
 - [ ] Generate strong JWT secrets
 - [ ] Configure proper CORS origins
@@ -569,6 +618,7 @@ pnpm prisma:studio
 - [ ] Database backups
 
 ### Environment Variables Security
+
 - Never commit `.env` files to Git
 - Use strong, unique passwords
 - Rotate JWT secrets regularly
@@ -579,6 +629,7 @@ pnpm prisma:studio
 ## Maintenance
 
 ### Regular Updates
+
 ```bash
 # Update dependencies
 pnpm update
@@ -592,6 +643,7 @@ pnpm prisma:migrate
 ```
 
 ### Backup Strategy
+
 ```bash
 # Database backup
 docker compose exec postgres pg_dump -U postgres social_communication > backup_$(date +%Y%m%d).sql

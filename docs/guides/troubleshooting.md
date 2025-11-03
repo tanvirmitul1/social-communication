@@ -21,6 +21,7 @@ Common issues and their solutions for the Social Communication backend.
 **Problem**: `pnpm: command not found`
 
 **Solution**:
+
 ```bash
 npm install -g pnpm
 
@@ -33,6 +34,7 @@ pnpm --version
 **Problem**: Errors during `pnpm install`
 
 **Solutions**:
+
 ```bash
 # Clear cache and retry
 pnpm store prune
@@ -48,6 +50,7 @@ pnpm install --force
 **Problem**: `The engine "node" is incompatible with this module`
 
 **Solution**:
+
 ```bash
 # Check your Node.js version
 node --version
@@ -67,6 +70,7 @@ nvm use 20
 **Solutions**:
 
 1. **Check if PostgreSQL is running**:
+
    ```bash
    # Linux/Mac
    sudo systemctl status postgresql
@@ -79,6 +83,7 @@ nvm use 20
    ```
 
 2. **Verify DATABASE_URL** in `.env`:
+
    ```env
    DATABASE_URL="postgresql://postgres:password@localhost:5432/social_communication?schema=public"
    ```
@@ -95,6 +100,7 @@ nvm use 20
 **Solutions**:
 
 1. **Reset PostgreSQL password**:
+
    ```bash
    # Using psql as superuser
    psql -U postgres
@@ -102,6 +108,7 @@ nvm use 20
    ```
 
 2. **Update `.env`** with correct password:
+
    ```env
    DATABASE_URL="postgresql://postgres:newpassword@localhost:5432/social_communication?schema=public"
    ```
@@ -113,6 +120,7 @@ nvm use 20
 **Problem**: `Error: database "social_communication" does not exist`
 
 **Solution**:
+
 ```bash
 # Create the database
 createdb social_communication
@@ -130,16 +138,19 @@ CREATE DATABASE social_communication;
 **Solutions**:
 
 1. **Reset migrations** (WARNING: deletes all data):
+
    ```bash
    pnpm prisma migrate reset
    ```
 
 2. **Apply migrations manually**:
+
    ```bash
    pnpm prisma migrate deploy
    ```
 
 3. **Regenerate Prisma client**:
+
    ```bash
    pnpm prisma:generate
    ```
@@ -154,6 +165,7 @@ CREATE DATABASE social_communication;
 **Problem**: `Cannot find module '@prisma/client'`
 
 **Solution**:
+
 ```bash
 pnpm prisma:generate
 ```
@@ -167,12 +179,14 @@ pnpm prisma:generate
 **Solutions**:
 
 1. **Check if Redis is running**:
+
    ```bash
    redis-cli ping
    # Should return: PONG
    ```
 
 2. **Start Redis**:
+
    ```bash
    # Linux/Mac
    redis-server
@@ -194,6 +208,7 @@ pnpm prisma:generate
 **Problem**: `NOAUTH Authentication required`
 
 **Solution**:
+
 ```env
 # Add Redis password to .env
 REDIS_PASSWORD=your-redis-password
@@ -206,6 +221,7 @@ REDIS_PASSWORD=your-redis-password
 **Solutions**:
 
 1. **Clear Redis cache**:
+
    ```bash
    redis-cli FLUSHDB
    ```
@@ -225,6 +241,7 @@ REDIS_PASSWORD=your-redis-password
 **Solutions**:
 
 1. **Find and kill the process**:
+
    ```bash
    # Linux/Mac
    lsof -ti:3000 | xargs kill -9
@@ -246,6 +263,7 @@ REDIS_PASSWORD=your-redis-password
 **Solutions**:
 
 1. **Check logs** for error messages:
+
    ```bash
    pnpm dev
    # Read the error output
@@ -273,6 +291,7 @@ REDIS_PASSWORD=your-redis-password
 **Problem**: Changes not reflected without manual restart
 
 **Solution**:
+
 ```bash
 # Make sure you're using dev mode
 pnpm dev
@@ -290,12 +309,14 @@ pnpm start  # This doesn't have hot reload
 **Solutions**:
 
 1. **Check Docker is running**:
+
    ```bash
    docker --version
    docker-compose --version
    ```
 
 2. **View error logs**:
+
    ```bash
    docker-compose logs
    ```
@@ -313,6 +334,7 @@ pnpm start  # This doesn't have hot reload
 **Solutions**:
 
 1. **Check logs**:
+
    ```bash
    docker-compose logs postgres
    ```
@@ -331,6 +353,7 @@ pnpm start  # This doesn't have hot reload
 **Solutions**:
 
 1. **Verify `.env` uses Docker hostname**:
+
    ```env
    # For Docker, use container name
    DATABASE_URL="postgresql://postgres:postgres@postgres:5432/social_communication?schema=public"
@@ -349,6 +372,7 @@ pnpm start  # This doesn't have hot reload
 **Problem**: Docker volume permission issues
 
 **Solution**:
+
 ```bash
 # Linux/Mac
 sudo chown -R $USER:$USER .
@@ -366,11 +390,13 @@ docker-compose up --user $(id -u):$(id -g)
 **Solutions**:
 
 1. **Regenerate Prisma client**:
+
    ```bash
    pnpm prisma:generate
    ```
 
 2. **Clear build cache**:
+
    ```bash
    rm -rf dist node_modules
    pnpm install
@@ -386,6 +412,7 @@ docker-compose up --user $(id -u):$(id -g)
 **Solutions**:
 
 1. **Ensure you're using .js extension**:
+
    ```typescript
    // Correct
    import { UserService } from '@services/UserService.js';
@@ -395,6 +422,7 @@ docker-compose up --user $(id -u):$(id -g)
    ```
 
 2. **Check tsconfig.json** has path aliases:
+
    ```json
    {
      "compilerOptions": {
@@ -415,6 +443,7 @@ docker-compose up --user $(id -u):$(id -g)
 **Problem**: Path aliases not working in build
 
 **Solution**:
+
 ```bash
 # Make sure tsc-alias runs after tsc
 pnpm build
@@ -430,15 +459,17 @@ pnpm build
 **Solutions**:
 
 1. **Check JWT token is valid**:
+
    ```javascript
    const socket = io('http://localhost:3000', {
      auth: {
-       token: 'valid-jwt-token-here'
-     }
+       token: 'valid-jwt-token-here',
+     },
    });
    ```
 
 2. **Check CORS configuration** in `.env`:
+
    ```env
    CORS_ORIGINS=http://localhost:3000,http://localhost:5173
    ```
@@ -455,6 +486,7 @@ pnpm build
 **Solutions**:
 
 1. **Check event names** match server:
+
    ```javascript
    // Must match CONSTANTS.SOCKET_EVENTS
    socket.emit('message:send', data);
@@ -462,6 +494,7 @@ pnpm build
    ```
 
 2. **Verify authentication**:
+
    ```javascript
    socket.on('connect', () => {
      console.log('Connected:', socket.id);
@@ -483,11 +516,12 @@ pnpm build
 **Solutions**:
 
 1. **Enable reconnection**:
+
    ```javascript
    const socket = io('http://localhost:3000', {
      reconnection: true,
      reconnectionAttempts: 5,
-     reconnectionDelay: 1000
+     reconnectionDelay: 1000,
    });
    ```
 
@@ -502,14 +536,15 @@ pnpm build
 **Problem**: `401 Unauthorized - Token expired`
 
 **Solution**:
+
 ```javascript
 // Use refresh token to get new access token
 const response = await fetch('/api/v1/auth/refresh', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({
-    refreshToken: storedRefreshToken
-  })
+    refreshToken: storedRefreshToken,
+  }),
 });
 
 const { accessToken, refreshToken } = await response.json();
@@ -523,6 +558,7 @@ const { accessToken, refreshToken } = await response.json();
 **Solutions**:
 
 1. **Check token format**:
+
    ```
    Authorization: Bearer eyJhbGciOiJIUzI1NiIs...
    ```
@@ -539,6 +575,7 @@ const { accessToken, refreshToken } = await response.json();
 **Problem**: Password doesn't meet requirements
 
 **Solution**:
+
 ```
 Password must:
 - Be at least 8 characters long
@@ -556,6 +593,7 @@ Valid example: Password123
 **Problems & Solutions**:
 
 1. **Database queries slow**:
+
    ```bash
    # Check Prisma query performance
    # Enable query logging in .env
@@ -563,6 +601,7 @@ Valid example: Password123
    ```
 
 2. **Redis cache not being used**:
+
    ```bash
    # Verify Redis is connected
    redis-cli ping
@@ -585,12 +624,14 @@ Valid example: Password123
 **Solutions**:
 
 1. **Check for memory leaks**:
+
    ```bash
    # Monitor with Node.js
    node --expose-gc --inspect dist/main.js
    ```
 
 2. **Limit connection pools**:
+
    ```env
    DATABASE_URL="postgresql://...?connection_limit=10"
    ```
@@ -616,6 +657,7 @@ Valid example: Password123
 ## Still Having Issues?
 
 1. **Check logs**:
+
    ```bash
    # Application logs
    tail -f logs/app.log
@@ -625,12 +667,14 @@ Valid example: Password123
    ```
 
 2. **Enable debug mode**:
+
    ```env
    NODE_ENV=development
    LOG_LEVEL=debug
    ```
 
 3. **Verify all services are running**:
+
    ```bash
    # PostgreSQL
    pg_isready -h localhost -p 5432

@@ -40,6 +40,7 @@ openssl rand -base64 32
 ```
 
 Update `.env`:
+
 ```env
 JWT_ACCESS_SECRET=<generated-secret-1>
 JWT_REFRESH_SECRET=<generated-secret-2>
@@ -52,6 +53,7 @@ docker-compose up -d
 ```
 
 This will start:
+
 - PostgreSQL database on port 5432
 - Redis cache on port 6379
 - Application server on port 3000
@@ -82,11 +84,11 @@ docker-compose exec app pnpm prisma:seed
 
 ### Test Credentials (after seeding)
 
-| Email                  | Password   | Role      |
-|------------------------|------------|-----------|
-| admin@socialcomm.com   | Admin@123  | ADMIN     |
-| alice@example.com      | User@123   | USER      |
-| bob@example.com        | User@123   | USER      |
+| Email                | Password  | Role  |
+| -------------------- | --------- | ----- |
+| admin@socialcomm.com | Admin@123 | ADMIN |
+| alice@example.com    | User@123  | USER  |
+| bob@example.com      | User@123  | USER  |
 
 ## Option 2: Local Development
 
@@ -142,6 +144,7 @@ cp .env.example .env
 ```
 
 Update at minimum:
+
 ```env
 DATABASE_URL="postgresql://postgres:YOUR_PASSWORD@localhost:5432/social_communication?schema=public"
 JWT_ACCESS_SECRET=<generated-secret>
@@ -255,6 +258,7 @@ socket.on('message:received', (data) => {
 ## Common Commands
 
 ### Development
+
 ```bash
 pnpm dev          # Start dev server with hot reload
 pnpm build        # Build for production
@@ -262,6 +266,7 @@ pnpm start        # Start production server
 ```
 
 ### Database
+
 ```bash
 pnpm prisma:generate   # Generate Prisma client
 pnpm prisma:migrate    # Run migrations
@@ -270,6 +275,7 @@ pnpm prisma:seed       # Seed database
 ```
 
 ### Code Quality
+
 ```bash
 pnpm lint         # Lint code
 pnpm format       # Format code
@@ -277,6 +283,7 @@ pnpm test         # Run tests
 ```
 
 ### Docker
+
 ```bash
 pnpm docker:up    # Start containers
 pnpm docker:down  # Stop containers
@@ -322,6 +329,7 @@ docker-compose up -d --build
 ## Support
 
 For issues and questions, please open an issue in the repository or refer to:
+
 - [Installation Guide](installation.md) - Detailed installation instructions
 - [PostgreSQL Setup](postgres-setup.md) - Database-specific setup
 - [Troubleshooting Guide](../guides/troubleshooting.md) - Common issues and solutions

@@ -46,6 +46,7 @@ pnpm install
 ```
 
 This will install all required packages including:
+
 - Express.js and middleware
 - Prisma ORM
 - Socket.IO
@@ -154,6 +155,7 @@ pnpm prisma:seed
 ```
 
 The migration will create all necessary database tables:
+
 - Users and authentication
 - Messages and groups
 - Calls and participants

@@ -11,20 +11,24 @@ This is an enterprise-level real-time messaging and audio/video calling platform
 All documentation is organized in the `docs/` directory:
 
 ### Getting Started
+
 - `docs/getting-started/quickstart.md` - Quick start guide (Docker & local setup)
 - `docs/getting-started/installation.md` - Comprehensive installation instructions
 - `docs/getting-started/postgres-setup.md` - PostgreSQL setup guide (Windows-specific)
 
 ### API Documentation
+
 - `docs/api/overview.md` - Complete API reference (endpoints, events, formats)
 - `docs/api/examples.md` - Practical API usage examples
 - Interactive Swagger docs at: http://localhost:3000/api/docs
 
 ### Development
+
 - `docs/development/architecture.md` - Detailed architecture documentation
 - `docs/development/setup.md` - Development environment setup
 
 ### Guides
+
 - `docs/guides/troubleshooting.md` - Common issues and solutions
 
 **Note**: The README.md contains quick links to all documentation. Always refer users to specific docs rather than duplicating information.
