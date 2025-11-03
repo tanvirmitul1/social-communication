@@ -99,3 +99,77 @@ jobs:
           tags: social-communication-backend:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+  deploy:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: [lint-and-test, docker-build]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+
+    steps:
+      - name: Deploy to Oracle Cloud Server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          port: ${{ secrets.SERVER_PORT || 22 }}
+          script: |
+            set -e
+            echo "🚀 Starting deployment..."
+            
+            # Navigate to project directory
+            cd ~/project/social-communication
+            
+            # Backup database before update
+            echo "📦 Creating database backup..."
+            docker compose exec -T postgres pg_dump -U postgres social_communication > backup_$(date +%Y%m%d_%H%M%S).sql || echo "⚠️ Backup failed, continuing..."
+            
+            # Pull latest code
+            echo "📥 Pulling latest code..."
+            git fetch origin
+            git reset --hard origin/main
+            
+            # Install dependencies
+            echo "📦 Installing dependencies..."
+            pnpm install
+            
+            # Generate Prisma client
+            echo "🔧 Generating Prisma client..."
+            pnpm prisma:generate
+            
+            # Run database migrations
+            echo "🗄️ Running database migrations..."
+            pnpm prisma:migrate || echo "⚠️ Migration failed, continuing..."
+            
+            # Stop current services
+            echo "⏹️ Stopping current services..."
+            docker compose down
+            
+            # Build and start new services
+            echo "🔨 Building and starting services..."
+            docker compose up --build -d
+            
+            # Wait for services to be ready
+            echo "⏳ Waiting for services to start..."
+            sleep 30
+            
+            # Health check
+            echo "🏥 Performing health check..."
+            if curl -f http://localhost:3000/health > /dev/null 2>&1; then
+                echo "✅ Deployment successful!"
+                echo "🌐 API is available at: http://${{ secrets.SERVER_HOST }}:3000"
+            else
+                echo "❌ Health check failed!"
+                echo "📋 Container status:"
+                docker compose ps
+                echo "📋 Application logs:"
+                docker compose logs app --tail 20
+                exit 1
+            fi
+            
+            # Cleanup old images
+            echo "🧹 Cleaning up old images..."
+            docker image prune -f
+            
+            echo "🎉 Deployment completed successfully!"
