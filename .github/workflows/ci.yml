@@ -114,6 +114,8 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SERVER_SSH_KEY }}
           port: ${{ secrets.SERVER_PORT || 22 }}
+          timeout: 300s
+          command_timeout: 600s
           script: |
             set -e
             echo "🚀 Starting deployment..."
@@ -121,55 +123,49 @@ jobs:
             # Navigate to project directory
             cd ~/project/social-communication
             
-            # Backup database before update
-            echo "📦 Creating database backup..."
-            docker compose exec -T postgres pg_dump -U postgres social_communication > backup_$(date +%Y%m%d_%H%M%S).sql || echo "⚠️ Backup failed, continuing..."
+            # Quick backup (skip if fails)
+            echo "📦 Quick backup..."
+            docker compose exec -T postgres pg_dump -U postgres social_communication > backup_$(date +%Y%m%d_%H%M%S).sql 2>/dev/null || echo "⚠️ Backup skipped"
             
             # Pull latest code
             echo "📥 Pulling latest code..."
-            git fetch origin
-            git reset --hard origin/main
+            git fetch origin --quiet
+            git reset --hard origin/main --quiet
             
-            # Install dependencies
+            # Quick install (use cache)
             echo "📦 Installing dependencies..."
-            pnpm install
+            pnpm install --prefer-offline --silent
             
             # Generate Prisma client
             echo "🔧 Generating Prisma client..."
-            pnpm prisma:generate
+            pnpm prisma:generate --silent
             
-            # Run database migrations
-            echo "🗄️ Running database migrations..."
-            pnpm prisma:migrate || echo "⚠️ Migration failed, continuing..."
+            # Run migrations (use deploy for production)
+            echo "🗄️ Running migrations..."
+            pnpm prisma:migrate:deploy --silent || echo "⚠️ Migration skipped"
             
-            # Stop current services
-            echo "⏹️ Stopping current services..."
-            docker compose down
+            # Quick restart
+            echo "🔄 Restarting services..."
+            docker compose down --timeout 10
+            docker compose up -d --quiet-pull
             
-            # Build and start new services
-            echo "🔨 Building and starting services..."
-            docker compose up --build -d
+            # Quick health check
+            echo "⏳ Waiting for startup..."
+            sleep 15
             
-            # Wait for services to be ready
-            echo "⏳ Waiting for services to start..."
-            sleep 30
-            
-            # Health check
-            echo "🏥 Performing health check..."
-            if curl -f http://localhost:3000/health > /dev/null 2>&1; then
+            # Health check with retry
+            echo "🏥 Health check..."
+            for i in {1..6}; do
+              if curl -f http://localhost:3000/health >/dev/null 2>&1; then
                 echo "✅ Deployment successful!"
-                echo "🌐 API is available at: http://${{ secrets.SERVER_HOST }}:3000"
-            else
-                echo "❌ Health check failed!"
-                echo "📋 Container status:"
-                docker compose ps
-                echo "📋 Application logs:"
-                docker compose logs app --tail 20
-                exit 1
-            fi
+                echo "🌐 API: http://${{ secrets.SERVER_HOST }}:3000"
+                exit 0
+              fi
+              echo "⏳ Retry $i/6..."
+              sleep 10
+            done
             
-            # Cleanup old images
-            echo "🧹 Cleaning up old images..."
-            docker image prune -f
-            
-            echo "🎉 Deployment completed successfully!"
+            echo "❌ Health check failed!"
+            docker compose ps
+            docker compose logs app --tail 10
+            exit 1
