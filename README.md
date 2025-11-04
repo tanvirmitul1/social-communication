@@ -23,6 +23,7 @@ A production-ready, enterprise-level backend for a real-time messaging and audio
 - **Database**: PostgreSQL 16
 - **ORM**: Prisma
 - **Cache**: Redis 7
+- **Reverse Proxy**: Nginx
 - **Real-time**: Socket.IO
 - **Video Calls**: Jitsi Meet API
 - **Authentication**: JWT (jsonwebtoken + argon2)
@@ -66,6 +67,7 @@ Comprehensive documentation is available in the [docs/](docs/) directory:
 - [Installation Guide](docs/setup/INSTALLATION.md) - Complete setup instructions
 - [API Documentation](docs/API.md) - Full REST API and WebSocket reference
 - [Architecture Guide](docs/ARCHITECTURE.md) - System design and patterns
+- [Nginx Setup Guide](docs/guides/nginx-setup.md) - Reverse proxy configuration
 
 For a complete list of documentation, see [docs/README.md](docs/README.md).
 
