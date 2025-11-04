@@ -79,6 +79,12 @@ services:
       - ./logs/nginx:/var/log/nginx
     depends_on:
       - app
+
+
+
+
+
+
     networks:
       - social-comm-network
     restart: unless-stopped
