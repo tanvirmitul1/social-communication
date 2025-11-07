@@ -62,7 +62,7 @@ export class CallSocketHandler {
             userId,
           });
 
-        callWithParticipants.participants.forEach((participant) => {
+        callWithParticipants.participants.forEach((participant: { userId: string }) => {
           if (participant.userId !== userId) {
             this.io
               .to(`user:${participant.userId}`)
@@ -101,7 +101,7 @@ export class CallSocketHandler {
         const callWithParticipants = call as CallWithParticipants;
 
         // Notify all participants
-        callWithParticipants.participants.forEach((participant) => {
+        callWithParticipants.participants.forEach((participant: { userId: string }) => {
           this.io.to(`user:${participant.userId}`).emit(CONSTANTS.SOCKET_EVENTS.CALL_END, {
             callId: call.id,
           });
@@ -127,7 +127,7 @@ export class CallSocketHandler {
             userId,
           });
 
-        call.participants.forEach((participant) => {
+        call.participants.forEach((participant: { userId: string }) => {
           if (participant.userId !== userId) {
             this.io
               .to(`user:${participant.userId}`)
