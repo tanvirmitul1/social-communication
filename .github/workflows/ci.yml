@@ -108,8 +108,8 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SERVER_SSH_KEY }}
           port: ${{ secrets.SERVER_PORT || 22 }}
-          timeout: 300s
-          command_timeout: 600s
+          timeout: 180s
+          command_timeout: 180s
           script: |
             set -e
             echo "🚀 Starting deployment..."
@@ -143,23 +143,25 @@ jobs:
             docker compose down --timeout 10
             docker compose up -d --quiet-pull
             
-            # Quick health check
+            # Health check with retry - 3 minutes total
             echo "⏳ Waiting for startup..."
             sleep 15
             
-            # Health check with retry
+            # Health check with retry - up to 3 minutes
             echo "🏥 Health check..."
-            for i in {1..6}; do
+            for i in {1..18}; do
               if curl -f http://localhost:3000/health >/dev/null 2>&1; then
                 echo "✅ Deployment successful!"
                 echo "🌐 API: http://${{ secrets.SERVER_HOST }}:3000"
                 exit 0
               fi
-              echo "⏳ Retry $i/6..."
+              echo "⏳ Retry $i/18..."
               sleep 10
             done
             
-            echo "❌ Health check failed!"
+            echo "❌ Health check failed after 3 minutes!"
+            echo "🔍 Checking container status..."
             docker compose ps
-            docker compose logs app --tail 10
+            echo "🔍 Checking application logs..."
+            docker compose logs app --tail 30
             exit 1
