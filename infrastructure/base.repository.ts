@@ -1,4 +1,7 @@
-import { prisma } from '@config/prisma.js';
+import { PrismaClient } from '@prisma/client';
+
+// Create a single instance of PrismaClient for the application
+const prisma = new PrismaClient();
 
 export abstract class BaseRepository {
   protected db = prisma;
