@@ -136,7 +136,7 @@ jobs:
             
             # Run migrations (use deploy for production)
             echo "🗄️ Running migrations..."
-            pnpm prisma:migrate:deploy --silent || echo "⚠️ Migration skipped"
+            pnpm prisma:migrate:deploy || echo "⚠️ Migration skipped"
             
             # Quick restart
             echo "🔄 Restarting services..."
