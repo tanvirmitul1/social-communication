@@ -17,7 +17,7 @@ jobs:
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: 141532
-          POSTGRES_DB: social_communication_test
+          POSTGRES_DB: social_communication
         ports:
           - 5432:5432
         options: >-
@@ -59,7 +59,7 @@ jobs:
       - name: Run database migrations
         run: pnpm prisma:migrate
         env:
-          DATABASE_URL: postgresql://postgres:141532@localhost:5432/social_communication_test
+          DATABASE_URL: postgresql://postgres:141532@localhost:5432/social_communication
 
       - name: Build application
         run: pnpm build
@@ -67,7 +67,7 @@ jobs:
       - name: Run critical tests only
         run: pnpm test -- --reporter=verbose
         env:
-          DATABASE_URL: postgresql://postgres:141532@localhost:5432/social_communication_test
+          DATABASE_URL: postgresql://postgres:141532@localhost:5432/social_communication
           REDIS_HOST: localhost
           REDIS_PORT: 6379
           JWT_ACCESS_SECRET: test-access-secret
@@ -132,7 +132,7 @@ jobs:
             
             # Generate Prisma client
             echo "🔧 Generating Prisma client..."
-            pnpm prisma:generate --silent
+            pnpm prisma:generate
             
             # Run migrations (use deploy for production)
             echo "🗄️ Running migrations..."
