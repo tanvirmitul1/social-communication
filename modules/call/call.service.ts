@@ -98,7 +98,7 @@ export class CallService {
     const call = await this.getCallById(callId);
 
     // Check if user is a participant
-    const isParticipant = call.participants.some((p) => p.userId === userId);
+    const isParticipant = call.participants.some((p: { userId: string }) => p.userId === userId);
     if (!isParticipant && call.initiatorId !== userId) {
       throw new ForbiddenError('You are not invited to this call');
     }
@@ -151,7 +151,7 @@ export class CallService {
     const call = await this.getCallById(callId);
 
     // Check if user is a participant
-    const isParticipant = call.participants.some((p) => p.userId === userId);
+    const isParticipant = call.participants.some((p: { userId: string }) => p.userId === userId);
     if (!isParticipant) {
       throw new ForbiddenError('You are not invited to this call');
     }
