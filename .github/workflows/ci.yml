@@ -56,13 +56,18 @@ jobs:
       - name: Generate Prisma Client
         run: pnpm prisma:generate
 
+      - name: Run database migrations
+        run: pnpm prisma:migrate
+        env:
+          DATABASE_URL: postgresql://postgres:141532@localhost:5432/social_communication_test
+
       - name: Build application
         run: pnpm build
 
       - name: Run critical tests only
         run: pnpm test -- --reporter=verbose
         env:
-          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/social_communication_test
+          DATABASE_URL: postgresql://postgres:141532@localhost:5432/social_communication_test
           REDIS_HOST: localhost
           REDIS_PORT: 6379
           JWT_ACCESS_SECRET: test-access-secret
