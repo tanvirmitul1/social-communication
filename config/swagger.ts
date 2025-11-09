@@ -24,6 +24,7 @@ pnpm prisma:migrate:deploy
 
 ## Base URLs
 
+- **Production**: \`http://40.233.122.142/api/v1\`
 - **Development (via Nginx)**: \`http://localhost/api/v1\`
 - **Direct Access**: \`http://localhost:3000/api/v1\`
 - **Health Endpoints**: Not versioned - accessible at \`/health\`, \`/health/ready\`, \`/metrics\`
@@ -198,10 +199,12 @@ For detailed documentation, see: [Full API Documentation](https://github.com/you
     },
     servers: [
       {
-        url: config.NODE_ENV === 'production'
-          ? `/api/${config.API_VERSION}`
-          : `http://localhost/api/${config.API_VERSION}`,
-        description: config.NODE_ENV === 'production' ? 'Production server' : 'Development server (via Nginx)',
+        url: `http://40.233.122.142/api/${config.API_VERSION}`,
+        description: 'Production server',
+      },
+      {
+        url: `http://localhost/api/${config.API_VERSION}`,
+        description: 'Development server (via Nginx)',
       },
       {
         url: `http://localhost:${config.PORT}/api/${config.API_VERSION}`,
