@@ -9,38 +9,57 @@ const options: swaggerJsdoc.Options = {
       version: '1.0.0',
       description: `Enterprise-level real-time messaging and audio/video calling platform API
 
+## Important Setup Note
+
+⚠️ **Before using this API, ensure database migrations have been run:**
+
+\`\`\`bash
+# For Docker deployments
+docker compose down
+docker compose up -d --build
+
+# For local development
+pnpm prisma:migrate:deploy
+\`\`\`
+
+## Base URLs
+
+- **Development (via Nginx)**: \`http://localhost/api/v1\`
+- **Direct Access**: \`http://localhost:3000/api/v1\`
+- **Health Endpoints**: Not versioned - accessible at \`/health\`, \`/health/ready\`, \`/metrics\`
+
 ## Authentication Flow
 
 This API uses JWT (JSON Web Tokens) for authentication with both access and refresh tokens.
 
 ### Registration & Login Flow
 
-1. **Register a new user**: \`POST /auth/register\`
+1. **Register a new user**: \`POST /api/v1/auth/register\`
    - Provide username, email, and password
    - Receive user object (without password)
    - No tokens returned on registration
 
-2. **Login**: \`POST /auth/login\`
+2. **Login**: \`POST /api/v1/auth/login\`
    - Provide email and password
    - Receive user object + accessToken + refreshToken
-   - Store both tokens securely (never in localStorage!)
+   - Store both tokens securely (use httpOnly cookies in production)
 
 3. **Access Protected Routes**:
    - Include access token in Authorization header: \`Bearer <accessToken>\`
    - Access token expires in 15 minutes by default
 
-4. **Refresh Token**: \`POST /auth/refresh\`
+4. **Refresh Token**: \`POST /api/v1/auth/refresh\`
    - When access token expires, use refresh token to get new tokens
    - Provide refresh token in request body
    - Receive new accessToken and refreshToken
    - Old refresh token is invalidated
 
-5. **Logout**: \`POST /auth/logout\`
+5. **Logout**: \`POST /api/v1/auth/logout\`
    - Provide refresh token to invalidate
    - Removes the specific device session
-   - Or use \`POST /auth/logout-all\` to logout from all devices
+   - Or use \`POST /api/v1/auth/logout-all\` to logout from all devices
 
-6. **Get Current User**: \`GET /auth/me\`
+6. **Get Current User**: \`GET /api/v1/auth/me\`
    - Requires valid access token
    - Returns current user profile
 
@@ -53,7 +72,7 @@ This API uses JWT (JSON Web Tokens) for authentication with both access and refr
 
 \`\`\`javascript
 // 1. Register
-const registerRes = await fetch('/api/v1/auth/register', {
+const registerRes = await fetch('http://localhost/api/v1/auth/register', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({
@@ -64,7 +83,7 @@ const registerRes = await fetch('/api/v1/auth/register', {
 });
 
 // 2. Login
-const loginRes = await fetch('/api/v1/auth/login', {
+const loginRes = await fetch('http://localhost/api/v1/auth/login', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({
@@ -76,12 +95,12 @@ const { data } = await loginRes.json();
 const { accessToken, refreshToken } = data;
 
 // 3. Access protected route
-const profileRes = await fetch('/api/v1/auth/me', {
+const profileRes = await fetch('http://localhost/api/v1/auth/me', {
   headers: { 'Authorization': \`Bearer \${accessToken}\` }
 });
 
 // 4. Refresh token when expired
-const refreshRes = await fetch('/api/v1/auth/refresh', {
+const refreshRes = await fetch('http://localhost/api/v1/auth/refresh', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({ refreshToken })
@@ -89,7 +108,7 @@ const refreshRes = await fetch('/api/v1/auth/refresh', {
 const { data: newTokens } = await refreshRes.json();
 
 // 5. Logout
-await fetch('/api/v1/auth/logout', {
+await fetch('http://localhost/api/v1/auth/logout', {
   method: 'POST',
   headers: {
     'Authorization': \`Bearer \${accessToken}\`,
@@ -101,11 +120,22 @@ await fetch('/api/v1/auth/logout', {
 
 ## WebSocket Events
 
-This API also supports real-time communication via WebSocket (Socket.IO).
+This API supports real-time communication via WebSocket (Socket.IO).
 
 ### Connection
-- Connect to: \`http://localhost:3000\`
-- Authentication: Pass JWT token in handshake auth
+\`\`\`javascript
+import { io } from 'socket.io-client';
+
+const socket = io('http://localhost', {
+  auth: { token: accessToken }
+  // OR
+  // extraHeaders: { authorization: 'Bearer ' + accessToken }
+});
+
+socket.on('connect', () => {
+  console.log('Connected to server');
+});
+\`\`\`
 
 ### Message Events
 - \`message:send\` - Send a message
@@ -130,7 +160,36 @@ This API also supports real-time communication via WebSocket (Socket.IO).
 - \`user:offline\` - User went offline
 - \`presence:update\` - Update user presence
 
-For detailed WebSocket documentation, see: [API Documentation](../docs/API.md)
+## Response Format
+
+All API responses follow this standard format:
+
+**Success Response:**
+\`\`\`json
+{
+  "success": true,
+  "message": "Operation successful",
+  "data": { /* response data */ }
+}
+\`\`\`
+
+**Error Response:**
+\`\`\`json
+{
+  "success": false,
+  "message": "Error description",
+  "error": "Detailed error message",
+  "code": "ERROR_CODE"
+}
+\`\`\`
+
+## Rate Limiting
+
+- **Auth endpoints** (/api/v1/auth/login, /api/v1/auth/register): 5 requests per 15 minutes
+- **Message endpoints**: 30 requests per minute
+- **General API**: 100 requests per 15 minutes
+
+For detailed documentation, see: [Full API Documentation](https://github.com/yourusername/social-communication)
 `,
       contact: {
         name: 'API Support',
@@ -139,12 +198,14 @@ For detailed WebSocket documentation, see: [API Documentation](../docs/API.md)
     },
     servers: [
       {
-        url: `http://localhost:${config.PORT}/api/${config.API_VERSION}`,
-        description: 'Development server',
+        url: config.NODE_ENV === 'production'
+          ? `/api/${config.API_VERSION}`
+          : `http://localhost/api/${config.API_VERSION}`,
+        description: config.NODE_ENV === 'production' ? 'Production server' : 'Development server (via Nginx)',
       },
       {
-        url: `https://api.socialcomm.com/api/${config.API_VERSION}`,
-        description: 'Production server',
+        url: `http://localhost:${config.PORT}/api/${config.API_VERSION}`,
+        description: 'Direct server access (development only)',
       },
     ],
     components: {
@@ -301,7 +362,14 @@ For detailed WebSocket documentation, see: [API Documentation](../docs/API.md)
       },
     ],
   },
-  apis: ['./modules/**/*.controller.ts', './modules/**/*.routes.ts', './modules/**/*.gateway.ts'],
+  apis: [
+    './modules/**/*.controller.ts',
+    './modules/**/*.routes.ts',
+    './modules/**/*.gateway.ts',
+    './dist/modules/**/*.controller.js',
+    './dist/modules/**/*.routes.js',
+    './dist/modules/**/*.gateway.js',
+  ],
 };
 
 export const swaggerSpec = swaggerJsdoc(options);
