@@ -1,7 +1,7 @@
 # ==============================================================================
 # Build Stage - Build the application
 # ==============================================================================
-FROM node:20-alpine AS builder
+FROM node:20-alpine3.17 AS builder
 
 # Install pnpm
 RUN npm install -g pnpm@latest
@@ -27,13 +27,14 @@ RUN pnpm build
 # ==============================================================================
 # Production Stage - Run the application
 # ==============================================================================
-FROM node:20-alpine
+FROM node:20-alpine3.17
 
 # Install pnpm
 RUN npm install -g pnpm@latest
 
-# Install dumb-init for proper signal handling
-RUN apk add --no-cache dumb-init
+# Install required dependencies for Prisma on Alpine
+# openssl1.1-compat provides libssl.so.1.1 needed by Prisma
+RUN apk add --no-cache dumb-init openssl1.1-compat
 
 # Create app user for security (don't run as root)
 RUN addgroup -g 1001 -S nodejs && \
