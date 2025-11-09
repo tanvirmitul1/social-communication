@@ -1,4 +1,3 @@
-version: '3.8'
 
 services:
   # PostgreSQL Database
@@ -80,11 +79,6 @@ services:
     depends_on:
       - app
 
-
-
-
-
-
     networks:
       - social-comm-network
     restart: unless-stopped
@@ -96,3 +90,7 @@ volumes:
 networks:
   social-comm-network:
     driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.18.30.0/27
