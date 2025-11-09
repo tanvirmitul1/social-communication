@@ -6,15 +6,15 @@ services:
     image: postgres:16-alpine
     container_name: social-comm-postgres
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: 141532
-      POSTGRES_DB: social_communication
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-141532}
+      POSTGRES_DB: ${POSTGRES_DB:-social_communication}
     ports:
-      - "5432:5432"
+      - "${POSTGRES_PORT:-5432}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -47,14 +47,25 @@ services:
     expose:
       - "3000"
     environment:
-      NODE_ENV: production
-      PORT: 3000
-      DATABASE_URL: postgresql://postgres:141532@postgres:5432/social_communication?schema=public
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
+      NODE_ENV: ${NODE_ENV:-production}
+      PORT: ${PORT:-3000}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-141532}@postgres:5432/${POSTGRES_DB:-social_communication}?schema=public
+      REDIS_HOST: ${REDIS_HOST:-redis}
+      REDIS_PORT: ${REDIS_PORT:-6379}
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+      REDIS_DB: ${REDIS_DB:-0}
       JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:-your-super-secret-access-token-key-change-in-production}
       JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-your-super-secret-refresh-token-key-change-in-production}
-      CORS_ORIGINS: http://localhost:80,http://localhost:5173,http://localhost
+      JWT_ACCESS_EXPIRATION: ${JWT_ACCESS_EXPIRATION:-15m}
+      JWT_REFRESH_EXPIRATION: ${JWT_REFRESH_EXPIRATION:-7d}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:80,http://localhost:5173,http://localhost}
+      JITSI_DOMAIN: ${JITSI_DOMAIN:-meet.jit.si}
+      JITSI_APP_ID: ${JITSI_APP_ID:-your-jitsi-app-id}
+      JITSI_APP_SECRET: ${JITSI_APP_SECRET:-your-jitsi-app-secret}
+      JITSI_ROOM_PREFIX: ${JITSI_ROOM_PREFIX:-social-comm-}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      BCRYPT_ROUNDS: ${BCRYPT_ROUNDS:-12}
+      MAX_FILE_SIZE: ${MAX_FILE_SIZE:-10485760}
     depends_on:
       postgres:
         condition: service_healthy
@@ -65,6 +76,12 @@ services:
       - ./logs:/app/logs
     networks:
       - social-comm-network
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/health', (r) => process.exit(r.statusCode === 200 ? 0 : 1))"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
     restart: unless-stopped
 
   # Nginx Reverse Proxy
@@ -78,13 +95,14 @@ services:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
       - ./logs/nginx:/var/log/nginx
     depends_on:
-      - app
-
-
-
-
-
-
+      app:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
     networks:
       - social-comm-network
     restart: unless-stopped
@@ -96,8 +114,3 @@ volumes:
 networks:
   social-comm-network:
     driver: bridge
-    ipam:
-      driver: default
-      config:
-        - subnet: 172.18.30.0/27
-
