@@ -20,6 +20,7 @@ services:
       retries: 5
     networks:
       - social-comm-network
+    restart: unless-stopped
 
   # Redis Cache
   redis:
@@ -37,6 +38,7 @@ services:
       retries: 5
     networks:
       - social-comm-network
+    restart: unless-stopped
 
   # Application
   app:
