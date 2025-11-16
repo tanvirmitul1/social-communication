@@ -611,6 +611,51 @@ Remove reaction from a message.
 }
 ```
 
+#### GET /messages/{id}/reactions
+
+Get all reactions for a message with statistics.
+
+**Authentication**: Required
+**Parameters**:
+- `id` (path): Message ID
+
+**Response** (200 OK):
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "emoji": "👍",
+      "count": 5,
+      "users": ["user-uuid-1", "user-uuid-2"]
+    },
+    {
+      "emoji": "❤️",
+      "count": 3,
+      "users": ["user-uuid-3", "user-uuid-4", "user-uuid-5"]
+    }
+  ]
+}
+```
+
+#### GET /messages/{id}/reaction
+
+Get the current user's reaction to a message.
+
+**Authentication**: Required
+**Parameters**:
+- `id` (path): Message ID
+
+**Response** (200 OK):
+```json
+{
+  "success": true,
+  "data": {
+    "emoji": "👍"
+  }
+}
+```
+
 #### GET /messages/search
 
 Search messages.
@@ -622,6 +667,537 @@ Search messages.
 - `limit` (optional, default: 20, max: 100)
 
 **Response**: Same structure as message list endpoints
+
+#### POST /messages/{id}/forward
+
+Forward a message to another user or group.
+
+**Authentication**: Required
+**Parameters**:
+- `id` (path): Original message ID
+
+**Request Body**:
+```json
+{
+  "groupId": "group-uuid",
+  "receiverId": "user-uuid"
+}
+```
+
+**Fields**:
+- `groupId`: Target group ID (for group forwarding)
+- `receiverId`: Target user ID (for direct message forwarding)
+
+**Note**: Either `groupId` or `receiverId` must be provided, but not both.
+
+**Response** (201 Created):
+```json
+{
+  "success": true,
+  "message": "Message forwarded successfully",
+  "data": {
+    "id": "uuid",
+    "senderId": "uuid",
+    "receiverId": "uuid",
+    "content": "Forwarded message content",
+    "type": "TEXT",
+    "status": "SENT",
+    "parentId": "original-message-uuid",
+    "createdAt": "2025-01-01T00:00:00.000Z"
+  }
+}
+
+**Rate Limit**: 30 requests per minute
+
+### Story Endpoints
+
+#### POST /stories
+
+Create a new story.
+
+**Authentication**: Required
+**Request Body**:
+```json
+{
+  "mediaUrl": "https://example.com/story.jpg",
+  "mediaType": "image",
+  "caption": "My story",
+  "expiresIn": 86400
+}
+```
+
+**Fields**:
+- `mediaUrl`: URL to story media
+- `mediaType`: Media type (`image`, `video`)
+- `caption`: Optional caption (max 200 characters)
+- `expiresIn`: Expiration time in seconds (max 86400 - 24 hours)
+
+**Response** (201 Created):
+```json
+{
+  "success": true,
+  "message": "Story created successfully",
+  "data": {
+    "id": "uuid",
+    "userId": "uuid",
+    "mediaUrl": "https://example.com/story.jpg",
+    "mediaType": "image",
+    "caption": "My story",
+    "expiresAt": "2025-01-02T00:00:00.000Z",
+    "createdAt": "2025-01-01T00:00:00.000Z"
+  }
+}
+```
+
+#### GET /stories
+
+Get friends' stories.
+
+**Authentication**: Required
+**Query Parameters**:
+- `page` (optional, default: 1)
+- `limit` (optional, default: 20, max: 100)
+
+**Response** (200 OK):
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": "uuid",
+      "userId": "uuid",
+      "user": {
+        "username": "john_doe",
+        "avatar": "https://example.com/avatar.jpg"
+      },
+      "mediaUrl": "https://example.com/story.jpg",
+      "mediaType": "image",
+      "caption": "My story",
+      "createdAt": "2025-01-01T00:00:00.000Z"
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "limit": 20,
+    "total": 10,
+    "totalPages": 1
+  }
+}
+```
+
+#### GET /stories/{userId}
+
+Get a user's stories.
+
+**Authentication**: Required
+**Parameters**:
+- `userId` (path): User UUID
+
+**Response** (200 OK):
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": "uuid",
+      "mediaUrl": "https://example.com/story.jpg",
+      "mediaType": "image",
+      "caption": "My story",
+      "createdAt": "2025-01-01T00:00:00.000Z",
+      "expiresAt": "2025-01-02T00:00:00.000Z"
+    }
+  ]
+}
+```
+
+#### DELETE /stories/{id}
+
+Delete a story.
+
+**Authentication**: Required (can only delete own stories)
+**Parameters**:
+- `id` (path): Story UUID
+
+**Response** (200 OK):
+```json
+{
+  "success": true,
+  "message": "Story deleted successfully",
+  "data": null
+}
+```
+
+#### POST /stories/{id}/view
+
+Mark story as viewed.
+
+**Authentication**: Required
+**Parameters**:
+- `id` (path): Story UUID
+
+**Response** (200 OK):
+```json
+{
+  "success": true,
+  "message": "Story marked as viewed",
+  "data": null
+}
+```
+
+#### POST /stories/{id}/react
+
+React to a story.
+
+**Authentication**: Required
+**Parameters**:
+- `id` (path): Story UUID
+**Request Body**:
+```json
+{
+  "emoji": "👍"
+}
+```
+
+**Response** (200 OK):
+```json
+{
+  "success": true,
+  "message": "Reaction added",
+  "data": null
+}
+```
+
+#### DELETE /stories/{id}/react
+
+Remove reaction from a story.
+
+**Authentication**: Required
+**Parameters**:
+- `id` (path): Story UUID
+**Request Body**:
+```json
+{
+  "emoji": "👍"
+}
+```
+
+**Response** (200 OK):
+```json
+{
+  "success": true,
+  "message": "Reaction removed",
+  "data": null
+}
+```
+
+### Post Endpoints
+
+#### POST /posts
+
+Create a new post.
+
+**Authentication**: Required
+**Request Body**:
+```json
+{
+  "content": "Hello, world!",
+  "mediaUrls": ["https://example.com/image.jpg"],
+  "type": "TEXT",
+  "visibility": "PUBLIC"
+}
+```
+
+**Fields**:
+- `content`: Post content (1-5000 characters)
+- `mediaUrls`: Array of media URLs (max 10)
+- `type`: Post type (`TEXT`, `IMAGE`, `VIDEO`, `LINK`, `POLL`)
+- `visibility`: Visibility (`PUBLIC`, `FRIENDS`, `ONLY_ME`, `CUSTOM`)
+
+**Response** (201 Created):
+```json
+{
+  "success": true,
+  "message": "Post created successfully",
+  "data": {
+    "id": "uuid",
+    "userId": "uuid",
+    "content": "Hello, world!",
+    "mediaUrls": ["https://example.com/image.jpg"],
+    "type": "TEXT",
+    "visibility": "PUBLIC",
+    "likesCount": 0,
+    "commentsCount": 0,
+    "sharesCount": 0,
+    "createdAt": "2025-01-01T00:00:00.000Z"
+  }
+}
+```
+
+#### GET /posts
+
+Get user's feed.
+
+**Authentication**: Required
+**Query Parameters**:
+- `page` (optional, default: 1)
+- `limit` (optional, default: 20, max: 100)
+
+**Response** (200 OK):
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": "uuid",
+      "userId": "uuid",
+      "user": {
+        "username": "john_doe",
+        "avatar": "https://example.com/avatar.jpg"
+      },
+      "content": "Hello, world!",
+      "mediaUrls": ["https://example.com/image.jpg"],
+      "type": "TEXT",
+      "visibility": "PUBLIC",
+      "likesCount": 5,
+      "commentsCount": 2,
+      "sharesCount": 1,
+      "createdAt": "2025-01-01T00:00:00.000Z"
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "limit": 20,
+    "total": 100,
+    "totalPages": 5
+  }
+}
+```
+
+#### GET /posts/{id}
+
+Get post by ID.
+
+**Authentication**: Required
+**Parameters**:
+- `id` (path): Post UUID
+
+**Response** (200 OK):
+```json
+{
+  "success": true,
+  "data": {
+    "id": "uuid",
+    "userId": "uuid",
+    "user": {
+      "username": "john_doe",
+      "avatar": "https://example.com/avatar.jpg"
+    },
+    "content": "Hello, world!",
+    "mediaUrls": ["https://example.com/image.jpg"],
+    "type": "TEXT",
+    "visibility": "PUBLIC",
+    "likesCount": 5,
+    "commentsCount": 2,
+    "sharesCount": 1,
+    "createdAt": "2025-01-01T00:00:00.000Z"
+  }
+}
+```
+
+#### PUT /posts/{id}
+
+Update a post.
+
+**Authentication**: Required (can only update own posts)
+**Parameters**:
+- `id` (path): Post UUID
+**Request Body**:
+```json
+{
+  "content": "Updated content",
+  "visibility": "FRIENDS"
+}
+```
+
+**Response** (200 OK):
+```json
+{
+  "success": true,
+  "message": "Post updated successfully",
+  "data": {
+    "id": "uuid",
+    "content": "Updated content",
+    "visibility": "FRIENDS",
+    "updatedAt": "2025-01-01T00:00:00.000Z"
+  }
+}
+```
+
+#### DELETE /posts/{id}
+
+Delete a post.
+
+**Authentication**: Required (can only delete own posts)
+**Parameters**:
+- `id` (path): Post UUID
+
+**Response** (200 OK):
+```json
+{
+  "success": true,
+  "message": "Post deleted successfully",
+  "data": null
+}
+```
+
+#### POST /posts/{id}/like
+
+Like a post.
+
+**Authentication**: Required
+**Parameters**:
+- `id` (path): Post UUID
+
+**Response** (200 OK):
+```json
+{
+  "success": true,
+  "message": "Post liked",
+  "data": {
+    "postId": "uuid",
+    "likesCount": 6
+  }
+}
+```
+
+#### DELETE /posts/{id}/like
+
+Unlike a post.
+
+**Authentication**: Required
+**Parameters**:
+- `id` (path): Post UUID
+
+**Response** (200 OK):
+```json
+{
+  "success": true,
+  "message": "Post unliked",
+  "data": {
+    "postId": "uuid",
+    "likesCount": 5
+  }
+}
+```
+
+#### POST /posts/{id}/comment
+
+Comment on a post.
+
+**Authentication**: Required
+**Parameters**:
+- `id` (path): Post UUID
+**Request Body**:
+```json
+{
+  "content": "Great post!",
+  "parentId": null
+}
+```
+
+**Fields**:
+- `content`: Comment content (1-1000 characters)
+- `parentId`: Parent comment ID (for threaded replies)
+
+**Response** (201 Created):
+```json
+{
+  "success": true,
+  "message": "Comment added",
+  "data": {
+    "id": "uuid",
+    "postId": "uuid",
+    "userId": "uuid",
+    "content": "Great post!",
+    "likesCount": 0,
+    "createdAt": "2025-01-01T00:00:00.000Z"
+  }
+}
+```
+
+#### POST /posts/{id}/share
+
+Share a post.
+
+**Authentication**: Required
+**Parameters**:
+- `id` (path): Post UUID
+
+**Response** (200 OK):
+```json
+{
+  "success": true,
+  "message": "Post shared",
+  "data": {
+    "postId": "uuid",
+    "sharesCount": 2
+  }
+}
+```
+
+#### POST /posts/{id}/bookmark
+
+Bookmark a post.
+
+**Authentication**: Required
+**Parameters**:
+- `id` (path): Post UUID
+
+**Response** (200 OK):
+```json
+{
+  "success": true,
+  "message": "Post bookmarked",
+  "data": null
+}
+```
+
+#### GET /posts/bookmarks
+
+Get bookmarked posts.
+
+**Authentication**: Required
+**Query Parameters**:
+- `page` (optional, default: 1)
+- `limit` (optional, default: 20, max: 100)
+
+**Response** (200 OK):
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": "uuid",
+      "postId": "uuid",
+      "userId": "uuid",
+      "post": {
+        "content": "Bookmarked post",
+        "user": {
+          "username": "jane_doe",
+          "avatar": "https://example.com/avatar2.jpg"
+        }
+      },
+      "createdAt": "2025-01-01T00:00:00.000Z"
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "limit": 20,
+    "total": 5,
+    "totalPages": 1
+  }
+}
+```
 
 ### Group Endpoints
 
@@ -1466,6 +2042,124 @@ socket.on('user:offline', (data) => {
 }
 ```
 
+### Story Events
+
+#### story:create
+
+Notification when a friend creates a story.
+
+**Listen**:
+```javascript
+socket.on('story:create', (data) => {
+  console.log('New story from:', data.userId);
+});
+```
+
+**Payload**:
+```json
+{
+  "storyId": "uuid",
+  "userId": "uuid",
+  "user": {
+    "username": "john_doe",
+    "avatar": "https://example.com/avatar.jpg"
+  },
+  "mediaType": "image",
+  "caption": "My story",
+  "createdAt": "2025-01-01T00:00:00.000Z"
+}
+```
+
+#### story:view
+
+Notification when someone views your story.
+
+**Listen**:
+```javascript
+socket.on('story:view', (data) => {
+  console.log('Story viewed by:', data.viewerId);
+});
+```
+
+**Payload**:
+```json
+{
+  "storyId": "uuid",
+  "viewerId": "uuid",
+  "viewedAt": "2025-01-01T00:00:00.000Z"
+}
+```
+
+### Post Events
+
+#### post:create
+
+Notification when a friend creates a post.
+
+**Listen**:
+```javascript
+socket.on('post:create', (data) => {
+  console.log('New post from:', data.userId);
+});
+```
+
+**Payload**:
+```json
+{
+  "postId": "uuid",
+  "userId": "uuid",
+  "user": {
+    "username": "john_doe",
+    "avatar": "https://example.com/avatar.jpg"
+  },
+  "content": "New post content",
+  "type": "TEXT",
+  "createdAt": "2025-01-01T00:00:00.000Z"
+}
+```
+
+#### post:like
+
+Notification when someone likes your post.
+
+**Listen**:
+```javascript
+socket.on('post:like', (data) => {
+  console.log('Post liked by:', data.userId);
+});
+```
+
+**Payload**:
+```json
+{
+  "postId": "uuid",
+  "userId": "uuid",
+  "likedAt": "2025-01-01T00:00:00.000Z"
+}
+```
+
+#### post:comment
+
+Notification when someone comments on your post.
+
+**Listen**:
+```javascript
+socket.on('post:comment', (data) => {
+  console.log('Post commented by:', data.userId);
+});
+```
+
+**Payload**:
+```json
+{
+  "postId": "uuid",
+  "commentId": "uuid",
+  "userId": "uuid",
+  "content": "Comment content",
+  "commentedAt": "2025-01-01T00:00:00.000Z"
+}
+```
+
 ## Data Models
 
 ### User
@@ -1500,7 +2194,7 @@ interface Message {
   metadata?: object;       // Additional metadata
   status: MessageStatus;   // SENT, DELIVERED, SEEN
   isPinned: boolean;       // Whether message is pinned
-  parentId?: string;       // UUID of parent message (for replies)
+  parentId?: string;       // UUID of parent message (for replies and forwarded messages)
   editedAt?: Date;         // Edit timestamp
   deletedAt?: Date;        // Delete timestamp
   createdAt: Date;         // Creation timestamp
@@ -1534,6 +2228,43 @@ interface Call {
   status: CallStatus;      // RINGING, ONGOING, ENDED, MISSED, REJECTED, CANCELED
   startedAt?: Date;        // Call start timestamp
   endedAt?: Date;          // Call end timestamp
+  createdAt: Date;         // Creation timestamp
+  updatedAt: Date;         // Last update timestamp
+}
+```
+
+### Story
+
+```typescript
+interface Story {
+  id: string;              // UUID
+  userId: string;          // UUID of user who created the story
+  mediaUrl: string;        // URL to story media
+  mediaType: string;       // Media type (image, video)
+  caption?: string;        // Optional caption
+  expiresAt: Date;         // Expiration timestamp
+  isArchived: boolean;     // Whether story is archived
+  createdAt: Date;         // Creation timestamp
+  updatedAt: Date;         // Last update timestamp
+}
+```
+
+### Post
+
+```typescript
+interface Post {
+  id: string;              // UUID
+  userId: string;          // UUID of user who created the post
+  content: string;         // Post content
+  mediaUrls: string[];     // Array of media URLs
+  type: PostType;          // TEXT, IMAGE, VIDEO, LINK, POLL
+  visibility: PostVisibility; // PUBLIC, FRIENDS, ONLY_ME, CUSTOM
+  likesCount: number;      // Number of likes
+  commentsCount: number;   // Number of comments
+  sharesCount: number;     // Number of shares
+  isPinned: boolean;       // Whether post is pinned
+  scheduledAt?: Date;      // Scheduled publication timestamp
+  expiresAt?: Date;        // Expiration timestamp
   createdAt: Date;         // Creation timestamp
   updatedAt: Date;         // Last update timestamp
 }
@@ -1588,6 +2319,21 @@ enum CallStatus {
   MISSED = "MISSED",
   REJECTED = "REJECTED",
   CANCELED = "CANCELED"
+}
+
+enum PostType {
+  TEXT = "TEXT",
+  IMAGE = "IMAGE",
+  VIDEO = "VIDEO",
+  LINK = "LINK",
+  POLL = "POLL"
+}
+
+enum PostVisibility {
+  PUBLIC = "PUBLIC",
+  FRIENDS = "FRIENDS",
+  ONLY_ME = "ONLY_ME",
+  CUSTOM = "CUSTOM"
 }
 ```
 
@@ -1700,6 +2446,26 @@ class APIClient {
     });
     return data;
   }
+  
+  async createStory(mediaUrl, mediaType, caption) {
+    const { data } = await this.client.post('/stories', {
+      mediaUrl,
+      mediaType,
+      caption,
+      expiresIn: 86400 // 24 hours
+    });
+    return data;
+  }
+  
+  async createPost(content, mediaUrls = [], type = 'TEXT', visibility = 'PUBLIC') {
+    const { data } = await this.client.post('/posts', {
+      content,
+      mediaUrls,
+      type,
+      visibility
+    });
+    return data;
+  }
 }
 
 // WebSocket Client
@@ -1725,6 +2491,14 @@ class SocketClient {
     this.socket.on('call:ringing', (data) => {
       console.log('Incoming call from:', data.initiatorId);
     });
+    
+    this.socket.on('story:create', (data) => {
+      console.log('New story from:', data.userId);
+    });
+    
+    this.socket.on('post:create', (data) => {
+      console.log('New post from:', data.userId);
+    });
   }
 
   sendMessage(content, receiverId) {
@@ -1742,6 +2516,14 @@ class SocketClient {
   stopTyping(receiverId) {
     this.socket.emit('typing:stop', { receiverId });
   }
+  
+  createStory(mediaUrl, mediaType, caption) {
+    this.socket.emit('story:create', {
+      mediaUrl,
+      mediaType,
+      caption
+    });
+  }
 }
 
 // Usage
@@ -1756,6 +2538,12 @@ await api.sendMessage('Hello!', 'user-uuid');
 
 // Send message via WebSocket
 socket.sendMessage('Hello via WebSocket!', 'user-uuid');
+
+// Create story
+await api.createStory('https://example.com/story.jpg', 'image', 'My story');
+
+// Create post
+await api.createPost('Hello, world!', ['https://example.com/image.jpg']);
 ```
 
 ### React Implementation Example
@@ -1764,10 +2552,13 @@ socket.sendMessage('Hello via WebSocket!', 'user-uuid');
 import React, { useState, useEffect } from 'react';
 import io from 'socket.io-client';
 
-const ChatApp = () => {
+const SocialApp = () => {
   const [socket, setSocket] = useState(null);
   const [messages, setMessages] = useState([]);
+  const [stories, setStories] = useState([]);
+  const [posts, setPosts] = useState([]);
   const [newMessage, setNewMessage] = useState('');
+  const [newPost, setNewPost] = useState('');
 
   useEffect(() => {
     // Connect to WebSocket
@@ -1781,6 +2572,18 @@ const ChatApp = () => {
 
     newSocket.on('message:received', (message) => {
       setMessages(prev => [...prev, message]);
+    });
+
+    newSocket.on('call:ringing', (data) => {
+      console.log('Incoming call from:', data.initiatorId);
+    });
+    
+    newSocket.on('story:create', (data) => {
+      setStories(prev => [...prev, data]);
+    });
+    
+    newSocket.on('post:create', (data) => {
+      setPosts(prev => [data, ...prev]);
     });
 
     setSocket(newSocket);
@@ -1799,32 +2602,79 @@ const ChatApp = () => {
       setNewMessage('');
     }
   };
+  
+  const createPost = () => {
+    if (newPost.trim() && socket) {
+      socket.emit('post:create', {
+        content: newPost,
+        type: 'TEXT'
+      });
+      setNewPost('');
+    }
+  };
 
   return (
-    <div>
-      <div className="chat-messages">
-        {messages.map((msg, index) => (
-          <div key={index} className="message">
-            <strong>{msg.senderId}:</strong> {msg.content}
+    <div className="social-app">
+      <div className="stories">
+        <h2>Stories</h2>
+        {stories.map((story, index) => (
+          <div key={index} className="story">
+            <img src={story.user.avatar} alt={story.user.username} />
+            <span>{story.user.username}</span>
           </div>
         ))}
       </div>
       
-      <div className="message-input">
-        <input
-          type="text"
-          value={newMessage}
-          onChange={(e) => setNewMessage(e.target.value)}
-          onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
-          placeholder="Type a message..."
-        />
-        <button onClick={sendMessage}>Send</button>
+      <div className="feed">
+        <div className="create-post">
+          <textarea
+            value={newPost}
+            onChange={(e) => setNewPost(e.target.value)}
+            placeholder="What's on your mind?"
+          />
+          <button onClick={createPost}>Post</button>
+        </div>
+        
+        <div className="posts">
+          {posts.map((post, index) => (
+            <div key={index} className="post">
+              <div className="post-header">
+                <img src={post.user.avatar} alt={post.user.username} />
+                <span>{post.user.username}</span>
+              </div>
+              <div className="post-content">
+                {post.content}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+      
+      <div className="chat">
+        <div className="chat-messages">
+          {messages.map((msg, index) => (
+            <div key={index} className="message">
+              <strong>{msg.senderId}:</strong> {msg.content}
+            </div>
+          ))}
+        </div>
+        
+        <div className="message-input">
+          <input
+            type="text"
+            value={newMessage}
+            onChange={(e) => setNewMessage(e.target.value)}
+            onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
+            placeholder="Type a message..."
+          />
+          <button onClick={sendMessage}>Send</button>
+        </div>
       </div>
     </div>
   );
 };
 
-export default ChatApp;
+export default SocialApp;
 ```
 
-This comprehensive API documentation provides all the information needed to build a complete frontend implementation for the Social Communication platform. It includes detailed endpoint specifications, WebSocket event descriptions, data models, and implementation examples.
+This comprehensive API documentation provides all the information needed to build a complete frontend implementation for the Social Communication platform. It includes detailed endpoint specifications, WebSocket event descriptions, data models, and implementation examples for all the advanced features including stories, posts, and enhanced messaging capabilities.

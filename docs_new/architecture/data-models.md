@@ -77,6 +77,22 @@ model User {
   blockedBy       BlockedUser[] @relation("BlockedBy")
   reports         Report[]      @relation("Reports")
   reported        Report[]      @relation("Reported")
+  
+  // New relations for advanced features
+  stories         Story[]
+  userProfile     UserProfile?
+  posts           Post[]
+  meetings        Meeting[]     @relation("MeetingOrganizers")
+  meetingParticipations MeetingParticipant[]
+  storyViews      StoryView[]
+  storyReactions  StoryReaction[]
+  postLikes       PostLike[]
+  postComments    PostComment[]
+  postShares      PostShare[]
+  postBookmarks   PostBookmark[]
+  postCommentLikes PostCommentLike[]
+  achievements    UserAchievement[]
+  interests       UserInterest[]
 }
 ```
 
@@ -304,7 +320,7 @@ model Message {
 - `metadata`: Additional metadata (JSON)
 - `status`: Message status (SENT, DELIVERED, SEEN)
 - `isPinned`: Whether message is pinned
-- `parentId`: Reference to parent Message (for replies)
+- `parentId`: Reference to parent Message (for replies and forwarded messages)
 - `editedAt`: Edit timestamp
 - `deletedAt`: Delete timestamp
 - `createdAt`: Message creation timestamp
@@ -334,8 +350,14 @@ model MessageReaction {
 - `id`: Unique identifier (UUID)
 - `messageId`: Reference to Message
 - `userId`: Reference to User
-- `emoji`: Emoji character
+- `emoji`: Emoji character (supports extended emoji set)
 - `createdAt`: Reaction creation timestamp
+
+**Enhanced Features**:
+- Supports rich emoji set with over 200 emojis
+- Provides reaction statistics and analytics
+- Allows users to view their own reactions
+- Enables reaction-based engagement metrics
 
 ### 10. Call Model
 
@@ -464,6 +486,525 @@ model Report {
 - `status`: Report status (PENDING, RESOLVED, DISMISSED)
 - `resolvedAt`: Resolution timestamp
 - `createdAt`: Report creation timestamp
+- `updatedAt`: Last update timestamp
+
+## New Models for Advanced Features
+
+### 14. Story Model
+
+The Story model represents temporary content shared by users.
+
+```prisma
+model Story {
+  id          String   @id @default(uuid())
+  userId      String
+  mediaUrl    String
+  mediaType   String
+  caption     String?
+  expiresAt   DateTime
+  isArchived  Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user        User     @relation(fields: [userId], references: [id])
+  views       StoryView[]
+  reactions   StoryReaction[]
+}
+```
+
+**Fields**:
+- `id`: Unique identifier (UUID)
+- `userId`: Reference to User who created the story
+- `mediaUrl`: URL to story media (image/video)
+- `mediaType`: Type of media (image, video)
+- `caption`: Optional caption for the story
+- `expiresAt`: Expiration timestamp
+- `isArchived`: Whether the story is archived
+- `createdAt`: Story creation timestamp
+- `updatedAt`: Last update timestamp
+
+### 15. StoryView Model
+
+The StoryView model tracks when users view stories.
+
+```prisma
+model StoryView {
+  id        String   @id @default(uuid())
+  storyId   String
+  viewerId  String
+  viewedAt  DateTime @default(now())
+
+  story     Story    @relation(fields: [storyId], references: [id])
+  viewer    User     @relation(fields: [viewerId], references: [id])
+
+  @@unique([storyId, viewerId])
+}
+```
+
+**Fields**:
+- `id`: Unique identifier (UUID)
+- `storyId`: Reference to Story
+- `viewerId`: Reference to User who viewed the story
+- `viewedAt`: Timestamp when the story was viewed
+
+### 16. StoryReaction Model
+
+The StoryReaction model manages reactions to stories.
+
+```prisma
+model StoryReaction {
+  id        String   @id @default(uuid())
+  storyId   String
+  userId    String
+  emoji     String
+  createdAt DateTime @default(now())
+
+  story     Story    @relation(fields: [storyId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@unique([storyId, userId])
+}
+```
+
+**Fields**:
+- `id`: Unique identifier (UUID)
+- `storyId`: Reference to Story
+- `userId`: Reference to User who reacted
+- `emoji`: Emoji used for reaction
+- `createdAt`: Reaction creation timestamp
+
+### 17. UserProfile Model
+
+The UserProfile model stores extended user profile information.
+
+```prisma
+model UserProfile {
+  id              String   @id @default(uuid())
+  userId          String   @unique
+  firstName       String?
+  lastName        String?
+  bio             String?
+  location        String?
+  website         String?
+  birthDate       DateTime?
+  gender          String?
+  profileViews    Int      @default(0)
+  lastProfileView DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  user            User     @relation(fields: [userId], references: [id])
+  interests       UserInterest[]
+  achievements    UserAchievement[]
+}
+```
+
+**Fields**:
+- `id`: Unique identifier (UUID)
+- `userId`: Reference to User
+- `firstName`: User's first name
+- `lastName`: User's last name
+- `bio`: User's biography
+- `location`: User's location
+- `website`: User's website
+- `birthDate`: User's birth date
+- `gender`: User's gender
+- `profileViews`: Number of profile views
+- `lastProfileView`: Timestamp of last profile view
+- `createdAt`: Profile creation timestamp
+- `updatedAt`: Last update timestamp
+
+### 18. UserInterest Model
+
+The UserInterest model tracks user interests for matching and recommendations.
+
+```prisma
+model UserInterest {
+  id        String   @id @default(uuid())
+  userId    String
+  interest  String
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@unique([userId, interest])
+}
+```
+
+**Fields**:
+- `id`: Unique identifier (UUID)
+- `userId`: Reference to User
+- `interest`: Interest tag
+- `createdAt`: Interest creation timestamp
+
+### 19. UserAchievement Model
+
+The UserAchievement model tracks user achievements and milestones.
+
+```prisma
+model UserAchievement {
+  id          String   @id @default(uuid())
+  userId      String
+  title       String
+  description String?
+  earnedAt    DateTime @default(now())
+
+  user        User     @relation(fields: [userId], references: [id])
+}
+```
+
+**Fields**:
+- `id`: Unique identifier (UUID)
+- `userId`: Reference to User
+- `title`: Achievement title
+- `description`: Achievement description
+- `earnedAt`: Timestamp when achievement was earned
+
+### 20. Post Model
+
+The Post model represents user-generated content for the social feed.
+
+```prisma
+model Post {
+  id          String   @id @default(uuid())
+  userId      String
+  content     String
+  mediaUrls   String[]
+  type        PostType @default(TEXT)
+  visibility  PostVisibility @default(PUBLIC)
+  likesCount  Int      @default(0)
+  commentsCount Int     @default(0)
+  sharesCount Int      @default(0)
+  isPinned    Boolean  @default(false)
+  scheduledAt DateTime?
+  expiresAt   DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user        User     @relation(fields: [userId], references: [id])
+  likes       PostLike[]
+  comments    PostComment[]
+  shares      PostShare[]
+  bookmarks   PostBookmark[]
+  tags        PostTag[]
+  media       PostMedia[]
+}
+```
+
+**Fields**:
+- `id`: Unique identifier (UUID)
+- `userId`: Reference to User who created the post
+- `content`: Post content text
+- `mediaUrls`: Array of URLs to attached media
+- `type`: Type of post (TEXT, IMAGE, VIDEO, LINK, POLL)
+- `visibility`: Visibility setting (PUBLIC, FRIENDS, ONLY_ME, CUSTOM)
+- `likesCount`: Number of likes
+- `commentsCount`: Number of comments
+- `sharesCount`: Number of shares
+- `isPinned`: Whether the post is pinned
+- `scheduledAt`: Scheduled publication timestamp
+- `expiresAt`: Expiration timestamp
+- `createdAt`: Post creation timestamp
+- `updatedAt`: Last update timestamp
+
+### 21. PostLike Model
+
+The PostLike model tracks likes on posts.
+
+```prisma
+model PostLike {
+  id        String   @id @default(uuid())
+  postId    String
+  userId    String
+  createdAt DateTime @default(now())
+
+  post      Post     @relation(fields: [postId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@unique([postId, userId])
+}
+```
+
+**Fields**:
+- `id`: Unique identifier (UUID)
+- `postId`: Reference to Post
+- `userId`: Reference to User who liked the post
+- `createdAt`: Like creation timestamp
+
+### 22. PostComment Model
+
+The PostComment model represents comments on posts.
+
+```prisma
+model PostComment {
+  id          String   @id @default(uuid())
+  postId      String
+  userId      String
+  content     String
+  parentId    String?
+  likesCount  Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  post        Post     @relation(fields: [postId], references: [id])
+  user        User     @relation(fields: [userId], references: [id])
+  parent      PostComment? @relation("PostCommentReplies", fields: [parentId], references: [id])
+  replies     PostComment[] @relation("PostCommentReplies")
+  likes       PostCommentLike[]
+}
+```
+
+**Fields**:
+- `id`: Unique identifier (UUID)
+- `postId`: Reference to Post
+- `userId`: Reference to User who commented
+- `content`: Comment content
+- `parentId`: Reference to parent comment (for threaded replies)
+- `likesCount`: Number of likes on the comment
+- `createdAt`: Comment creation timestamp
+- `updatedAt`: Last update timestamp
+
+### 23. PostCommentLike Model
+
+The PostCommentLike model tracks likes on post comments.
+
+```prisma
+model PostCommentLike {
+  id        String   @id @default(uuid())
+  commentId String
+  userId    String
+  createdAt DateTime @default(now())
+
+  comment   PostComment @relation(fields: [commentId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@unique([commentId, userId])
+}
+```
+
+**Fields**:
+- `id`: Unique identifier (UUID)
+- `commentId`: Reference to PostComment
+- `userId`: Reference to User who liked the comment
+- `createdAt`: Like creation timestamp
+
+### 24. PostShare Model
+
+The PostShare model tracks when users share posts.
+
+```prisma
+model PostShare {
+  id        String   @id @default(uuid())
+  postId    String
+  userId    String
+  createdAt DateTime @default(now())
+
+  post      Post     @relation(fields: [postId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@unique([postId, userId])
+}
+```
+
+**Fields**:
+- `id`: Unique identifier (UUID)
+- `postId`: Reference to Post
+- `userId`: Reference to User who shared the post
+- `createdAt`: Share creation timestamp
+
+### 25. PostBookmark Model
+
+The PostBookmark model tracks when users bookmark posts.
+
+```prisma
+model PostBookmark {
+  id        String   @id @default(uuid())
+  postId    String
+  userId    String
+  createdAt DateTime @default(now())
+
+  post      Post     @relation(fields: [postId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@unique([postId, userId])
+}
+```
+
+**Fields**:
+- `id`: Unique identifier (UUID)
+- `postId`: Reference to Post
+- `userId`: Reference to User who bookmarked the post
+- `createdAt`: Bookmark creation timestamp
+
+### 26. PostTag Model
+
+The PostTag model tracks hashtags in posts.
+
+```prisma
+model PostTag {
+  id        String   @id @default(uuid())
+  postId    String
+  tag       String
+  createdAt DateTime @default(now())
+
+  post      Post     @relation(fields: [postId], references: [id])
+
+  @@unique([postId, tag])
+}
+```
+
+**Fields**:
+- `id`: Unique identifier (UUID)
+- `postId`: Reference to Post
+- `tag`: Hashtag without #
+- `createdAt`: Tag creation timestamp
+
+### 27. PostMedia Model
+
+The PostMedia model tracks media attached to posts.
+
+```prisma
+model PostMedia {
+  id        String   @id @default(uuid())
+  postId    String
+  url       String
+  type      String
+  order     Int
+  createdAt DateTime @default(now())
+
+  post      Post     @relation(fields: [postId], references: [id])
+}
+```
+
+**Fields**:
+- `id`: Unique identifier (UUID)
+- `postId`: Reference to Post
+- `url`: URL to media file
+- `type`: Type of media (image, video)
+- `order`: Display order
+- `createdAt`: Media creation timestamp
+
+### 28. Meeting Model
+
+The Meeting model represents scheduled meetings.
+
+```prisma
+model Meeting {
+  id          String     @id @default(uuid())
+  organizerId String
+  title       String
+  description String?
+  scheduledAt DateTime
+  duration    Int
+  roomId      String
+  status      MeetingStatus @default(SCHEDULED)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  organizer   User       @relation("MeetingOrganizers", fields: [organizerId], references: [id])
+  participants MeetingParticipant[]
+  agendaItems MeetingAgenda[]
+  notes       MeetingNote[]
+}
+```
+
+**Fields**:
+- `id`: Unique identifier (UUID)
+- `organizerId`: Reference to User who organized the meeting
+- `title`: Meeting title
+- `description`: Meeting description
+- `scheduledAt`: Scheduled start time
+- `duration`: Meeting duration in minutes
+- `roomId`: Meeting room identifier
+- `status`: Meeting status (SCHEDULED, ONGOING, ENDED, CANCELLED)
+- `createdAt`: Meeting creation timestamp
+- `updatedAt`: Last update timestamp
+
+### 29. MeetingParticipant Model
+
+The MeetingParticipant model tracks meeting participants.
+
+```prisma
+model MeetingParticipant {
+  id         String   @id @default(uuid())
+  meetingId  String
+  userId     String
+  role       ParticipantRole @default(ATTENDEE)
+  joinedAt   DateTime?
+  leftAt     DateTime?
+  status     ParticipationStatus @default(INVITED)
+
+  meeting    Meeting  @relation(fields: [meetingId], references: [id])
+  user       User     @relation(fields: [userId], references: [id])
+
+  @@unique([meetingId, userId])
+}
+```
+
+**Fields**:
+- `id`: Unique identifier (UUID)
+- `meetingId`: Reference to Meeting
+- `userId`: Reference to participating User
+- `role`: Participant role (ORGANIZER, CO_HOST, ATTENDEE)
+- `joinedAt`: Timestamp when participant joined
+- `leftAt`: Timestamp when participant left
+- `status`: Participation status (INVITED, ACCEPTED, DECLINED, JOINED, LEFT)
+
+### 30. MeetingAgenda Model
+
+The MeetingAgenda model tracks meeting agenda items.
+
+```prisma
+model MeetingAgenda {
+  id          String   @id @default(uuid())
+  meetingId   String
+  title       String
+  description String?
+  order       Int
+  duration    Int?
+  completedAt DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  meeting     Meeting  @relation(fields: [meetingId], references: [id])
+}
+```
+
+**Fields**:
+- `id`: Unique identifier (UUID)
+- `meetingId`: Reference to Meeting
+- `title`: Agenda item title
+- `description`: Agenda item description
+- `order`: Display order
+- `duration`: Expected duration in minutes
+- `completedAt`: Timestamp when item was completed
+- `createdAt`: Agenda item creation timestamp
+- `updatedAt`: Last update timestamp
+
+### 31. MeetingNote Model
+
+The MeetingNote model tracks meeting notes.
+
+```prisma
+model MeetingNote {
+  id        String   @id @default(uuid())
+  meetingId String
+  userId    String
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  meeting   Meeting  @relation(fields: [meetingId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+}
+```
+
+**Fields**:
+- `id`: Unique identifier (UUID)
+- `meetingId`: Reference to Meeting
+- `userId`: Reference to User who created the note
+- `content`: Note content
+- `createdAt`: Note creation timestamp
 - `updatedAt`: Last update timestamp
 
 ## Enumerations
@@ -596,6 +1137,62 @@ enum ReportStatus {
 }
 ```
 
+### PostType
+
+```prisma
+enum PostType {
+  TEXT
+  IMAGE
+  VIDEO
+  LINK
+  POLL
+}
+```
+
+### PostVisibility
+
+```prisma
+enum PostVisibility {
+  PUBLIC
+  FRIENDS
+  ONLY_ME
+  CUSTOM
+}
+```
+
+### MeetingStatus
+
+```prisma
+enum MeetingStatus {
+  SCHEDULED
+  ONGOING
+  ENDED
+  CANCELLED
+}
+```
+
+### ParticipantRole
+
+```prisma
+enum ParticipantRole {
+  ORGANIZER
+  CO_HOST
+  ATTENDEE
+}
+```
+
+### ParticipationStatus
+
+```prisma
+enum ParticipationStatus {
+  INVITED
+  ACCEPTED
+  DECLINED
+  JOINED
+  LEFT
+}
+```
+
 ## Indexes and Constraints
 
 ### Primary Keys
@@ -614,6 +1211,16 @@ All models have a primary key `id` field of type UUID.
 8. **MessageReaction**: `[messageId, userId, emoji]`
 9. **CallParticipant**: `[callId, userId]`
 10. **BlockedUser**: `[blockerId, blockedId]`
+11. **StoryView**: `[storyId, viewerId]`
+12. **StoryReaction**: `[storyId, userId]`
+13. **UserProfile**: `userId`
+14. **UserInterest**: `[userId, interest]`
+15. **PostLike**: `[postId, userId]`
+16. **PostCommentLike**: `[commentId, userId]`
+17. **PostShare**: `[postId, userId]`
+18. **PostBookmark**: `[postId, userId]`
+19. **PostTag**: `[postId, tag]`
+20. **MeetingParticipant**: `[meetingId, userId]`
 
 ### Indexes
 
@@ -622,6 +1229,11 @@ All models have a primary key `id` field of type UUID.
 3. **Group**: Indexes on `title`, `type`, `createdAt`
 4. **Call**: Indexes on `initiatorId`, `groupId`, `status`, `createdAt`
 5. **MessageReaction**: Indexes on `messageId`, `userId`, `createdAt`
+6. **Story**: Indexes on `userId`, `expiresAt`, `createdAt`
+7. **Post**: Indexes on `userId`, `createdAt`, `visibility`
+8. **PostLike**: Indexes on `postId`, `userId`, `createdAt`
+9. **PostComment**: Indexes on `postId`, `userId`, `createdAt`
+10. **Meeting**: Indexes on `organizerId`, `scheduledAt`, `status`
 
 ## Data Relationships
 
@@ -636,6 +1248,14 @@ All models have a primary key `id` field of type UUID.
 7. Group → GroupMember (one group has many members)
 8. Message → MessageReaction (one message has many reactions)
 9. Call → CallParticipant (one call has many participants)
+10. User → Story (one user creates many stories)
+11. Story → StoryView (one story has many views)
+12. Story → StoryReaction (one story has many reactions)
+13. User → Post (one user creates many posts)
+14. Post → PostLike (one post has many likes)
+15. Post → PostComment (one post has many comments)
+16. PostComment → PostCommentLike (one comment has many likes)
+17. Meeting → MeetingParticipant (one meeting has many participants)
 
 ### Many-to-Many Relationships
 
@@ -644,6 +1264,8 @@ Implemented through junction models:
 2. **Follow**: User ↔ User
 3. **BlockedUser**: User ↔ User
 4. **Report**: User ↔ User
+5. **PostShare**: User ↔ Post
+6. **PostBookmark**: User ↔ Post
 
 ## Data Access Patterns
 
@@ -771,4 +1393,76 @@ const calls = await prisma.call.findMany({
 });
 ```
 
-This data model provides a comprehensive foundation for the social communication platform, supporting all core features including messaging, groups, calls, and social interactions.
+### Story Management
+
+```javascript
+// Create story
+const story = await prisma.story.create({
+  data: {
+    userId: userId,
+    mediaUrl: 'https://example.com/story.jpg',
+    mediaType: 'image',
+    expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hours
+  }
+});
+
+// Get user's stories
+const stories = await prisma.story.findMany({
+  where: {
+    userId: userId,
+    expiresAt: { gt: new Date() }
+  },
+  orderBy: { createdAt: 'desc' }
+});
+
+// Get friends' stories
+const friendsStories = await prisma.story.findMany({
+  where: {
+    user: {
+      OR: [
+        { followers: { some: { followerId: userId } } },
+        { following: { some: { followingId: userId } } }
+      ]
+    },
+    expiresAt: { gt: new Date() }
+  },
+  orderBy: { createdAt: 'desc' }
+});
+```
+
+### Post Management
+
+```javascript
+// Create post
+const post = await prisma.post.create({
+  data: {
+    userId: userId,
+    content: 'Hello, world!',
+    type: 'TEXT',
+    visibility: 'PUBLIC'
+  }
+});
+
+// Get user's feed
+const feed = await prisma.post.findMany({
+  where: {
+    OR: [
+      { userId: userId },
+      { user: { followers: { some: { followerId: userId } } } }
+    ],
+    visibility: 'PUBLIC'
+  },
+  orderBy: { createdAt: 'desc' },
+  take: 20
+});
+
+// Like post
+const like = await prisma.postLike.create({
+  data: {
+    postId: postId,
+    userId: userId
+  }
+});
+```
+
+This enhanced data model provides a comprehensive foundation for an advanced social communication platform, supporting all core features including messaging, groups, calls, social interactions, stories, posts, and meetings.
