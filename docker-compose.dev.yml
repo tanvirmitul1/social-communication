@@ -1,7 +1,5 @@
-version: '3.8'
-
+# PostgreSQL Database - Development
 services:
-  # PostgreSQL Database - Development
   postgres:
     image: postgres:16-alpine
     container_name: social-comm-postgres-dev
@@ -116,13 +114,9 @@ services:
 
 volumes:
   postgres_data_dev:
-    name: social-comm-postgres-dev
   redis_data_dev:
-    name: social-comm-redis-dev
   pgadmin_data_dev:
-    name: social-comm-pgadmin-dev
 
 networks:
   social-comm-network:
-    name: social-comm-network-dev
     driver: bridge
