@@ -3,7 +3,7 @@ import { Response } from 'express';
 import { MessageService } from '@modules/message/message.service.js';
 import { ResponseHandler } from '@common/utils.js';
 import { AuthRequest } from '@middlewares/auth-guard.js';
-import { SendMessageInput, EditMessageInput } from './message.validation.js';
+import { SendMessageInput, EditMessageInput, ForwardMessageInput } from './message.validation.js';
 import { MessageStatus } from '@prisma/client';
 
 @injectable()
@@ -537,6 +537,104 @@ export class MessageController {
 
   /**
    * @swagger
+   * /messages/{id}/reactions:
+   *   get:
+   *     summary: Get all reactions for a message
+   *     tags: [Messages]
+   *     security:
+   *       - bearerAuth: []
+   *     parameters:
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         schema:
+   *           type: string
+   *           format: uuid
+   *         description: Message ID
+   *     responses:
+   *       200:
+   *         description: Message reactions retrieved successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                 data:
+   *                   type: array
+   *                   items:
+   *                     type: object
+   *                     properties:
+   *                       emoji:
+   *                         type: string
+   *                       count:
+   *                         type: number
+   *                       users:
+   *                         type: array
+   *                         items:
+   *                           type: string
+   *       401:
+   *         description: Unauthorized
+   *       404:
+   *         description: Message not found
+   */
+  async getMessageReactions(req: AuthRequest, res: Response): Promise<Response> {
+    const { id } = req.params;
+
+    const reactions = await this.messageService.getMessageReactions(id);
+
+    return ResponseHandler.success(res, reactions);
+  }
+
+  /**
+   * @swagger
+   * /messages/{id}/reaction:
+   *   get:
+   *     summary: Get current user's reaction to a message
+   *     tags: [Messages]
+   *     security:
+   *       - bearerAuth: []
+   *     parameters:
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         schema:
+   *           type: string
+   *           format: uuid
+   *         description: Message ID
+   *     responses:
+   *       200:
+   *         description: User reaction retrieved successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                 data:
+   *                   type: object
+   *                   properties:
+   *                     emoji:
+   *                       type: string
+   *                       nullable: true
+   *       401:
+   *         description: Unauthorized
+   *       404:
+   *         description: Message not found
+   */
+  async getUserReaction(req: AuthRequest, res: Response): Promise<Response> {
+    const userId = req.user!.id;
+    const { id } = req.params;
+
+    const reaction = await this.messageService.getUserReaction(id, userId);
+
+    return ResponseHandler.success(res, { emoji: reaction });
+  }
+
+  /**
+   * @swagger
    * /messages/search:
    *   get:
    *     summary: Search messages
@@ -592,5 +690,82 @@ export class MessageController {
     );
 
     return ResponseHandler.paginated(res, result.messages, result.page, result.limit, result.total);
+  }
+
+  /**
+   * @swagger
+   * /messages/{id}/forward:
+   *   post:
+   *     summary: Forward a message
+   *     tags: [Messages]
+   *     security:
+   *       - bearerAuth: []
+   *     parameters:
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         schema:
+   *           type: string
+   *           format: uuid
+   *         description: Original message ID
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             required:
+   *               - originalMessageId
+   *             properties:
+   *               originalMessageId:
+   *                 type: string
+   *                 format: uuid
+   *                 description: ID of the message to forward
+   *               groupId:
+   *                 type: string
+   *                 format: uuid
+   *                 description: Target group ID (for group forwarding)
+   *               receiverId:
+   *                 type: string
+   *                 format: uuid
+   *                 description: Target user ID (for direct message forwarding)
+   *     responses:
+   *       201:
+   *         description: Message forwarded successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 message:
+   *                   type: string
+   *                   example: Message forwarded successfully
+   *                 data:
+   *                   $ref: '#/components/schemas/Message'
+   *       400:
+   *         description: Validation error
+   *       401:
+   *         description: Unauthorized
+   *       404:
+   *         description: Original message not found
+   *       429:
+   *         description: Too many requests
+   */
+  async forwardMessage(req: AuthRequest, res: Response): Promise<Response> {
+    const senderId = req.user!.id;
+    const { id } = req.params;
+    const { groupId, receiverId } = req.body as ForwardMessageInput;
+
+    const message = await this.messageService.forwardMessage({
+      originalMessageId: id,
+      senderId,
+      groupId,
+      receiverId,
+    });
+
+    return ResponseHandler.created(res, message, 'Message forwarded successfully');
   }
 }

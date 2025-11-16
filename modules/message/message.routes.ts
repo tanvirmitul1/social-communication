@@ -8,6 +8,7 @@ import {
   sendMessageSchema,
   editMessageSchema,
   reactToMessageSchema,
+  forwardMessageSchema,
 } from './message.validation.js';
 
 const router: Router = Router();
@@ -26,5 +27,8 @@ router.post('/:id/delivered', messageController.markAsDelivered);
 router.post('/:id/seen', messageController.markAsSeen);
 router.post('/:id/react', validate(reactToMessageSchema), messageController.addReaction);
 router.delete('/:id/react', validate(reactToMessageSchema), messageController.removeReaction);
+router.get('/:id/reactions', messageController.getMessageReactions);
+router.get('/:id/reaction', messageController.getUserReaction);
+router.post('/:id/forward', validate(forwardMessageSchema), messageController.forwardMessage);
 
 export { router as messageRoutes };
