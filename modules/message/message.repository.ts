@@ -171,4 +171,40 @@ export class MessageRepository extends BaseRepository {
   async count(where: Prisma.MessageWhereInput): Promise<number> {
     return this.db.message.count({ where });
   }
+
+  async forwardMessage(
+    originalMessageId: string,
+    senderId: string,
+    receiverId?: string,
+    groupId?: string
+  ): Promise<Message> {
+    // First, get the original message
+    const originalMessage = await this.findById(originalMessageId);
+    if (!originalMessage) {
+      throw new Error('Original message not found');
+    }
+
+    // Create a new message with forwarded content
+    return this.db.message.create({
+      data: {
+        senderId,
+        content: originalMessage.content,
+        type: originalMessage.type,
+        ...(originalMessage.metadata && { metadata: originalMessage.metadata }),
+        ...(receiverId && { receiverId }),
+        ...(groupId && { groupId }),
+        // Add metadata indicating this is a forwarded message
+        parentId: originalMessageId, // Reference to original message
+      },
+      include: {
+        sender: {
+          select: {
+            id: true,
+            username: true,
+            avatar: true,
+          },
+        },
+      },
+    });
+  }
 }

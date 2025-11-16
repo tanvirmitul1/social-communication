@@ -16,6 +16,13 @@ interface SendMessageData {
   metadata?: Record<string, unknown>;
 }
 
+interface ForwardMessageData {
+  originalMessageId: string;
+  senderId: string;
+  groupId?: string;
+  receiverId?: string;
+}
+
 @injectable()
 export class MessageService {
   constructor(
@@ -163,6 +170,56 @@ export class MessageService {
     await this.cacheService.delete(CONSTANTS.REDIS_KEYS.CACHED_MESSAGE(messageId));
   }
 
+  async getMessageReactions(messageId: string): Promise<any[]> {
+    // Try cache first
+    const cacheKey = `message_reactions:${messageId}`;
+    const cached = await this.cacheService.get<any[]>(cacheKey);
+    if (cached) {
+      return cached;
+    }
+
+    // Get reactions from repository
+    const message = await this.messageRepository.findById(messageId);
+    if (!message) {
+      throw new NotFoundError('Message not found');
+    }
+
+    const reactions: any[] = (message as any).reactions || [];
+    
+    // Group reactions by emoji and count them
+    const reactionStats: Record<string, { emoji: string; count: number; users: string[] }> = {};
+    
+    reactions.forEach((reaction: any) => {
+      if (!reactionStats[reaction.emoji]) {
+        reactionStats[reaction.emoji] = {
+          emoji: reaction.emoji,
+          count: 0,
+          users: []
+        };
+      }
+      reactionStats[reaction.emoji].count += 1;
+      reactionStats[reaction.emoji].users.push(reaction.userId);
+    });
+
+    const result = Object.values(reactionStats);
+    
+    // Cache results
+    await this.cacheService.setWithExpiry(cacheKey, result, CONSTANTS.CACHE_TTL.MESSAGE);
+    
+    return result;
+  }
+
+  async getUserReaction(messageId: string, userId: string): Promise<string | null> {
+    const message = await this.messageRepository.findById(messageId);
+    if (!message) {
+      throw new NotFoundError('Message not found');
+    }
+
+    const reactions: any[] = (message as any).reactions || [];
+    const userReaction = reactions.find((reaction: any) => reaction.userId === userId);
+    return userReaction ? userReaction.emoji : null;
+  }
+
   async searchMessages(
     query: string,
     userId: string,
@@ -183,5 +240,23 @@ export class MessageService {
     });
 
     return { messages, total, page, limit };
+  }
+
+  async forwardMessage(data: ForwardMessageData): Promise<Message> {
+    const message = await this.messageRepository.forwardMessage(
+      data.originalMessageId,
+      data.senderId,
+      data.receiverId,
+      data.groupId
+    );
+
+    // Cache message
+    await this.cacheService.setWithExpiry(
+      CONSTANTS.REDIS_KEYS.CACHED_MESSAGE(message.id),
+      message,
+      CONSTANTS.CACHE_TTL.MESSAGE
+    );
+
+    return message;
   }
 }
