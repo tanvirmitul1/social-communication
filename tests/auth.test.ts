@@ -30,42 +30,66 @@ describe('Authentication Service', () => {
 
   describe('register', () => {
     it('should successfully register a new user', async () => {
-      const user = await authService.register('testuser', `test-${Date.now()}@example.com`, 'Password123');
+      const timestamp = Date.now();
+      const user = await authService.register(
+        `testuser${timestamp}`, 
+        `test-${timestamp}@example.com`, 
+        'Password123'
+      );
       
       expect(user).toBeDefined();
-      expect(user.username).toBe('testuser');
+      expect(user.username).toBe(`testuser${timestamp}`);
       expect(user.email).toContain('test-');
       expect(user.passwordHash).toBeDefined();
       expect(user.id).toBeDefined();
     });
 
     it('should throw ConflictError when email already exists', async () => {
+      const timestamp = Date.now();
+      const email = `existing-${timestamp}@example.com`;
       // Create a user first
-      const email = `existing-${Date.now()}@example.com`;
-      await authService.register('existinguser', email, 'Password123');
+      await authService.register(
+        `existinguser${timestamp}`, 
+        email, 
+        'Password123'
+      );
       
       // Try to register with the same email
       await expect(
-        authService.register('newuser', email, 'Password123')
+        authService.register(
+          `newuser${timestamp}`, 
+          email, 
+          'Password123'
+        )
       ).rejects.toThrow(/Email already registered/);
     });
 
     it('should throw ConflictError when username already exists', async () => {
+      const timestamp = Date.now();
+      const username = `existinguser-${timestamp}`;
       // Create a user first
-      const username = `existinguser-${Date.now()}`;
-      await authService.register(username, `existing-${Date.now()}@example.com`, 'Password123');
+      await authService.register(
+        username, 
+        `existing-${timestamp}@example.com`, 
+        'Password123'
+      );
       
       // Try to register with the same username
       await expect(
-        authService.register(username, `new-${Date.now()}@example.com`, 'Password123')
+        authService.register(
+          username, 
+          `new-${timestamp}@example.com`, 
+          'Password123'
+        )
       ).rejects.toThrow(/Username already taken/);
     });
   });
 
   describe('login', () => {
+    const timestamp = Date.now();
     const testUser = {
-      username: `testuser-${Date.now()}`,
-      email: `test-${Date.now()}@example.com`,
+      username: `testuser-${timestamp}`,
+      email: `test-${timestamp}@example.com`,
       password: 'Password123'
     };
 
@@ -100,11 +124,12 @@ describe('Authentication Service', () => {
 
   describe('refreshAccessToken', () => {
     let refreshToken: string;
+    const timestamp = Date.now();
 
     beforeEach(async () => {
       // Register and login to get a refresh token
-      const username = `testuser3-${Date.now()}`;
-      const email = `test3-${Date.now()}@example.com`;
+      const username = `testuser3-${timestamp}`;
+      const email = `test3-${timestamp}@example.com`;
       await authService.register(username, email, 'Password123');
       const result = await authService.login(email, 'Password123');
       refreshToken = result.tokens.refreshToken;
@@ -132,11 +157,12 @@ describe('Authentication Service', () => {
 
   describe('verifyAccessToken', () => {
     let accessToken: string;
+    const timestamp = Date.now();
 
     beforeEach(async () => {
       // Register and login to get an access token
-      const username = `testuser4-${Date.now()}`;
-      const email = `test4-${Date.now()}@example.com`;
+      const username = `testuser4-${timestamp}`;
+      const email = `test4-${timestamp}@example.com`;
       await authService.register(username, email, 'Password123');
       const result = await authService.login(email, 'Password123');
       accessToken = result.tokens.accessToken;
