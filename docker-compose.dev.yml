@@ -64,19 +64,19 @@ services:
 
   # Nginx Reverse Proxy - Development
   # Proxies requests to app running on host machine (localhost:3000)
-  nginx:
-    image: nginx:alpine
-    container_name: social-comm-nginx-dev
-    ports:
-      - "8080:80"
-    volumes:
-      - ./nginx.dev.conf:/etc/nginx/nginx.conf:ro
-      - ./logs/nginx:/var/log/nginx
-    networks:
-      - social-comm-network
-    restart: unless-stopped
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
+  # nginx:
+  #   image: nginx:alpine
+  #   container_name: social-comm-nginx-dev
+  #   ports:
+  #     - "8080:80"
+  #   volumes:
+  #     - ./nginx.dev.conf:/etc/nginx/nginx.conf:ro
+  #     - ./logs/nginx:/var/log/nginx
+  #   networks:
+  #     - social-comm-network
+  #   restart: unless-stopped
+  #   extra_hosts:
+  #     - "host.docker.internal:host-gateway"
 
   # Application - Development (Optional - can run locally with npm run dev)
   # Uncomment this if you want to run the app in Docker for development
