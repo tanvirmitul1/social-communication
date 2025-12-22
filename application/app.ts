@@ -23,6 +23,7 @@ import { userRoutes } from '@modules/user/user.routes.js';
 import { messageRoutes } from '@modules/message/message.routes.js';
 import { groupRoutes } from '@modules/group/group.routes.js';
 import { callRoutes } from '@modules/call/call.routes.js';
+import { friendRoutes } from '@modules/user/friend.routes.js';
 import { HealthController } from '@modules/health/health.controller.js';
 
 export function createApp(): ExpressApplication {
@@ -38,8 +39,26 @@ export function createApp(): ExpressApplication {
   // CORS
   app.use(
     cors({
-      origin: config.CORS_ORIGINS.split(','),
+      origin: (origin, callback) => {
+        // Allow requests with no origin (like mobile apps or curl requests)
+        if (!origin) return callback(null, true);
+        
+        // Allow all origins in development
+        if (config.NODE_ENV === 'development') {
+          return callback(null, true);
+        }
+        
+        // In production, check against allowed origins
+        const allowedOrigins = config.CORS_ORIGINS.split(',');
+        if (allowedOrigins.includes('*') || allowedOrigins.includes(origin)) {
+          return callback(null, true);
+        }
+        
+        return callback(new Error('Not allowed by CORS'));
+      },
       credentials: true,
+      methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+      allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
     })
   );
 
@@ -89,6 +108,7 @@ export function createApp(): ExpressApplication {
   app.use(`/api/${API_VERSION}/messages`, messageRoutes);
   app.use(`/api/${API_VERSION}/groups`, groupRoutes);
   app.use(`/api/${API_VERSION}/calls`, callRoutes);
+  app.use(`/api/${API_VERSION}/friends`, friendRoutes);
 
   // Root endpoint
   app.get('/', (_req, res) => {

@@ -16,6 +16,7 @@ import { GroupService } from '@modules/group/group.service.js';
 import { CallService } from '@modules/call/call.service.js';
 import { CacheService } from '@infrastructure/cache.service.js';
 import { JitsiService } from '@infrastructure/jitsi.service.js';
+import { FriendRequestService } from '@modules/user/friend-request.service.js';
 
 // Register repositories
 container.registerSingleton('UserRepository', UserRepository);
@@ -32,5 +33,6 @@ container.registerSingleton('GroupService', GroupService);
 container.registerSingleton('CallService', CallService);
 container.registerSingleton('CacheService', CacheService);
 container.registerSingleton('JitsiService', JitsiService);
+container.registerSingleton('FriendRequestService', FriendRequestService);
 
 export { container };
