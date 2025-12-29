@@ -138,4 +138,30 @@ export class FriendRequestRepository extends BaseRepository {
       take,
     });
   }
+
+  async findAcceptedFriendships(userId: string) {
+    return this.db.friendRequest.findMany({
+      where: {
+        OR: [
+          { senderId: userId, status: FriendRequestStatus.ACCEPTED },
+          { receiverId: userId, status: FriendRequestStatus.ACCEPTED }
+        ]
+      },
+      include: {
+        sender: true,
+        receiver: true
+      }
+    });
+  }
+
+  async findAcceptedFriendshipBetweenUsers(userId: string, friendId: string) {
+    return this.db.friendRequest.findFirst({
+      where: {
+        OR: [
+          { senderId: userId, receiverId: friendId, status: FriendRequestStatus.ACCEPTED },
+          { senderId: friendId, receiverId: userId, status: FriendRequestStatus.ACCEPTED }
+        ]
+      }
+    });
+  }
 }
