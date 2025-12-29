@@ -1,356 +1,246 @@
 # Social Communication Backend
 
-A production-ready, enterprise-level backend for a real-time messaging and audio/video calling platform built with Express.js, TypeScript, PostgreSQL, and Redis.
+Enterprise-level real-time messaging and audio/video calling platform built with Express.js, TypeScript, PostgreSQL, Redis, and Socket.IO.
 
 ## Features
 
-- **Real-time Messaging**: WebSocket-based messaging using Socket.IO
-- **Audio/Video Calls**: Jitsi Meet API integration for voice/video calling
-- **JWT Authentication**: Access and refresh token-based authentication
-- **Role-Based Access Control**: Admin, Moderator, and User roles
-- **Scalable Architecture**: Modular, clean architecture following SOLID principles
-- **PostgreSQL Database**: Type-safe database access with Prisma ORM
-- **Redis Caching**: Caching layer for improved performance
-- **API Documentation**: Auto-generated Swagger/OpenAPI documentation
-- **Docker Support**: Complete containerized deployment
-- **CI/CD Ready**: GitHub Actions workflow included
+- 💬 Real-time messaging (direct & group)
+- 📞 Audio/Video calls (Jitsi integration)
+- 👥 User management & friend requests
+- 🔔 Real-time notifications
+- 📎 File uploads
+- 🔒 JWT authentication
+- 🚀 WebSocket support
+- 📊 PostgreSQL database
+- ⚡ Redis caching
 
-## Tech Stack
+---
 
-- **Runtime**: Node.js 20+
+## 📖 Documentation
+
+### For Developers
+
+- **[LOCAL_SETUP.md](LOCAL_SETUP.md)** - Step-by-step guide to run locally with Docker
+- **[PRODUCTION_DEPLOY.md](PRODUCTION_DEPLOY.md)** - Step-by-step Oracle Cloud deployment guide
+- **[CLAUDE.md](CLAUDE.md)** - Developer guide for working with this codebase
+
+---
+
+## 🚀 Quick Start
+
+### Local Development (Docker)
+
+```bash
+# 1. Copy environment file
+cp .env.docker .env
+
+# 2. Start all services
+docker compose up -d
+
+# 3. Open browser
+http://localhost/api/docs
+```
+
+**Done!** See [LOCAL_SETUP.md](LOCAL_SETUP.md) for details.
+
+### Production Deployment (Oracle Cloud)
+
+```bash
+# 1. Copy production environment file
+cp .env.production .env
+
+# 2. Edit with your settings
+nano .env
+
+# 3. Start all services
+docker compose up -d
+```
+
+**Done!** See [PRODUCTION_DEPLOY.md](PRODUCTION_DEPLOY.md) for full instructions.
+
+---
+
+## 🛠 Tech Stack
+
+- **Runtime**: Node.js 20
 - **Framework**: Express.js
 - **Language**: TypeScript
 - **Database**: PostgreSQL 16
-- **ORM**: Prisma
 - **Cache**: Redis 7
-- **Reverse Proxy**: Nginx
-- **Real-time**: Socket.IO
+- **ORM**: Prisma
+- **WebSocket**: Socket.IO
 - **Video Calls**: Jitsi Meet API
-- **Authentication**: JWT (jsonwebtoken + argon2)
-- **Validation**: Zod
-- **Documentation**: Swagger/OpenAPI 3
-- **Testing**: Vitest
-- **Package Manager**: pnpm
+- **Deployment**: Docker & Docker Compose
+- **Reverse Proxy**: Nginx
 
-## Project Structure
+---
+
+## 📂 Project Structure
 
 ```
-.
-├── main.ts              # Application entry point
-├── application/         # App initialization & DI container
-├── config/              # Configuration (env, logger, prisma, redis, swagger)
-├── infrastructure/      # Base classes & external services (cache, jitsi, sockets)
-├── middlewares/         # Express middlewares (auth, error handler, validation)
-├── common/              # Shared utilities, types, errors, constants
-├── modules/             # Feature modules (business logic)
-│   ├── auth/           # Authentication module
-│   ├── user/           # User management module
-│   ├── message/        # Messaging module
-│   ├── group/          # Group management module
-│   ├── call/           # Video calling module
-│   └── health/         # Health checks module
-├── docs/                # Documentation
-├── tests/               # Test files
-├── prisma/              # Database schema and migrations
-├── scripts/             # Build and utility scripts
-├── Dockerfile           # Docker configuration
-└── docker-compose.yml   # Docker Compose configuration
+├── application/          # Application initialization & DI
+├── common/              # Shared utilities & types
+├── config/              # Configuration (DB, Redis, Swagger)
+├── infrastructure/      # Base repositories & external services
+├── middlewares/         # Express middlewares
+├── modules/            # Feature modules
+│   ├── auth/          # Authentication & authorization
+│   ├── user/          # User management & friends
+│   ├── message/       # Real-time messaging
+│   ├── group/         # Group chat management
+│   └── call/          # Audio/video calls (Jitsi)
+├── prisma/            # Database schema & migrations
+├── main.ts            # Application entry point
+└── docker-compose.yml # Docker services
 ```
 
-> **Note**: This project follows a clean, modular architecture with feature-based organization. Each module in `modules/` contains its own controller, service, repository, routes, and validation files.
+---
 
-## 📚 Documentation
+## 🌐 API Documentation
 
-Comprehensive documentation is available in the [docs/](docs/) directory:
+After starting the application:
 
-- [Quick Start Guide](docs/guides/QUICKSTART.md) - Get started in 5 minutes
-- [Installation Guide](docs/setup/INSTALLATION.md) - Complete setup instructions
-- [API Documentation](docs/API.md) - Full REST API and WebSocket reference
-- [Architecture Guide](docs/ARCHITECTURE.md) - System design and patterns
-- [Nginx Setup Guide](docs/guides/nginx-setup.md) - Reverse proxy configuration
+- **Swagger UI**: http://localhost/api/docs
+- **Health Check**: http://localhost/health
+- **API Base**: http://localhost/api/v1
 
-For a complete list of documentation, see [docs/README.md](docs/README.md).
+### Main Endpoints
 
-## Getting Started
+**Authentication**
+- `POST /api/v1/auth/register` - Register
+- `POST /api/v1/auth/login` - Login
+- `POST /api/v1/auth/refresh` - Refresh token
 
-### Prerequisites
-
-- Node.js 20 or higher
-- pnpm 8 or higher
-- PostgreSQL 16
-- Redis 7
-
-### Installation
-
-1. Clone the repository:
-
-```bash
-git clone <repository-url>
-cd social-communication
-```
-
-2. Install dependencies:
-
-```bash
-pnpm install
-```
-
-3. Copy environment variables:
-
-```bash
-cp .env.example .env
-```
-
-4. Configure environment variables in `.env`:
-
-```env
-DATABASE_URL="postgresql://postgres:postgres@localhost:5432/social_communication"
-REDIS_HOST=localhost
-REDIS_PORT=6379
-JWT_ACCESS_SECRET=your-secret-key
-JWT_REFRESH_SECRET=your-refresh-secret-key
-# ... other variables
-```
-
-5. Run database migrations:
-
-```bash
-pnpm prisma:migrate
-```
-
-6. Generate Prisma client:
-
-```bash
-pnpm prisma:generate
-```
-
-### Development
-
-Start the development server:
-
-```bash
-pnpm dev
-```
-
-The server will start at `http://localhost:3000`
-
-### Running with Docker
-
-Start all services using Docker Compose:
-
-```bash
-pnpm docker:up
-```
-
-Stop services:
-
-```bash
-pnpm docker:down
-```
-
-View logs:
-
-```bash
-pnpm docker:logs
-```
-
-## Documentation
-
-### Quick Links
-
-- **[Quick Start Guide](docs/getting-started/quickstart.md)** - Get up and running in minutes
-- **[Installation Guide](docs/getting-started/installation.md)** - Detailed installation instructions
-- **[API Overview](docs/api/overview.md)** - Complete API reference
-- **[API Examples](docs/api/examples.md)** - Practical code examples
-- **[Architecture](docs/development/architecture.md)** - System architecture and design
-- **[Troubleshooting](docs/guides/troubleshooting.md)** - Common issues and solutions
-
-### Interactive API Documentation
-
-Once the server is running, visit:
-
-- **Swagger UI**: http://localhost:3000/api/docs
-- **OpenAPI Spec**: http://localhost:3000/api/docs/openapi.json
-
-### Getting Started Guides
-
-- [Quick Start](docs/getting-started/quickstart.md) - Fast setup with Docker or local
-- [Installation](docs/getting-started/installation.md) - Comprehensive installation guide
-- [PostgreSQL Setup](docs/getting-started/postgres-setup.md) - Database setup (Windows)
-
-### API Documentation
-
-- [API Overview](docs/api/overview.md) - All endpoints, events, and reference
-- [API Examples](docs/api/examples.md) - Practical usage examples with cURL and JavaScript
-
-### Development Guides
-
-- [Architecture](docs/development/architecture.md) - Clean architecture, layers, and patterns
-- [Setup Guide](docs/development/setup.md) - Development environment setup
-
-### Additional Resources
-
-- [Troubleshooting Guide](docs/guides/troubleshooting.md) - Solutions to common problems
-
-## Available Scripts
-
-- `pnpm dev` - Start development server with hot reload
-- `pnpm build` - Build for production
-- `pnpm start` - Start production server
-- `pnpm test` - Run tests
-- `pnpm test:coverage` - Run tests with coverage
-- `pnpm lint` - Run ESLint
-- `pnpm lint:fix` - Fix ESLint errors
-- `pnpm format` - Format code with Prettier
-- `pnpm prisma:generate` - Generate Prisma client
-- `pnpm prisma:migrate` - Run database migrations
-- `pnpm prisma:studio` - Open Prisma Studio
-- `pnpm docs:generate` - Generate API documentation
-- `pnpm docker:build` - Build Docker image
-- `pnpm docker:up` - Start Docker containers
-- `pnpm docker:down` - Stop Docker containers
-
-## API Endpoints
-
-### Authentication
-
-- `POST /api/v1/auth/register` - Register new user
-- `POST /api/v1/auth/login` - Login user
-- `POST /api/v1/auth/logout` - Logout user
-- `POST /api/v1/auth/refresh` - Refresh access token
-- `GET /api/v1/auth/me` - Get current user
-
-### Users
-
-- `GET /api/v1/users` - Search users
-- `GET /api/v1/users/:id` - Get user by ID
-- `PATCH /api/v1/users/:id` - Update user
-- `DELETE /api/v1/users/:id` - Delete user
-
-### Messages
-
+**Messages**
 - `POST /api/v1/messages` - Send message
-- `GET /api/v1/messages/:id` - Get message
-- `GET /api/v1/messages/group/:groupId` - Get group messages
 - `GET /api/v1/messages/direct/:userId` - Get direct messages
-- `PATCH /api/v1/messages/:id` - Edit message
-- `DELETE /api/v1/messages/:id` - Delete message
+- `GET /api/v1/messages/group/:groupId` - Get group messages
 
-### Groups
-
-- `POST /api/v1/groups` - Create group
-- `GET /api/v1/groups` - Get user's groups
-- `GET /api/v1/groups/:id` - Get group
-- `PATCH /api/v1/groups/:id` - Update group
-- `DELETE /api/v1/groups/:id` - Delete group
-
-### Calls
-
+**Calls**
 - `POST /api/v1/calls` - Initiate call
 - `POST /api/v1/calls/:id/join` - Join call
 - `POST /api/v1/calls/:id/end` - End call
-- `POST /api/v1/calls/:id/reject` - Reject call
 
-## WebSocket Events
+### WebSocket Events
 
-### Messaging
+**Messaging**
+- `message:send` - Send message
+- `message:received` - Receive message
+- `typing:start` / `typing:stop` - Typing indicators
 
-- `message:send` - Send a message
-- `message:received` - Receive a message
-- `message:edit` - Edit a message
-- `message:delete` - Delete a message
-- `typing:start` - User started typing
-- `typing:stop` - User stopped typing
+**Calls**
+- `call:initiate` - Initiate call
+- `call:answer` - Answer call
+- `call:reject` - Reject call
+- `call:end` - End call
 
-### Calls
+---
 
-- `call:initiate` - Initiate a call
-- `call:ringing` - Incoming call
-- `call:answer` - Answer a call
-- `call:reject` - Reject a call
-- `call:end` - Call ended
+## 🔧 Common Commands
 
-## Security Features
-
-- JWT-based authentication with access and refresh tokens
-- Argon2 password hashing
-- Helmet for HTTP security headers
-- CORS configuration
-- Rate limiting per route and per IP
-- Input validation using Zod
-- SQL injection protection via Prisma
-- XSS protection
-
-## Testing
-
-Run tests:
+### Docker Commands
 
 ```bash
-pnpm test
+# Start all services
+docker compose up -d
+
+# View logs
+docker compose logs -f
+
+# View app logs only
+docker compose logs -f app
+
+# Stop services
+docker compose down
+
+# Restart app after code changes
+docker compose up -d --build app
+
+# Check status
+docker compose ps
+
+# Seed test data
+docker compose exec app pnpm prisma:seed
+
+# Backup database
+docker compose exec -T postgres pg_dump -U postgres social_communication > backup.sql
 ```
 
-Run tests with coverage:
+### Development Commands (inside container)
 
 ```bash
-pnpm test:coverage
+# Access app container
+docker compose exec app sh
+
+# Run migrations
+docker compose exec app pnpm prisma:migrate:deploy
+
+# Generate Prisma client
+docker compose exec app pnpm prisma:generate
+
+# Access PostgreSQL
+docker compose exec postgres psql -U postgres -d social_communication
 ```
 
-Run tests with UI:
+---
+
+## 🔒 Environment Variables
+
+Key variables in `.env`:
 
 ```bash
-pnpm test:ui
+NODE_ENV=development|production
+DATABASE_URL=postgresql://postgres:password@postgres:5432/social_communication
+REDIS_HOST=redis
+JWT_ACCESS_SECRET=your-secret-key
+JWT_REFRESH_SECRET=your-refresh-secret
+CORS_ORIGINS=http://localhost
+JITSI_DOMAIN=meet.jit.si
 ```
 
-## Deployment
+---
 
-### Docker Deployment
+## 📋 Requirements
 
-1. Build the Docker image:
+- **Docker Desktop** (for local development)
+- **Docker & Docker Compose** (for production)
+- **Minimum**: 2GB RAM, 10GB disk space
 
+---
+
+## 🐛 Troubleshooting
+
+### Check container status
 ```bash
-docker build -t social-communication-backend .
+docker compose ps
 ```
 
-2. Run with Docker Compose:
-
+### View error logs
 ```bash
-docker-compose up -d
+docker compose logs app
 ```
 
-### Manual Deployment
-
-1. Build the application:
-
+### Restart services
 ```bash
-pnpm build
+docker compose restart
 ```
 
-2. Run database migrations:
-
+### Fresh start (deletes data)
 ```bash
-pnpm prisma:migrate
+docker compose down -v
+docker compose up -d
 ```
 
-3. Start the application:
+---
 
-```bash
-pnpm start
-```
-
-## Environment Variables
-
-See `.env.example` for all available environment variables.
-
-## Health Checks
-
-- `/health` - Basic health check
-- `/health/ready` - Readiness probe (checks database and Redis)
-- `/metrics` - Metrics endpoint
-
-## License
+## 📄 License
 
 MIT
 
-## Support
+---
 
-For issues and questions, please open an issue in the repository.
+## 💬 Support
+
+- Check logs: `docker compose logs -f`
+- See documentation: [LOCAL_SETUP.md](LOCAL_SETUP.md) or [PRODUCTION_DEPLOY.md](PRODUCTION_DEPLOY.md)
+- Review [CLAUDE.md](CLAUDE.md) for development guidelines

@@ -18,7 +18,8 @@
       "Bash(tsx scripts/migrate-structure.ts:*)",
       "Bash(pnpm exec tsx:*)",
       "Bash(find:*)",
-      "Bash(pnpm build:*)"
+      "Bash(pnpm build:*)",
+      "Bash(git add:*)"
     ],
     "deny": [],
     "ask": []
