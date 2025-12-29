@@ -102,10 +102,10 @@ async function runComprehensiveTest() {
     
     // Test message forwarding functionality
     console.log('   🔁 Testing message forwarding...');
-    
+
     // Since we can't directly test the service methods without the full app context,
     // we'll verify the database structure supports forwarding by checking if parentId exists
-    const _forwardedMessage = await prisma.message.create({
+    await prisma.message.create({
       data: {
         senderId: user.id,
         receiverId: admin.id,
@@ -114,7 +114,7 @@ async function runComprehensiveTest() {
         parentId: message.id, // Reference to original message
       },
     });
-    
+
     console.log('   ✅ Message forwarding structure verified');
     
     // Verify data was created

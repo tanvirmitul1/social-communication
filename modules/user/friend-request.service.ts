@@ -155,21 +155,10 @@ export class FriendRequestService {
    */
   async getFriends(userId: string): Promise<User[]> {
     // Get friends from database
-    const friendships = await this.friendRequestRepository.db.friendRequest.findMany({
-      where: {
-        OR: [
-          { senderId: userId, status: FriendRequestStatus.ACCEPTED },
-          { receiverId: userId, status: FriendRequestStatus.ACCEPTED }
-        ]
-      },
-      include: {
-        sender: true,
-        receiver: true
-      }
-    });
+    const friendships = await this.friendRequestRepository.findAcceptedFriendships(userId);
 
     // Extract friend users (excluding the current user)
-    const friends = friendships.map(fr => 
+    const friends = friendships.map(fr =>
       fr.senderId === userId ? fr.receiver : fr.sender
     );
 
@@ -181,14 +170,7 @@ export class FriendRequestService {
    */
   async removeFriend(userId: string, friendId: string): Promise<void> {
     // Find accepted friend request
-    const friendRequest = await this.friendRequestRepository.db.friendRequest.findFirst({
-      where: {
-        OR: [
-          { senderId: userId, receiverId: friendId, status: FriendRequestStatus.ACCEPTED },
-          { senderId: friendId, receiverId: userId, status: FriendRequestStatus.ACCEPTED }
-        ]
-      }
-    });
+    const friendRequest = await this.friendRequestRepository.findAcceptedFriendshipBetweenUsers(userId, friendId);
 
     if (!friendRequest) {
       throw new ConflictError('Users are not friends');
