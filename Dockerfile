@@ -61,6 +61,13 @@ RUN pnpm prisma:generate
 # Copy built application from builder stage
 COPY --chown=nodejs:nodejs --from=builder /app/dist ./dist
 
+# Copy docker entrypoint script
+COPY --chown=nodejs:nodejs docker-entrypoint.sh ./
+
+# Make entrypoint script executable
+USER root
+RUN chmod +x docker-entrypoint.sh
+
 # Create necessary directories with proper permissions
 RUN mkdir -p uploads logs && \
     chown -R nodejs:nodejs uploads logs
@@ -78,5 +85,5 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
 # Use dumb-init to handle signals properly
 ENTRYPOINT ["dumb-init", "--"]
 
-# Start application
-CMD ["node", "dist/main.js"]
+# Run migrations and start application
+CMD ["sh", "docker-entrypoint.sh"]
