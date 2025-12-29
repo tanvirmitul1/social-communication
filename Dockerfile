@@ -52,6 +52,9 @@ COPY --chown=nodejs:nodejs prisma ./prisma
 # Install ONLY production dependencies
 RUN pnpm install --frozen-lockfile --prod
 
+# Install Prisma CLI separately (needed for generating client)
+RUN pnpm add -D prisma
+
 # Generate Prisma client
 RUN pnpm prisma:generate
 
