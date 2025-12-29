@@ -1,5 +1,21 @@
-# PostgreSQL Database - Development
+# ==============================================================================
+# Development Docker Compose Configuration
+# ==============================================================================
+# This configuration runs ALL services in Docker (database, cache, and app)
+# to ensure development environment matches production exactly.
+#
+# Benefits:
+# - Dev/prod parity (no "works on my machine" bugs)
+# - No local tooling needed (just Docker)
+# - Hot reload via volume mounting
+# - Easy onboarding for new developers
+#
+# Start: pnpm docker:dev:up
+# Stop:  pnpm docker:dev:down
+# ==============================================================================
+
 services:
+  # PostgreSQL Database - Development
   postgres:
     image: postgres:16-alpine
     container_name: social-comm-postgres-dev
@@ -7,14 +23,11 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: 141532
       POSTGRES_DB: social_communication
-      # Enable better logging for development
       POSTGRES_INITDB_ARGS: "-E UTF8 --locale=en_US.UTF-8"
     ports:
       - "5432:5432"
     volumes:
       - postgres_data_dev:/var/lib/postgresql/data
-      # Optional: Add init scripts
-      # - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s
@@ -44,7 +57,52 @@ services:
       - social-comm-network
     restart: unless-stopped
 
-  # pgAdmin4 - PostgreSQL Database GUI
+  # Application - Development (with hot reload)
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: social-comm-app-dev
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: development
+      PORT: 3000
+      DATABASE_URL: postgresql://postgres:141532@postgres:5432/social_communication?schema=public
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ""
+      REDIS_DB: 0
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:-dev-secret-change-in-production}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-dev-refresh-secret-change-in-production}
+      JWT_ACCESS_EXPIRATION: ${JWT_ACCESS_EXPIRATION:-15m}
+      JWT_REFRESH_EXPIRATION: ${JWT_REFRESH_EXPIRATION:-7d}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000,http://localhost:5173,http://localhost:8080}
+      JITSI_DOMAIN: ${JITSI_DOMAIN:-meet.jit.si}
+      JITSI_APP_ID: ${JITSI_APP_ID:-your-jitsi-app-id}
+      JITSI_APP_SECRET: ${JITSI_APP_SECRET:-your-jitsi-app-secret}
+      JITSI_ROOM_PREFIX: ${JITSI_ROOM_PREFIX:-social-comm-dev-}
+      LOG_LEVEL: ${LOG_LEVEL:-debug}
+      BCRYPT_ROUNDS: ${BCRYPT_ROUNDS:-10}
+      MAX_FILE_SIZE: ${MAX_FILE_SIZE:-10485760}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      # Mount source code for hot reload
+      - .:/app
+      # Prevent node_modules from being overwritten
+      - /app/node_modules
+      # Persist uploads and logs
+      - ./uploads:/app/uploads
+      - ./logs:/app/logs
+    networks:
+      - social-comm-network
+    restart: unless-stopped
+
+  # pgAdmin4 - PostgreSQL Database GUI (dev only)
   pgadmin:
     image: dpage/pgadmin4:latest
     container_name: social-comm-pgadmin-dev
@@ -61,56 +119,6 @@ services:
     restart: unless-stopped
     depends_on:
       - postgres
-
-  # Nginx Reverse Proxy - Development
-  # Proxies requests to app running on host machine (localhost:3000)
-  # nginx:
-  #   image: nginx:alpine
-  #   container_name: social-comm-nginx-dev
-  #   ports:
-  #     - "8080:80"
-  #   volumes:
-  #     - ./nginx.dev.conf:/etc/nginx/nginx.conf:ro
-  #     - ./logs/nginx:/var/log/nginx
-  #   networks:
-  #     - social-comm-network
-  #   restart: unless-stopped
-  #   extra_hosts:
-  #     - "host.docker.internal:host-gateway"
-
-  # Application - Development (Optional - can run locally with npm run dev)
-  # Uncomment this if you want to run the app in Docker for development
-  # app:
-  #   build:
-  #     context: .
-  #     dockerfile: Dockerfile
-  #     target: builder
-  #   container_name: social-comm-app-dev
-  #   ports:
-  #     - "3000:3000"
-  #   environment:
-  #     NODE_ENV: development
-  #     PORT: 3000
-  #     DATABASE_URL: postgresql://postgres:postgres@postgres:5432/social_communication?schema=public
-  #     REDIS_HOST: redis
-  #     REDIS_PORT: 6379
-  #     JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:-dev-secret-change-in-production}
-  #     JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-dev-refresh-secret-change-in-production}
-  #     CORS_ORIGINS: http://localhost:3000,http://localhost:5173
-  #     LOG_LEVEL: debug
-  #   depends_on:
-  #     postgres:
-  #       condition: service_healthy
-  #     redis:
-  #       condition: service_healthy
-  #   volumes:
-  #     - .:/app
-  #     - /app/node_modules
-  #     - ./uploads:/app/uploads
-  #     - ./logs:/app/logs
-  #   networks:
-  #     - social-comm-network
-  #   command: pnpm dev
 
 volumes:
   postgres_data_dev:

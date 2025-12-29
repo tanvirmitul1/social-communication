@@ -26,6 +26,7 @@ All documentation is organized in the `docs/` directory:
 
 - `docs/development/architecture.md` - Detailed architecture documentation
 - `docs/development/setup.md` - Development environment setup
+- `docs/development/docker-workflow.md` - Docker development workflow (recommended)
 
 ### Guides
 
@@ -35,7 +36,31 @@ All documentation is organized in the `docs/` directory:
 
 ## Essential Commands
 
-### Development Workflow
+### Recommended: Docker Development Workflow
+
+```bash
+# Initial setup (after cloning)
+cp .env.example .env
+
+# Start everything (Postgres, Redis, App with hot reload)
+pnpm docker:dev:up          # Start all services in Docker
+
+# View logs
+pnpm docker:dev:logs        # View all service logs
+
+# Stop everything
+pnpm docker:dev:down        # Stop all services
+
+# Run commands inside container
+docker compose -f docker-compose.dev.yml exec app sh
+pnpm prisma:studio          # Inside container
+pnpm test                   # Inside container
+
+# Code changes auto-reload (volume mounted)
+# Just edit files and save - no rebuild needed!
+```
+
+### Alternative: Local Development Workflow
 
 ```bash
 # Initial setup (after cloning)
@@ -43,6 +68,9 @@ pnpm install
 cp .env.example .env
 pnpm prisma:generate
 pnpm prisma:migrate
+
+# Start only database & Redis
+pnpm docker:dev:up postgres redis
 
 # Development
 pnpm dev                    # Start with hot reload (uses tsx watch)

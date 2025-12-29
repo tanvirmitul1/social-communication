@@ -28,20 +28,39 @@ Enterprise-level real-time messaging and audio/video calling platform built with
 
 ## 🚀 Quick Start
 
-### Local Development (Docker)
+### Development (Recommended - All in Docker)
 
 ```bash
-# 1. Copy environment file
-cp .env.docker .env
+# 1. Start all services (Postgres, Redis, App with hot reload)
+pnpm docker:dev:up
 
-# 2. Start all services
-docker compose up -d
+# 2. Open browser
+http://localhost:3000/api/docs
 
-# 3. Open browser
-http://localhost/api/docs
+# View logs
+pnpm docker:dev:logs
 ```
 
-**Done!** See [LOCAL_SETUP.md](LOCAL_SETUP.md) for details.
+**✅ Benefits**: Dev/prod parity, no local Node.js needed, hot reload works!
+
+### Alternative: Local Development (Manual)
+
+```bash
+# 1. Start only database & Redis
+pnpm docker:dev:up postgres redis
+
+# 2. Install dependencies
+pnpm install
+
+# 3. Run migrations
+pnpm prisma:generate
+pnpm prisma:migrate
+
+# 4. Start app locally
+pnpm dev
+```
+
+**See [LOCAL_SETUP.md](LOCAL_SETUP.md) for details.**
 
 ### Production Deployment (Oracle Cloud)
 
@@ -138,48 +157,64 @@ After starting the application:
 
 ## 🔧 Common Commands
 
-### Docker Commands
+### Development Mode (Docker)
+
+```bash
+# Start dev environment (hot reload enabled)
+pnpm docker:dev:up
+
+# View logs (all services)
+pnpm docker:dev:logs
+
+# Stop dev environment
+pnpm docker:dev:down
+
+# Rebuild app (after dependency changes)
+docker compose -f docker-compose.dev.yml up -d --build app
+
+# Check status
+docker compose -f docker-compose.dev.yml ps
+
+# Run migrations inside container
+docker compose -f docker-compose.dev.yml exec app pnpm prisma:migrate
+
+# Access app shell
+docker compose -f docker-compose.dev.yml exec app sh
+
+# Access database GUI
+http://localhost:5050  # pgAdmin (admin@localhost.com / admin)
+```
+
+### Production Mode (Docker)
 
 ```bash
 # Start all services
-docker compose up -d
+pnpm docker:up
 
 # View logs
-docker compose logs -f
-
-# View app logs only
-docker compose logs -f app
+pnpm docker:logs
 
 # Stop services
-docker compose down
+pnpm docker:down
 
-# Restart app after code changes
-docker compose up -d --build app
-
-# Check status
-docker compose ps
-
-# Seed test data
-docker compose exec app pnpm prisma:seed
+# Restart app
+docker compose restart app
 
 # Backup database
 docker compose exec -T postgres pg_dump -U postgres social_communication > backup.sql
 ```
 
-### Development Commands (inside container)
+### Database Commands
 
 ```bash
-# Access app container
-docker compose exec app sh
-
-# Run migrations
-docker compose exec app pnpm prisma:migrate:deploy
-
-# Generate Prisma client
-docker compose exec app pnpm prisma:generate
-
-# Access PostgreSQL
+# Access PostgreSQL CLI
 docker compose exec postgres psql -U postgres -d social_communication
+
+# Seed test data
+docker compose exec app pnpm prisma:seed
+
+# Reset database (WARNING: deletes all data)
+docker compose exec app pnpm prisma:reset
 ```
 
 ---
