@@ -19,7 +19,8 @@
       "Bash(pnpm exec tsx:*)",
       "Bash(find:*)",
       "Bash(pnpm build:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(docker compose:*)"
     ],
     "deny": [],
     "ask": []
