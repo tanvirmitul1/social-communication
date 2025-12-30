@@ -37,6 +37,3 @@ uploads/
 # Temp
 tmp/
 temp/
-
-# Prisma
-prisma/migrations/
