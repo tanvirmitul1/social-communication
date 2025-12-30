@@ -20,6 +20,7 @@ export const errorHandler = (
       'Application error'
     );
 
+    res.setHeader('Content-Type', 'application/json');
     res.status(err.statusCode).json({
       success: false,
       message: err.message,
@@ -39,6 +40,7 @@ export const errorHandler = (
     'Unhandled error'
   );
 
+  res.setHeader('Content-Type', 'application/json');
   res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
     success: false,
     message: 'Internal server error',
@@ -50,6 +52,7 @@ export const errorHandler = (
 };
 
 export const notFoundHandler = (_req: Request, res: Response): void => {
+  res.setHeader('Content-Type', 'application/json');
   res.status(StatusCodes.NOT_FOUND).json({
     success: false,
     message: 'Resource not found',
