@@ -20,7 +20,10 @@
       "Bash(find:*)",
       "Bash(pnpm build:*)",
       "Bash(git add:*)",
-      "Bash(docker compose:*)"
+      "Bash(docker compose:*)",
+      "Bash(git commit:*)",
+      "Bash(cat:*)",
+      "Bash(timeout /t 5)"
     ],
     "deny": [],
     "ask": []

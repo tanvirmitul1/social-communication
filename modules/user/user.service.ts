@@ -70,12 +70,7 @@ export class UserService {
   }> {
     const { skip, take } = Helpers.paginate(page, limit);
     const users = await this.userRepository.search(query, skip, take);
-    const total = await this.userRepository.count({
-      OR: [
-        { username: { contains: query, mode: 'insensitive' } },
-        { email: { contains: query, mode: 'insensitive' } },
-      ],
-    });
+    const total = await this.userRepository.countSearchResults(query);
 
     return { users, total, page, limit };
   }
