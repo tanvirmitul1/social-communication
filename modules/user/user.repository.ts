@@ -68,6 +68,18 @@ export class UserRepository extends BaseRepository {
     return this.db.user.count({ where });
   }
 
+  async countSearchResults(query: string): Promise<number> {
+    return this.db.user.count({
+      where: {
+        status: { not: UserStatus.DELETED },
+        OR: [
+          { username: { contains: query, mode: 'insensitive' } },
+          { email: { contains: query, mode: 'insensitive' } },
+        ],
+      },
+    });
+  }
+
   async createRefreshToken(userId: string, token: string, expiresAt: Date): Promise<void> {
     await this.db.refreshToken.create({
       data: {
