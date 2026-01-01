@@ -98,7 +98,7 @@ services:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
       - ./logs/nginx:/var/log/nginx
       # Mount SSL certificates from Let's Encrypt (uncomment after obtaining certificates)
-      # - /etc/letsencrypt:/etc/letsencrypt:ro
+      - /etc/letsencrypt:/etc/letsencrypt:ro
     depends_on:
       app:
         condition: service_healthy
