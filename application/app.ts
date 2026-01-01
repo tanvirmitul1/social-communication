@@ -36,31 +36,21 @@ export function createApp(): ExpressApplication {
     })
   );
 
-  // CORS
-  app.use(
-    cors({
-      origin: (origin, callback) => {
-        // Allow requests with no origin (like mobile apps or curl requests)
-        if (!origin) return callback(null, true);
-        
-        // Allow all origins in development
-        if (config.NODE_ENV === 'development') {
-          return callback(null, true);
-        }
-        
-        // In production, check against allowed origins
-        const allowedOrigins = config.CORS_ORIGINS.split(',');
-        if (allowedOrigins.includes('*') || allowedOrigins.includes(origin)) {
-          return callback(null, true);
-        }
-        
-        return callback(new Error('Not allowed by CORS'));
-      },
-      credentials: true,
-      methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-      allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
-    })
-  );
+  // CORS - nginx handles CORS in production, Express handles it in development
+  if (config.NODE_ENV === 'development') {
+    app.use(
+      cors({
+        origin: true,
+        credentials: true,
+        methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+        allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+      })
+    );
+  } else {
+    // In production, nginx handles CORS headers
+    // Just enable CORS without adding headers (nginx already adds them)
+    app.use(cors({ origin: false }));
+  }
 
   // Compression
   app.use(compression());
