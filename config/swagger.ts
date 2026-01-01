@@ -24,7 +24,7 @@ pnpm prisma:migrate:deploy
 
 ## Base URLs
 
-- **Production**: \`http://40.233.122.142/api/v1\`
+- **Production**: \`https://socialbackend.duckdns.org/api/v1\`
 - **Development (via Nginx)**: \`http://localhost/api/v1\`
 - **Direct Access**: \`http://localhost:3000/api/v1\`
 - **Health Endpoints**: Not versioned - accessible at \`/health\`, \`/health/ready\`, \`/metrics\`
@@ -199,8 +199,8 @@ For detailed documentation, see: [Full API Documentation](https://github.com/you
     },
     servers: [
       {
-        url: `http://40.233.122.142/api/${config.API_VERSION}`,
-        description: 'Production server',
+        url: `https://socialbackend.duckdns.org/api/${config.API_VERSION}`,
+        description: 'Production server (HTTPS)',
       },
       {
         url: `http://localhost/api/${config.API_VERSION}`,
