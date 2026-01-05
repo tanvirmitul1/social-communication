@@ -107,6 +107,8 @@ export function createApp(): ExpressApplication {
       version: '1.0.0',
       docs: '/api/docs',
       health: '/health',
+      message: 'Testing mitul hot reload with polling! 🎯',
+      timestamp: new Date().toISOString(),
     });
   });
 
