@@ -1,8 +1,9 @@
 {
-  "watch": ["app", "core", "main.ts"],
+  "watch": ["application", "common", "config", "infrastructure", "middlewares", "modules", "main.ts"],
   "ext": "ts,json",
   "ignore": ["node_modules", "dist", "tests", "**/*.test.ts", "**/*.spec.ts"],
   "exec": "tsx main.ts",
-  "legacyWatch": false,
+  "legacyWatch": true,
+  "polling": true,
   "delay": 1000
 }

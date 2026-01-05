@@ -100,70 +100,87 @@ pnpm docker:logs            # View logs
 
 ## Architecture & Design Patterns
 
-### Layer Architecture (Bottom-Up)
+### Folder Structure
 
-**1. Core Layer** (`core/`)
+```
+├── application/          # Application initialization & DI
+│   ├── app.ts           # Express app configuration
+│   ├── server.ts        # Server startup & graceful shutdown
+│   └── container.ts     # Dependency injection registration
+├── common/              # Shared utilities & types
+│   ├── errors.ts        # Custom error classes
+│   ├── constants.ts     # Application constants
+│   ├── utils.ts         # Helper functions
+│   ├── response.ts      # ResponseHandler
+│   └── async-handler.ts # Async error wrapper
+├── config/              # Configuration (DB, Redis, Swagger)
+│   ├── env.ts           # Environment variable validation
+│   ├── prisma.ts        # Prisma client singleton
+│   ├── redis.ts         # Redis client singleton
+│   ├── logger.ts        # Pino logger
+│   ├── rate-limiter.ts  # Rate limiting configuration
+│   └── swagger.ts       # OpenAPI specification
+├── infrastructure/      # Base repositories & external services
+│   ├── base.repository.ts  # Base repository with Prisma client
+│   ├── cache.service.ts    # Redis caching abstraction
+│   ├── jitsi.service.ts    # Jitsi integration
+│   └── socket.manager.ts   # Socket.IO + Redis adapter
+├── middlewares/         # Express middlewares
+│   ├── auth-guard.ts    # JWT authentication
+│   ├── validation.ts    # Request validation
+│   └── error-handler.ts # Global error handler
+├── modules/            # Feature modules
+│   ├── auth/          # Authentication & authorization
+│   ├── user/          # User management & friends
+│   ├── message/       # Real-time messaging
+│   ├── group/         # Group chat management
+│   ├── call/          # Audio/video calls (Jitsi)
+│   └── health/        # Health check endpoints
+├── prisma/            # Database schema & migrations
+├── main.ts            # Application entry point
+└── docker-compose.yml # Docker services
+```
 
-- Independent utilities, no dependencies on other layers
-- `errors/` - Custom error classes (AppError, ValidationError, UnauthorizedError, etc.)
-- `logger/` - Pino logger configuration
-- `utils/` - Helper functions (asyncHandler, ResponseHandler, Helpers)
-- `validations/` - Zod schemas for request validation
-- `constants/` - Application constants including WebSocket event names
+### Module Structure
 
-**2. Domain Layer** (`app/repositories/`)
+Each module in `modules/` follows this pattern:
 
-- Data access abstraction using Repository Pattern
-- Each repository extends `BaseRepository` which provides access to Prisma client
-- Repositories are responsible for ALL database operations
-- Never query Prisma directly from services - always use repositories
-
-**3. Application Layer** (`app/services/`)
-
-- Business logic implementation
-- Services consume repositories via dependency injection
-- Each service handles a specific domain (Auth, User, Message, Group, Call, Cache, Jitsi)
-- Services orchestrate complex operations across multiple repositories
-
-**4. Infrastructure Layer** (`app/config/`)
-
-- `container.ts` - Dependency injection configuration (tsyringe)
-- `database.ts` - Prisma client singleton
-- `redis.ts` - Redis client singleton
-- `env.ts` - Environment variable validation (envsafe)
-- `swagger.ts` - OpenAPI specification
-
-**5. Presentation Layer** (`app/controllers/` + `app/routes/`)
-
-- Controllers handle HTTP requests/responses
-- Controllers are thin - delegate to services immediately
-- Routes define endpoint structure and apply middleware
+```
+modules/[feature]/
+├── [feature].controller.ts  # HTTP request handlers
+├── [feature].service.ts     # Business logic
+├── [feature].repository.ts  # Database access
+├── [feature].routes.ts      # Route definitions
+├── [feature].validation.ts  # Zod validation schemas
+└── [feature].gateway.ts     # Socket.IO handlers (if needed)
+```
 
 ### Key Design Patterns
 
 **Dependency Injection (tsyringe)**
 
-- All services and repositories are registered as singletons in `app/config/container.ts`
+- All services and repositories are registered as singletons in `application/container.ts`
 - Use `@inject('ServiceName')` decorator in constructors
 - Controllers resolve dependencies via `container.resolve(ControllerClass)`
 
 **Repository Pattern**
 
 - All database access goes through repositories
+- Each repository extends `BaseRepository` which provides access to Prisma client
 - Keeps Prisma queries isolated and testable
 - Example: `UserRepository.findById()` instead of `prisma.user.findUnique()`
 
 **Service Layer Pattern**
 
 - Business logic stays in services, not controllers
-- Services can call multiple repositories
+- Services consume repositories via dependency injection
 - Services handle transactions, caching, and complex workflows
 
-**WebSocket Architecture** (`app/sockets/`)
+**WebSocket Architecture** (`infrastructure/socket.manager.ts`)
 
 - `SocketManager` - Initializes Socket.IO server with Redis adapter for horizontal scaling
-- `ChatSocketHandler` - Handles messaging events
-- `CallSocketHandler` - Handles call events
+- `ChatSocketHandler` - Handles messaging events (in `modules/message/message.gateway.ts`)
+- `CallSocketHandler` - Handles call events (in `modules/call/call.gateway.ts`)
 - Authentication middleware validates JWT tokens on socket connection
 - Users join rooms: `user:${userId}` for direct messages, `group:${groupId}` for groups
 - **Critical**: Redis adapter (pub/sub) enables WebSocket communication across multiple server instances
@@ -173,32 +190,24 @@ pnpm docker:logs            # View logs
 The project uses path aliases (defined in `tsconfig.json`). Always use these imports:
 
 ```typescript
-import { UserService } from '@services/UserService.js'; // Correct
-import { NotFoundError } from '@errors/index.js'; // Correct
-import { CONSTANTS } from '@constants/index.js'; // Correct
+import { UserService } from '@modules/user/user.service.js'; // Correct
+import { NotFoundError } from '@common/errors.js'; // Correct
+import { CONSTANTS } from '@common/constants.js'; // Correct
 
 // NOT:
-import { UserService } from '../services/UserService.js'; // Wrong
+import { UserService } from '../user/user.service.js'; // Wrong
 ```
 
 **Critical**: All imports MUST include `.js` extension (ES modules requirement).
 
 Available aliases:
 
-- `@app/*` → `app/*`
-- `@core/*` → `core/*`
-- `@config/*` → `app/config/*`
-- `@controllers/*` → `app/controllers/*`
-- `@services/*` → `app/services/*`
-- `@repositories/*` → `app/repositories/*`
-- `@routes/*` → `app/routes/*`
-- `@sockets/*` → `app/sockets/*`
-- `@middlewares/*` → `app/middlewares/*`
-- `@utils/*` → `core/utils/*`
-- `@errors/*` → `core/errors/*`
-- `@logger/*` → `core/logger/*`
-- `@validations/*` → `core/validations/*`
-- `@constants/*` → `core/constants/*`
+- `@application/*` → `application/*`
+- `@config/*` → `config/*`
+- `@modules/*` → `modules/*`
+- `@common/*` → `common/*`
+- `@infrastructure/*` → `infrastructure/*`
+- `@middlewares/*` → `middlewares/*`
 
 ## Database Schema (Prisma)
 
@@ -237,52 +246,52 @@ pnpm prisma:migrate   # Create and apply migration
 
 ### Adding a New API Endpoint
 
-1. **Define validation schema** in `core/validations/` using Zod
-2. **Add repository method** in appropriate repository (e.g., `UserRepository`)
-3. **Add service method** in appropriate service (e.g., `UserService`)
-4. **Add controller method** with JSDoc Swagger annotations
-5. **Add route** in `app/routes/` with middleware (auth, validation, rate limiting)
-6. **Register in dependency injection** if new service/repository created
+1. **Define validation schema** in module's `[feature].validation.ts` using Zod
+2. **Add repository method** in module's `[feature].repository.ts`
+3. **Add service method** in module's `[feature].service.ts`
+4. **Add controller method** in module's `[feature].controller.ts` with JSDoc Swagger annotations
+5. **Add route** in module's `[feature].routes.ts` with middleware (auth, validation, rate limiting)
+6. **Register in dependency injection** in `application/container.ts` if new service/repository created
 
 Example flow for "Get User's Friends":
 
 ```typescript
-// 1. core/validations/userValidation.ts
+// 1. modules/user/user.validation.ts
 export const getUserFriendsSchema = z.object({
   page: z.number().optional(),
   limit: z.number().optional()
 });
 
-// 2. app/repositories/UserRepository.ts
+// 2. modules/user/user.repository.ts
 async getFriends(userId: string, skip: number, take: number) {
   // Prisma query to get friends
 }
 
-// 3. app/services/UserService.ts
+// 3. modules/user/user.service.ts
 async getUserFriends(userId: string, page: number, limit: number) {
   const { skip, take } = Helpers.paginate(page, limit);
   return this.userRepository.getFriends(userId, skip, take);
 }
 
-// 4. app/controllers/UserController.ts
+// 4. modules/user/user.controller.ts
 getUserFriends = asyncHandler(async (req: AuthRequest, res: Response) => {
   const friends = await this.userService.getUserFriends(...);
   return ResponseHandler.success(res, friends);
 });
 
-// 5. app/routes/user.routes.ts
+// 5. modules/user/user.routes.ts
 router.get('/:id/friends', userController.getUserFriends);
 ```
 
 ### Adding WebSocket Events
 
-1. Add event name to `CONSTANTS.SOCKET_EVENTS` in `core/constants/index.ts`
-2. Add handler in `ChatSocketHandler` or `CallSocketHandler`
+1. Add event name to `CONSTANTS.SOCKET_EVENTS` in `common/constants.ts`
+2. Add handler in `modules/message/message.gateway.ts` or `modules/call/call.gateway.ts`
 3. Emit to appropriate rooms using `socket.to('room:id').emit()`
 
 ## Redis Caching Strategy
 
-The `CacheService` provides a standard interface. Redis keys are defined in `CONSTANTS.REDIS_KEYS`:
+The `CacheService` (in `infrastructure/cache.service.ts`) provides a standard interface. Redis keys are defined in `CONSTANTS.REDIS_KEYS`:
 
 - User presence: `presence:${userId}`
 - Typing indicators: `typing:${groupId}:${userId}`
@@ -307,13 +316,13 @@ await this.cacheService.setWithExpiry(key, value, CONSTANTS.CACHE_TTL.USER);
 
 **Middleware**:
 
-- `authenticate` - Validates JWT, populates `req.user`
+- `authenticate` (in `middlewares/auth-guard.ts`) - Validates JWT, populates `req.user`
 - `authorize(...roles)` - Checks user role (USER, MODERATOR, ADMIN)
 
 **Controllers using auth**:
 
 ```typescript
-import { AuthRequest } from '@middlewares/auth.middleware.js';
+import { AuthRequest } from '@middlewares/auth-guard.js';
 
 someMethod = asyncHandler(async (req: AuthRequest, res: Response) => {
   const userId = req.user!.id; // Safe after authenticate middleware
@@ -322,7 +331,7 @@ someMethod = asyncHandler(async (req: AuthRequest, res: Response) => {
 
 ## Error Handling
 
-Use custom error classes from `core/errors/`:
+Use custom error classes from `common/errors.ts`:
 
 - `ValidationError` - 400 Bad Request
 - `UnauthorizedError` - 401 Unauthorized
@@ -331,7 +340,7 @@ Use custom error classes from `core/errors/`:
 - `ConflictError` - 409 Conflict
 - `AppError` - Generic error with custom status code
 
-Errors are automatically caught by `express-async-errors` and handled by `errorHandler` middleware.
+Errors are automatically caught by `express-async-errors` and handled by `errorHandler` middleware in `middlewares/error-handler.ts`.
 
 ## Important Conventions
 
@@ -339,7 +348,7 @@ Errors are automatically caught by `express-async-errors` and handled by `errorH
 2. **Always sanitize user objects** before sending responses (use `Helpers.sanitizeUser()`)
 3. **All file imports need .js extension** (ES modules requirement)
 4. **Use ResponseHandler** for consistent API responses
-5. **Register new services/repositories** in `app/config/container.ts`
+5. **Register new services/repositories** in `application/container.ts`
 6. **Invalidate cache** when updating entities
 7. **Use logger, not console.log** (`logger.info()`, `logger.error()`, etc.)
 
@@ -364,15 +373,15 @@ Run single test file: `pnpm test path/to/test.test.ts`
 
 ## Environment Variables
 
-All env vars are validated in `app/config/env.ts` using envsafe. If adding new vars:
+All env vars are validated in `config/env.ts` using envsafe. If adding new vars:
 
 1. Add to `.env.example`
-2. Add validation in `app/config/env.ts`
+2. Add validation in `config/env.ts`
 3. Update `docker-compose.yml` if needed
 
 ## Jitsi Video Calling Integration
 
-The `JitsiService` handles video/audio call room creation and JWT token generation:
+The `JitsiService` (in `infrastructure/jitsi.service.ts`) handles video/audio call room creation and JWT token generation:
 
 **Key Methods**:
 
@@ -425,17 +434,17 @@ const socket = io('http://localhost:3000', {
 
 ## Rate Limiting Strategy
 
-Three rate limiters defined in `app/middlewares/rateLimit.middleware.ts`:
+Rate limiters are defined in `config/rate-limiter.ts`:
 
-1. **authLimiter** - 5 requests per 15 minutes (login/register)
-2. **messageLimiter** - 30 requests per minute (message sending)
-3. **apiLimiter** - 100 requests per 15 minutes (general API)
+- Uses Redis to track request counts per IP
+- Configured in routes with middleware
+- Custom limiters can be created using the rate limiter factory
 
 **How it works**:
 
-- Uses Redis to track request counts per IP
-- Configured in routes: `router.post('/login', authLimiter, ...)`
-- Custom limiters: `createRateLimiter({ windowMs, max, message })`
+- Express rate limit with Redis store
+- Tracks requests per IP address
+- Returns 429 Too Many Requests when limit exceeded
 
 ## Pagination Helpers
 
@@ -458,7 +467,7 @@ return ResponseHandler.paginated(res, items, page, limit, total);
 
 ## Constants Usage
 
-Import from `@constants/index.js` to access:
+Import from `@common/constants.js` to access:
 
 - `CONSTANTS.SOCKET_EVENTS` - All WebSocket event names
 - `CONSTANTS.REDIS_KEYS` - Redis key generators (functions)
@@ -478,13 +487,15 @@ socket.emit('message:received', data); // ✗ Wrong
 
 Controller methods include JSDoc annotations for Swagger. Access docs at: `http://localhost:3000/api/docs`
 
+Swagger configuration is in `config/swagger.ts`.
+
 ## Application Startup & Graceful Shutdown
 
-**Startup sequence** (in `main.ts`):
+**Startup sequence** (in `main.ts` → `application/server.ts`):
 
 1. Import `reflect-metadata` and `express-async-errors` first
-2. Import and execute `app/config/container.ts` to register DI
-3. Initialize Express app with middleware
+2. Import and execute `application/container.ts` to register DI
+3. Initialize Express app with middleware (via `application/app.ts`)
 4. Connect to PostgreSQL via Prisma
 5. Connect to Redis
 6. Initialize SocketManager (creates Socket.IO + Redis adapter)
