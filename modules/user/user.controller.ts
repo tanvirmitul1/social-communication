@@ -163,10 +163,9 @@ export class UserController {
    * @swagger
    * /users:
    *   get:
-   *     summary: Search users
+   *     summary: Search users (Public)
    *     tags: [Users]
-   *     security:
-   *       - bearerAuth: []
+   *     description: Search users by username or email. This endpoint is publicly accessible.
    *     parameters:
    *       - in: query
    *         name: query
@@ -213,8 +212,8 @@ export class UserController {
    *                       type: integer
    *                     totalPages:
    *                       type: integer
-   *       401:
-   *         description: Unauthorized
+   *       400:
+   *         description: Bad request - query parameter required
    */
   async searchUsers(req: AuthRequest, res: Response): Promise<Response> {
     const { query, page = 1, limit = 20 } = req.query;
