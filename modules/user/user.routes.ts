@@ -7,15 +7,16 @@ import { friendRequestRoutes } from '@modules/user/friend-request.routes.js';
 const router: Router = Router();
 const userController = container.resolve(UserController);
 
-router.use(authenticate);
-
+// Public routes (no authentication required)
 router.get('/', userController.searchUsers);
-router.get('/:id', userController.getUser);
-router.patch('/:id', userController.updateUser);
-router.delete('/:id', userController.deleteUser);
-router.get('/:id/presence', userController.getUserPresence);
+
+// Protected routes (authentication required)
+router.get('/:id', authenticate, userController.getUser);
+router.patch('/:id', authenticate, userController.updateUser);
+router.delete('/:id', authenticate, userController.deleteUser);
+router.get('/:id/presence', authenticate, userController.getUserPresence);
 
 // Mount friend request routes under /users/:id/friend-requests
-router.use('/friend-requests', friendRequestRoutes);
+router.use('/friend-requests', authenticate, friendRequestRoutes);
 
 export { router as userRoutes };
