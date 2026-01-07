@@ -209,37 +209,47 @@ export class MessageRepository extends BaseRepository {
   }
 
   async getChatList(userId: string, skip: number, take: number) {
-    // Get all direct conversations (unique user pairs)
-    const directChats = await this.db.message.findMany({
+    // Get all unique user IDs that current user has conversations with
+    const directMessages = await this.db.message.findMany({
       where: {
         deletedAt: null,
         OR: [{ senderId: userId }, { receiverId: userId }],
         groupId: null, // Only direct messages
       },
+      select: {
+        senderId: true,
+        receiverId: true,
+        createdAt: true,
+      },
       orderBy: { createdAt: 'desc' },
-      distinct: ['senderId', 'receiverId'],
-      include: {
-        sender: {
-          select: {
-            id: true,
-            username: true,
-            avatar: true,
-            email: true,
-          },
-        },
-        receiver: {
-          select: {
-            id: true,
-            username: true,
-            avatar: true,
-            email: true,
-          },
-        },
+    });
+
+    // Get unique other user IDs from direct messages
+    const uniqueUserIds = new Set<string>();
+    for (const msg of directMessages) {
+      const otherUserId = msg.senderId === userId ? msg.receiverId : msg.senderId;
+      if (otherUserId) {
+        uniqueUserIds.add(otherUserId);
+      }
+    }
+
+    // Fetch user details for all unique users
+    const users = await this.db.user.findMany({
+      where: {
+        id: { in: Array.from(uniqueUserIds) },
+      },
+      select: {
+        id: true,
+        username: true,
+        avatar: true,
+        email: true,
       },
     });
 
+    const userMap = new Map(users.map(u => [u.id, u]));
+
     // Get all group conversations
-    const groupChats = await this.db.message.findMany({
+    const groupMessages = await this.db.message.findMany({
       where: {
         deletedAt: null,
         groupId: { not: null },
@@ -254,86 +264,47 @@ export class MessageRepository extends BaseRepository {
           },
         ],
       },
-      orderBy: { createdAt: 'desc' },
-      distinct: ['groupId'],
-      include: {
-        sender: {
-          select: {
-            id: true,
-            username: true,
-            avatar: true,
-          },
-        },
-        group: {
-          select: {
-            id: true,
-            title: true,
-            cover: true,
-            type: true,
-          },
-        },
+      select: {
+        groupId: true,
+        createdAt: true,
       },
+      orderBy: { createdAt: 'desc' },
     });
 
-    // Process direct chats to get unique conversations with last message
-    const directChatMap = new Map();
-    for (const message of directChats) {
-      const otherUserId = message.senderId === userId ? message.receiverId : message.senderId;
-      if (!otherUserId) continue;
-
-      if (!directChatMap.has(otherUserId)) {
-        // Get the last message for this conversation
-        const lastMessage = await this.db.message.findFirst({
-          where: {
-            deletedAt: null,
-            OR: [
-              { senderId: userId, receiverId: otherUserId },
-              { senderId: otherUserId, receiverId: userId },
-            ],
-          },
-          orderBy: { createdAt: 'desc' },
-          include: {
-            sender: {
-              select: {
-                id: true,
-                username: true,
-                avatar: true,
-              },
-            },
-          },
-        });
-
-        // Get unread count
-        const unreadCount = await this.db.message.count({
-          where: {
-            deletedAt: null,
-            senderId: otherUserId,
-            receiverId: userId,
-            status: { not: 'READ' },
-          },
-        });
-
-        const otherUser = message.senderId === userId ? message.receiver : message.sender;
-        directChatMap.set(otherUserId, {
-          type: 'direct',
-          user: otherUser,
-          lastMessage,
-          unreadCount,
-          lastMessageAt: lastMessage?.createdAt || message.createdAt,
-        });
+    // Get unique group IDs
+    const uniqueGroupIds = new Set<string>();
+    for (const msg of groupMessages) {
+      if (msg.groupId) {
+        uniqueGroupIds.add(msg.groupId);
       }
     }
 
-    // Process group chats to get unique conversations with last message
-    const groupChatMap = new Map();
-    for (const message of groupChats) {
-      if (!message.groupId || groupChatMap.has(message.groupId)) continue;
+    // Fetch group details
+    const groups = await this.db.group.findMany({
+      where: {
+        id: { in: Array.from(uniqueGroupIds) },
+      },
+      select: {
+        id: true,
+        title: true,
+        cover: true,
+        type: true,
+      },
+    });
 
-      // Get the last message for this group
+    const groupMap = new Map(groups.map(g => [g.id, g]));
+
+    // Process direct chats to get unique conversations with last message
+    const directChatMap = new Map();
+    for (const otherUserId of uniqueUserIds) {
+      // Get the last message for this conversation
       const lastMessage = await this.db.message.findFirst({
         where: {
           deletedAt: null,
-          groupId: message.groupId,
+          OR: [
+            { senderId: userId, receiverId: otherUserId },
+            { senderId: otherUserId, receiverId: userId },
+          ],
         },
         orderBy: { createdAt: 'desc' },
         include: {
@@ -347,23 +318,73 @@ export class MessageRepository extends BaseRepository {
         },
       });
 
+      if (!lastMessage) continue;
+
       // Get unread count
       const unreadCount = await this.db.message.count({
         where: {
           deletedAt: null,
-          groupId: message.groupId,
-          senderId: { not: userId },
-          status: { not: 'READ' },
+          senderId: otherUserId,
+          receiverId: userId,
+          status: { not: MessageStatus.SEEN },
         },
       });
 
-      groupChatMap.set(message.groupId, {
-        type: 'group',
-        group: message.group,
-        lastMessage,
-        unreadCount,
-        lastMessageAt: lastMessage?.createdAt || message.createdAt,
+      const otherUser = userMap.get(otherUserId);
+      if (otherUser) {
+        directChatMap.set(otherUserId, {
+          type: 'direct',
+          user: otherUser,
+          lastMessage,
+          unreadCount,
+          lastMessageAt: lastMessage.createdAt,
+        });
+      }
+    }
+
+    // Process group chats to get unique conversations with last message
+    const groupChatMap = new Map();
+    for (const groupId of uniqueGroupIds) {
+      // Get the last message for this group
+      const lastMessage = await this.db.message.findFirst({
+        where: {
+          deletedAt: null,
+          groupId,
+        },
+        orderBy: { createdAt: 'desc' },
+        include: {
+          sender: {
+            select: {
+              id: true,
+              username: true,
+              avatar: true,
+            },
+          },
+        },
       });
+
+      if (!lastMessage) continue;
+
+      // Get unread count
+      const unreadCount = await this.db.message.count({
+        where: {
+          deletedAt: null,
+          groupId,
+          senderId: { not: userId },
+          status: { not: MessageStatus.SEEN },
+        },
+      });
+
+      const group = groupMap.get(groupId);
+      if (group) {
+        groupChatMap.set(groupId, {
+          type: 'group',
+          group,
+          lastMessage,
+          unreadCount,
+          lastMessageAt: lastMessage.createdAt,
+        });
+      }
     }
 
     // Combine and sort by last message time
