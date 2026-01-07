@@ -28,7 +28,7 @@ router.get(
 router.delete(
   '/:id',
   generalRateLimiter,
-  validate(friendIdSchema),
+  validate(friendIdSchema, 'params'),
   friendRequestController.removeFriend
 );
 

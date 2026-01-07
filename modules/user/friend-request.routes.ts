@@ -30,21 +30,21 @@ router.post(
 router.post(
   '/:id/accept',
   generalRateLimiter,
-  validate(friendRequestIdSchema),
+  validate(friendRequestIdSchema, 'params'),
   friendRequestController.acceptFriendRequest
 );
 
 router.post(
   '/:id/reject',
   generalRateLimiter,
-  validate(friendRequestIdSchema),
+  validate(friendRequestIdSchema, 'params'),
   friendRequestController.rejectFriendRequest
 );
 
 router.post(
   '/:id/cancel',
   generalRateLimiter,
-  validate(friendRequestIdSchema),
+  validate(friendRequestIdSchema, 'params'),
   friendRequestController.cancelFriendRequest
 );
 
