@@ -7,7 +7,15 @@ import { CallType } from '@prisma/client';
 
 @injectable()
 export class CallController {
-  constructor(@inject('CallService') private callService: CallService) {}
+  constructor(@inject('CallService') private callService: CallService) {
+    this.initiateCall = this.initiateCall.bind(this);
+    this.joinCall = this.joinCall.bind(this);
+    this.endCall = this.endCall.bind(this);
+    this.leaveCall = this.leaveCall.bind(this);
+    this.rejectCall = this.rejectCall.bind(this);
+    this.getCall = this.getCall.bind(this);
+    this.getUserCalls = this.getUserCalls.bind(this);
+  }
 
   /**
    * @swagger
