@@ -7,7 +7,16 @@ import { CreateGroupInput, UpdateGroupInput, AddGroupMemberInput } from './group
 
 @injectable()
 export class GroupController {
-  constructor(@inject('GroupService') private groupService: GroupService) {}
+  constructor(@inject('GroupService') private groupService: GroupService) {
+    this.createGroup = this.createGroup.bind(this);
+    this.getGroup = this.getGroup.bind(this);
+    this.getUserGroups = this.getUserGroups.bind(this);
+    this.updateGroup = this.updateGroup.bind(this);
+    this.deleteGroup = this.deleteGroup.bind(this);
+    this.addMember = this.addMember.bind(this);
+    this.removeMember = this.removeMember.bind(this);
+    this.leaveGroup = this.leaveGroup.bind(this);
+  }
 
   /**
    * @swagger

@@ -8,7 +8,22 @@ import { MessageStatus } from '@prisma/client';
 
 @injectable()
 export class MessageController {
-  constructor(@inject('MessageService') private messageService: MessageService) {}
+  constructor(@inject('MessageService') private messageService: MessageService) {
+    this.sendMessage = this.sendMessage.bind(this);
+    this.getMessage = this.getMessage.bind(this);
+    this.getGroupMessages = this.getGroupMessages.bind(this);
+    this.getDirectMessages = this.getDirectMessages.bind(this);
+    this.editMessage = this.editMessage.bind(this);
+    this.deleteMessage = this.deleteMessage.bind(this);
+    this.markAsDelivered = this.markAsDelivered.bind(this);
+    this.markAsSeen = this.markAsSeen.bind(this);
+    this.addReaction = this.addReaction.bind(this);
+    this.removeReaction = this.removeReaction.bind(this);
+    this.getMessageReactions = this.getMessageReactions.bind(this);
+    this.getUserReaction = this.getUserReaction.bind(this);
+    this.searchMessages = this.searchMessages.bind(this);
+    this.forwardMessage = this.forwardMessage.bind(this);
+  }
 
   /**
    * @swagger

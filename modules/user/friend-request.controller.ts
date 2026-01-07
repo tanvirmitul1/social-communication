@@ -6,7 +6,15 @@ import { AuthRequest } from '@middlewares/auth-guard.js';
 
 @injectable()
 export class FriendRequestController {
-  constructor(@inject('FriendRequestService') private friendRequestService: FriendRequestService) {}
+  constructor(@inject('FriendRequestService') private friendRequestService: FriendRequestService) {
+    this.sendFriendRequest = this.sendFriendRequest.bind(this);
+    this.acceptFriendRequest = this.acceptFriendRequest.bind(this);
+    this.rejectFriendRequest = this.rejectFriendRequest.bind(this);
+    this.cancelFriendRequest = this.cancelFriendRequest.bind(this);
+    this.getPendingFriendRequests = this.getPendingFriendRequests.bind(this);
+    this.getFriends = this.getFriends.bind(this);
+    this.removeFriend = this.removeFriend.bind(this);
+  }
 
   /**
    * @swagger

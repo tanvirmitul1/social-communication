@@ -31,9 +31,9 @@ export const authenticate = (req: AuthRequest, _res: Response, next: NextFunctio
     next();
   } catch (error) {
     if (error instanceof jwt.JsonWebTokenError) {
-      next(new UnauthorizedError('Invalid token'));
+      next(new UnauthorizedError('Invalid token. Please log in again.'));
     } else if (error instanceof jwt.TokenExpiredError) {
-      next(new UnauthorizedError('Token expired'));
+      next(new UnauthorizedError('Token expired. Please log in again.'));
     } else {
       next(error);
     }
