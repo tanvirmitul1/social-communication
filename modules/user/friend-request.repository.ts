@@ -84,8 +84,15 @@ export class FriendRequestRepository extends BaseRepository {
   }
 
   async createFollow(followerId: string, followingId: string) {
-    return this.db.follow.create({
-      data: {
+    return this.db.follow.upsert({
+      where: {
+        followerId_followingId: {
+          followerId,
+          followingId,
+        },
+      },
+      update: {},
+      create: {
         followerId,
         followingId,
       },
