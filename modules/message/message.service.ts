@@ -259,4 +259,20 @@ export class MessageService {
 
     return message;
   }
+
+  async getChatList(
+    userId: string,
+    page: number = 1,
+    limit: number = 20
+  ): Promise<{
+    chats: any[];
+    total: number;
+    page: number;
+    limit: number;
+  }> {
+    const { skip, take } = Helpers.paginate(page, limit);
+    const { chats, total } = await this.messageRepository.getChatList(userId, skip, take);
+
+    return { chats, total, page, limit };
+  }
 }
