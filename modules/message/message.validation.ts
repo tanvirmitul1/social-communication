@@ -49,7 +49,13 @@ export const forwardMessageSchema = z.object({
   message: 'Either groupId or receiverId must be provided',
 });
 
+export const getChatListSchema = z.object({
+  page: z.coerce.number().int().positive().default(1),
+  limit: z.coerce.number().int().positive().max(100).default(20),
+});
+
 export type SendMessageInput = z.infer<typeof sendMessageSchema>;
 export type EditMessageInput = z.infer<typeof editMessageSchema>;
 export type ReactToMessageInput = z.infer<typeof reactToMessageSchema>;
 export type ForwardMessageInput = z.infer<typeof forwardMessageSchema>;
+export type GetChatListInput = z.infer<typeof getChatListSchema>;

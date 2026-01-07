@@ -23,6 +23,7 @@ export class MessageController {
     this.getUserReaction = this.getUserReaction.bind(this);
     this.searchMessages = this.searchMessages.bind(this);
     this.forwardMessage = this.forwardMessage.bind(this);
+    this.getChatList = this.getChatList.bind(this);
   }
 
   /**
@@ -782,5 +783,105 @@ export class MessageController {
     });
 
     return ResponseHandler.created(res, message, 'Message forwarded successfully');
+  }
+
+  /**
+   * @swagger
+   * /messages/chats:
+   *   get:
+   *     summary: Get chat list with last messages
+   *     description: Retrieve all conversations (direct and group) with the last message and unread count
+   *     tags: [Messages]
+   *     security:
+   *       - bearerAuth: []
+   *     parameters:
+   *       - in: query
+   *         name: page
+   *         schema:
+   *           type: integer
+   *           default: 1
+   *         description: Page number
+   *       - in: query
+   *         name: limit
+   *         schema:
+   *           type: integer
+   *           default: 20
+   *           maximum: 100
+   *         description: Items per page
+   *     responses:
+   *       200:
+   *         description: Chat list retrieved successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 data:
+   *                   type: array
+   *                   items:
+   *                     type: object
+   *                     properties:
+   *                       type:
+   *                         type: string
+   *                         enum: [direct, group]
+   *                         description: Type of conversation
+   *                       user:
+   *                         type: object
+   *                         description: Other user (for direct chats)
+   *                         properties:
+   *                           id:
+   *                             type: string
+   *                           username:
+   *                             type: string
+   *                           avatar:
+   *                             type: string
+   *                           email:
+   *                             type: string
+   *                       group:
+   *                         type: object
+   *                         description: Group info (for group chats)
+   *                         properties:
+   *                           id:
+   *                             type: string
+   *                           title:
+   *                             type: string
+   *                           cover:
+   *                             type: string
+   *                           type:
+   *                             type: string
+   *                       lastMessage:
+   *                         $ref: '#/components/schemas/Message'
+   *                       unreadCount:
+   *                         type: integer
+   *                         description: Number of unread messages
+   *                       lastMessageAt:
+   *                         type: string
+   *                         format: date-time
+   *                 pagination:
+   *                   type: object
+   *                   properties:
+   *                     page:
+   *                       type: integer
+   *                     limit:
+   *                       type: integer
+   *                     total:
+   *                       type: integer
+   *       401:
+   *         description: Unauthorized
+   */
+  async getChatList(req: AuthRequest, res: Response): Promise<Response> {
+    const userId = req.user!.id;
+    const { page = 1, limit = 20 } = req.query;
+
+    const result = await this.messageService.getChatList(
+      userId,
+      Number(page),
+      Number(limit)
+    );
+
+    return ResponseHandler.paginated(res, result.chats, result.page, result.limit, result.total);
   }
 }
