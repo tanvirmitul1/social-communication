@@ -18,7 +18,7 @@ export class FriendRequestController {
 
   /**
    * @swagger
-   * /friend-requests:
+   * /users/friend-requests:
    *   post:
    *     summary: Send a friend request
    *     tags: [Friend Requests]
@@ -73,7 +73,7 @@ export class FriendRequestController {
 
   /**
    * @swagger
-   * /friend-requests/{id}/accept:
+   * /users/friend-requests/{id}/accept:
    *   post:
    *     summary: Accept a friend request
    *     tags: [Friend Requests]
@@ -123,7 +123,7 @@ export class FriendRequestController {
 
   /**
    * @swagger
-   * /friend-requests/{id}/reject:
+   * /users/friend-requests/{id}/reject:
    *   post:
    *     summary: Reject a friend request
    *     tags: [Friend Requests]
@@ -173,7 +173,7 @@ export class FriendRequestController {
 
   /**
    * @swagger
-   * /friend-requests/{id}/cancel:
+   * /users/friend-requests/{id}/cancel:
    *   post:
    *     summary: Cancel a friend request (sender only)
    *     tags: [Friend Requests]
@@ -223,7 +223,7 @@ export class FriendRequestController {
 
   /**
    * @swagger
-   * /friend-requests/pending:
+   * /users/friend-requests/pending:
    *   get:
    *     summary: Get pending friend requests
    *     tags: [Friend Requests]
