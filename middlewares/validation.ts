@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { ZodSchema, ZodError } from 'zod';
+import { ZodSchema, ZodError, ZodObject } from 'zod';
 import { ValidationError } from '@common/errors.js';
 
 export const validate = (schema: ZodSchema, source?: 'body' | 'params' | 'query') => {
@@ -11,24 +11,19 @@ export const validate = (schema: ZodSchema, source?: 'body' | 'params' | 'query'
         // If source is explicitly specified, validate only that part
         dataToValidate = req[source];
       } else {
-        // Auto-detect: Check if schema has 'body', 'params', or 'query' keys
-        // by attempting to parse a test object and checking the error path
-        const testParse = schema.safeParse({ params: {}, query: {}, body: {} });
+        // Auto-detect: Check if schema has 'body', 'params', or 'query' keys by inspecting the shape
+        let hasStructuredKeys = false;
 
-        if (!testParse.success) {
-          const hasStructuredKeys = testParse.error.errors.some((err) =>
-            err.path[0] === 'body' || err.path[0] === 'params' || err.path[0] === 'query'
-          );
+        if (schema instanceof ZodObject) {
+          const shape = schema.shape;
+          hasStructuredKeys = 'body' in shape || 'params' in shape || 'query' in shape;
+        }
 
-          if (hasStructuredKeys) {
-            // Schema expects structured request (e.g., { body: {...}, params: {...}, query: {...} })
-            dataToValidate = { params: req.params, query: req.query, body: req.body };
-          } else {
-            // Schema expects direct body data (backward compatibility)
-            dataToValidate = req.body;
-          }
+        if (hasStructuredKeys) {
+          // Schema expects structured request (e.g., { body: {...}, params: {...}, query: {...} })
+          dataToValidate = { params: req.params, query: req.query, body: req.body };
         } else {
-          // If test parse succeeds with empty object, assume direct body validation
+          // Schema expects direct body data (backward compatibility)
           dataToValidate = req.body;
         }
       }
