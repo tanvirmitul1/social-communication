@@ -28,6 +28,10 @@ COPY prisma ./prisma
 # Generate Prisma client
 RUN pnpm prisma:generate
 
+# Copy source code (will be overridden by volume mount in docker-compose.dev.yml)
+# This ensures the container works standalone and has fallback code
+COPY . .
+
 # Create necessary directories
 RUN mkdir -p uploads logs
 
@@ -35,4 +39,5 @@ RUN mkdir -p uploads logs
 EXPOSE 3000
 
 # Start development server with hot reload
+# Note: Volume mount from docker-compose.dev.yml will override the copied source
 CMD ["pnpm", "dev"]
