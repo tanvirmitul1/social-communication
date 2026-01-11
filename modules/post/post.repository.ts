@@ -37,11 +37,11 @@ export interface PostWithDetails extends Post {
 @injectable()
 export class PostRepository extends BaseRepository {
   async create(data: Prisma.PostCreateInput): Promise<Post> {
-    return this.prisma.post.create({ data });
+    return this.db.post.create({ data });
   }
 
   async findById(id: string, userId?: string): Promise<PostWithDetails | null> {
-    const post = await this.prisma.post.findUnique({
+    const post = await this.db.post.findUnique({
       where: { id },
       include: {
         author: {
@@ -100,7 +100,7 @@ export class PostRepository extends BaseRepository {
       userId?: string;
     }
   ): Promise<PostWithDetails[]> {
-    const posts = await this.prisma.post.findMany({
+    const posts = await this.db.post.findMany({
       where,
       take: options.limit + 1, // Fetch one extra for cursor pagination
       ...(options.cursor && {
@@ -158,14 +158,14 @@ export class PostRepository extends BaseRepository {
   }
 
   async update(id: string, data: Prisma.PostUpdateInput): Promise<Post> {
-    return this.prisma.post.update({
+    return this.db.post.update({
       where: { id },
       data,
     });
   }
 
   async softDelete(id: string): Promise<Post> {
-    return this.prisma.post.update({
+    return this.db.post.update({
       where: { id },
       data: {
         deletedAt: new Date(),
@@ -179,7 +179,7 @@ export class PostRepository extends BaseRepository {
     metric: 'likesCount' | 'commentsCount' | 'sharesCount',
     value: number = 1
   ): Promise<void> {
-    await this.prisma.post.update({
+    await this.db.post.update({
       where: { id },
       data: {
         [metric]: {
@@ -194,7 +194,7 @@ export class PostRepository extends BaseRepository {
     metric: 'likesCount' | 'commentsCount' | 'sharesCount',
     value: number = 1
   ): Promise<void> {
-    await this.prisma.post.update({
+    await this.db.post.update({
       where: { id },
       data: {
         [metric]: {
@@ -206,7 +206,7 @@ export class PostRepository extends BaseRepository {
 
   // Reaction methods
   async createReaction(postId: string, userId: string, type: ReactionType): Promise<PostReaction> {
-    return this.prisma.postReaction.upsert({
+    return this.db.postReaction.upsert({
       where: {
         postId_userId: { postId, userId },
       },
@@ -223,7 +223,7 @@ export class PostRepository extends BaseRepository {
 
   async deleteReaction(postId: string, userId: string): Promise<PostReaction | null> {
     try {
-      return await this.prisma.postReaction.delete({
+      return await this.db.postReaction.delete({
         where: {
           postId_userId: { postId, userId },
         },
@@ -234,7 +234,7 @@ export class PostRepository extends BaseRepository {
   }
 
   async findReaction(postId: string, userId: string): Promise<PostReaction | null> {
-    return this.prisma.postReaction.findUnique({
+    return this.db.postReaction.findUnique({
       where: {
         postId_userId: { postId, userId },
       },
@@ -247,7 +247,7 @@ export class PostRepository extends BaseRepository {
     cursor?: string,
     limit: number = 50
   ): Promise<PostReaction[]> {
-    return this.prisma.postReaction.findMany({
+    return this.db.postReaction.findMany({
       where: {
         postId,
         ...(type && { type }),
@@ -272,7 +272,7 @@ export class PostRepository extends BaseRepository {
 
   // Saved posts methods
   async savePost(userId: string, postId: string): Promise<SavedPost> {
-    return this.prisma.savedPost.upsert({
+    return this.db.savedPost.upsert({
       where: {
         userId_postId: { userId, postId },
       },
@@ -286,7 +286,7 @@ export class PostRepository extends BaseRepository {
 
   async unsavePost(userId: string, postId: string): Promise<SavedPost | null> {
     try {
-      return await this.prisma.savedPost.delete({
+      return await this.db.savedPost.delete({
         where: {
           userId_postId: { userId, postId },
         },
@@ -297,7 +297,7 @@ export class PostRepository extends BaseRepository {
   }
 
   async findSavedPosts(userId: string, cursor?: string, limit: number = 20): Promise<SavedPost[]> {
-    return this.prisma.savedPost.findMany({
+    return this.db.savedPost.findMany({
       where: { userId },
       take: limit + 1,
       ...(cursor && {
@@ -336,7 +336,7 @@ export class PostRepository extends BaseRepository {
     caption?: string,
     groupId?: string
   ): Promise<PostShare> {
-    return this.prisma.postShare.create({
+    return this.db.postShare.create({
       data: {
         postId,
         sharedBy: userId,
@@ -353,7 +353,7 @@ export class PostRepository extends BaseRepository {
     limit: number = 20
   ): Promise<PostWithDetails[]> {
     // Get posts from users that the current user follows
-    const followingIds = await this.prisma.follow.findMany({
+    const followingIds = await this.db.follow.findMany({
       where: { followerId: userId },
       select: { followingId: true },
     });
@@ -410,7 +410,7 @@ export class PostRepository extends BaseRepository {
 
   // Helper: Check if two users are friends
   private async areFriends(userId1: string, userId2: string): Promise<boolean> {
-    const friendship = await this.prisma.follow.findFirst({
+    const friendship = await this.db.follow.findFirst({
       where: {
         OR: [
           { followerId: userId1, followingId: userId2 },
@@ -423,7 +423,7 @@ export class PostRepository extends BaseRepository {
 
   // Moderation
   async flagPost(id: string, reason: string, moderatorId: string): Promise<Post> {
-    return this.prisma.post.update({
+    return this.db.post.update({
       where: { id },
       data: {
         isFlagged: true,

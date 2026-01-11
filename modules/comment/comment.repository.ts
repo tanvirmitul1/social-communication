@@ -18,11 +18,11 @@ export interface CommentWithDetails extends Comment {
 @injectable()
 export class CommentRepository extends BaseRepository {
   async create(data: Prisma.CommentCreateInput): Promise<Comment> {
-    return this.prisma.comment.create({ data });
+    return this.db.comment.create({ data });
   }
 
   async findById(id: string, userId?: string): Promise<CommentWithDetails | null> {
-    const comment = await this.prisma.comment.findUnique({
+    const comment = await this.db.comment.findUnique({
       where: { id },
       include: {
         author: {
@@ -64,7 +64,7 @@ export class CommentRepository extends BaseRepository {
       userId?: string;
     }
   ): Promise<CommentWithDetails[]> {
-    const comments = await this.prisma.comment.findMany({
+    const comments = await this.db.comment.findMany({
       where,
       take: options.limit + 1,
       ...(options.cursor && {
@@ -105,14 +105,14 @@ export class CommentRepository extends BaseRepository {
   }
 
   async update(id: string, data: Prisma.CommentUpdateInput): Promise<Comment> {
-    return this.prisma.comment.update({
+    return this.db.comment.update({
       where: { id },
       data,
     });
   }
 
   async softDelete(id: string): Promise<Comment> {
-    return this.prisma.comment.update({
+    return this.db.comment.update({
       where: { id },
       data: { deletedAt: new Date() },
     });
@@ -123,7 +123,7 @@ export class CommentRepository extends BaseRepository {
     metric: 'likesCount' | 'repliesCount',
     value: number = 1
   ): Promise<void> {
-    await this.prisma.comment.update({
+    await this.db.comment.update({
       where: { id },
       data: {
         [metric]: {
@@ -138,7 +138,7 @@ export class CommentRepository extends BaseRepository {
     metric: 'likesCount' | 'repliesCount',
     value: number = 1
   ): Promise<void> {
-    await this.prisma.comment.update({
+    await this.db.comment.update({
       where: { id },
       data: {
         [metric]: {
@@ -187,7 +187,7 @@ export class CommentRepository extends BaseRepository {
     userId: string,
     type: ReactionType
   ): Promise<CommentReaction> {
-    return this.prisma.commentReaction.upsert({
+    return this.db.commentReaction.upsert({
       where: {
         commentId_userId: { commentId, userId },
       },
@@ -204,7 +204,7 @@ export class CommentRepository extends BaseRepository {
 
   async deleteReaction(commentId: string, userId: string): Promise<CommentReaction | null> {
     try {
-      return await this.prisma.commentReaction.delete({
+      return await this.db.commentReaction.delete({
         where: {
           commentId_userId: { commentId, userId },
         },
@@ -215,7 +215,7 @@ export class CommentRepository extends BaseRepository {
   }
 
   async findReaction(commentId: string, userId: string): Promise<CommentReaction | null> {
-    return this.prisma.commentReaction.findUnique({
+    return this.db.commentReaction.findUnique({
       where: {
         commentId_userId: { commentId, userId },
       },
@@ -228,7 +228,7 @@ export class CommentRepository extends BaseRepository {
     cursor?: string,
     limit: number = 50
   ): Promise<CommentReaction[]> {
-    return this.prisma.commentReaction.findMany({
+    return this.db.commentReaction.findMany({
       where: {
         commentId,
         ...(type && { type }),
@@ -253,7 +253,7 @@ export class CommentRepository extends BaseRepository {
 
   // Cascade update post's comment count
   async incrementPostCommentCount(postId: string): Promise<void> {
-    await this.prisma.post.update({
+    await this.db.post.update({
       where: { id: postId },
       data: {
         commentsCount: {
@@ -264,7 +264,7 @@ export class CommentRepository extends BaseRepository {
   }
 
   async decrementPostCommentCount(postId: string): Promise<void> {
-    await this.prisma.post.update({
+    await this.db.post.update({
       where: { id: postId },
       data: {
         commentsCount: {
