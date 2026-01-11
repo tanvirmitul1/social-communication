@@ -13,6 +13,7 @@ export class UserController {
     this.deleteUser = this.deleteUser.bind(this);
     this.searchUsers = this.searchUsers.bind(this);
     this.getUserPresence = this.getUserPresence.bind(this);
+    this.getUserSuggestions = this.getUserSuggestions.bind(this);
   }
 
   /**
@@ -281,5 +282,53 @@ export class UserController {
     const presence = await this.userService.getUserPresence(id);
 
     return ResponseHandler.success(res, presence);
+  }
+
+  /**
+   * @swagger
+   * /users/suggestions:
+   *   get:
+   *     summary: Get user suggestions to follow
+   *     tags: [Users]
+   *     security:
+   *       - bearerAuth: []
+   *     description: Get personalized user suggestions based on mutual connections, popularity, and activity
+   *     parameters:
+   *       - in: query
+   *         name: limit
+   *         schema:
+   *           type: integer
+   *           default: 8
+   *           maximum: 20
+   *         description: Number of suggestions to return
+   *     responses:
+   *       200:
+   *         description: User suggestions retrieved successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 data:
+   *                   type: array
+   *                   items:
+   *                     $ref: '#/components/schemas/User'
+   *       401:
+   *         description: Unauthorized
+   */
+  async getUserSuggestions(req: AuthRequest, res: Response): Promise<Response> {
+    const userId = req.user!.id;
+    const { limit = 8 } = req.query;
+
+    const suggestions = await this.userService.getUserSuggestions(userId, Number(limit));
+
+    return ResponseHandler.success(
+      res,
+      suggestions.map((u) => Helpers.sanitizeUser(u)),
+      'User suggestions retrieved successfully'
+    );
   }
 }

@@ -15,6 +15,8 @@ const postController = container.resolve(PostController);
 router.get('/', userController.searchUsers);
 
 // Protected routes (authentication required)
+// Note: /suggestions must come before /:id to avoid route conflict
+router.get('/suggestions', authenticate, userController.getUserSuggestions);
 router.get('/:id', authenticate, userController.getUser);
 router.patch('/:id', authenticate, userController.updateUser);
 router.delete('/:id', authenticate, userController.deleteUser);

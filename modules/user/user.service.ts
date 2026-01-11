@@ -101,4 +101,22 @@ export class UserService {
       lastSeen: user.lastSeen,
     };
   }
+
+  async getUserSuggestions(userId: string, limit: number = 8): Promise<User[]> {
+    // Try cache first
+    const cacheKey = `suggestions:${userId}`;
+    const cached = await this.cacheService.get<User[]>(cacheKey);
+
+    if (cached) {
+      return cached.slice(0, limit);
+    }
+
+    // Get suggestions from repository
+    const suggestions = await this.userRepository.getSuggestions(userId, limit);
+
+    // Cache for 30 minutes
+    await this.cacheService.setWithExpiry(cacheKey, suggestions, 1800);
+
+    return suggestions;
+  }
 }

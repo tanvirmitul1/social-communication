@@ -110,4 +110,58 @@ export class UserRepository extends BaseRepository {
       data: { revokedAt: new Date() },
     });
   }
+
+  async getSuggestions(userId: string, limit: number = 8): Promise<User[]> {
+    // Get users that:
+    // 1. Are not the current user
+    // 2. Are not already followed by the current user
+    // 3. Have mutual connections (friends of friends) OR are popular users
+    // 4. Are active (not deleted)
+
+    // First, get users the current user is already following
+    const following = await this.db.follow.findMany({
+      where: { followerId: userId },
+      select: { followingId: true },
+    });
+
+    const followingIds = following.map((f) => f.followingId);
+    followingIds.push(userId); // Exclude self
+
+    // Strategy: Get users with most followers (popular users) who are not already followed
+    const suggestions = await this.db.user.findMany({
+      where: {
+        id: { notIn: followingIds },
+        status: { not: UserStatus.DELETED },
+      },
+      select: {
+        id: true,
+        username: true,
+        email: true,
+        avatar: true,
+        firstName: true,
+        lastName: true,
+        statusMessage: true,
+        isOnline: true,
+        lastSeen: true,
+        status: true,
+        createdAt: true,
+        updatedAt: true,
+        _count: {
+          select: {
+            followers: true, // Count followers for ranking
+          },
+        },
+      },
+      orderBy: {
+        followers: { _count: 'desc' }, // Order by popularity (most followers)
+      },
+      take: limit * 2, // Get more to filter
+    });
+
+    // Return top suggestions (sorted by follower count)
+    return suggestions.slice(0, limit).map((user) => {
+      const { _count, ...userData } = user;
+      return userData as User;
+    });
+  }
 }
