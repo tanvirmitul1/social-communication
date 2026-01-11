@@ -138,8 +138,6 @@ export class UserRepository extends BaseRepository {
         username: true,
         email: true,
         avatar: true,
-        firstName: true,
-        lastName: true,
         statusMessage: true,
         isOnline: true,
         lastSeen: true,
