@@ -30,8 +30,8 @@ export const config = envsafe({
   // Security
   BCRYPT_ROUNDS: num({ default: 12 }),
   CORS_ORIGINS: str({ default: 'http://localhost:3000' }),
-  RATE_LIMIT_WINDOW_MS: num({ default: 900000 }),
-  RATE_LIMIT_MAX_REQUESTS: num({ default: 100 }),
+  RATE_LIMIT_WINDOW_MS: num({ default: 900000 }), // 15 minutes
+  RATE_LIMIT_MAX_REQUESTS: num({ default: 1000 }), // Increased 10x from 100
 
   // Jitsi
   JITSI_DOMAIN: str({ default: 'meet.jit.si' }),

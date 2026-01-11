@@ -16,8 +16,8 @@ const friendRequestController = container.resolve(FriendRequestController);
 router.use(authenticate);
 
 // Rate limiters
-const generalRateLimiter = createRateLimiter({ windowMs: 60 * 1000, max: 10 });
-const getRateLimiter = createRateLimiter({ windowMs: 60 * 1000, max: 30 });
+const generalRateLimiter = createRateLimiter({ windowMs: 60 * 1000, max: 100 }); // Increased 10x from 10
+const getRateLimiter = createRateLimiter({ windowMs: 60 * 1000, max: 300 }); // Increased 10x from 30
 
 // Friend request routes
 router.post(

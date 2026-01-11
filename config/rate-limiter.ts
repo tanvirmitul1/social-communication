@@ -38,17 +38,17 @@ export const createRateLimiter = (options?: {
 // Predefined rate limiters
 export const authLimiter = createRateLimiter({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100,
+  max: 1000, // Increased 10x from 100
   message: 'Too many authentication attempts, please try again later',
 });
 
 export const apiLimiter = createRateLimiter({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100,
+  max: 1000, // Increased 10x from 100
 });
 
 export const messageLimiter = createRateLimiter({
   windowMs: 60 * 1000, // 1 minute
-  max: 30,
+  max: 300, // Increased 10x from 30
   message: 'Too many messages, please slow down',
 });
