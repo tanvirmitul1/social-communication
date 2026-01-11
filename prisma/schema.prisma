@@ -83,6 +83,34 @@ enum NotificationType {
   SYSTEM
 }
 
+enum PostPrivacy {
+  PUBLIC
+  FRIENDS
+  PRIVATE
+}
+
+enum PostStatus {
+  ACTIVE
+  ARCHIVED
+  FLAGGED
+  REMOVED
+}
+
+enum ReactionType {
+  LIKE
+  LOVE
+  HAHA
+  WOW
+  SAD
+  ANGRY
+}
+
+enum MediaType {
+  IMAGE
+  VIDEO
+  LINK
+}
+
 // Models
 model User {
   id            String      @id @default(uuid())
@@ -116,6 +144,11 @@ model User {
   notifications        Notification[]
   activityLogs         ActivityLog[]
   typingIndicators     TypingIndicator[]
+  posts                Post[]
+  postReactions        PostReaction[]
+  comments             Comment[]
+  commentReactions     CommentReaction[]
+  savedPosts           SavedPost[]
 
   @@index([email])
   @@index([username])
@@ -407,4 +440,218 @@ model TypingIndicator {
   @@index([receiverId])
   @@index([expiresAt])
   @@map("typing_indicators")
+}
+
+// ==============================================================================
+// TIMELINE / FEED SYSTEM
+// ==============================================================================
+
+model Post {
+  id              String      @id @default(uuid())
+  authorId        String
+  content         String      @db.Text
+  privacy         PostPrivacy @default(PUBLIC)
+  status          PostStatus  @default(ACTIVE)
+
+  // Engagement metrics (denormalized for performance)
+  likesCount      Int         @default(0)
+  commentsCount   Int         @default(0)
+  sharesCount     Int         @default(0)
+
+  // Moderation
+  isFlagged       Boolean     @default(false)
+  flaggedReason   String?     @db.VarChar(500)
+  moderatedAt     DateTime?
+  moderatedBy     String?
+
+  // Audit fields
+  editedAt        DateTime?
+  deletedAt       DateTime?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  // Relations
+  author          User            @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  media           PostMedia[]
+  reactions       PostReaction[]
+  comments        Comment[]
+  savedBy         SavedPost[]
+  mentions        PostMention[]
+  shares          PostShare[]
+
+  // Composite indexes for feed queries (critical for performance)
+  @@index([authorId, createdAt(sort: Desc)])           // Author timeline
+  @@index([status, privacy, createdAt(sort: Desc)])    // Public feed
+  @@index([createdAt(sort: Desc)])                     // Chronological feed
+  @@index([status, deletedAt])                         // Active posts filter
+  @@index([isFlagged, moderatedAt])                    // Moderation queue
+
+  @@map("posts")
+}
+
+model PostMedia {
+  id        String    @id @default(uuid())
+  postId    String
+  type      MediaType
+  url       String    @db.VarChar(1000)
+  thumbnail String?   @db.VarChar(1000)
+  width     Int?
+  height    Int?
+  duration  Int?      // For videos (in seconds)
+  size      Int?      // File size in bytes
+  metadata  Json?     // Additional metadata (alt text, caption, etc.)
+  createdAt DateTime  @default(now())
+
+  // Relations
+  post      Post      @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@index([postId])
+  @@map("post_media")
+}
+
+model PostReaction {
+  id        String       @id @default(uuid())
+  postId    String
+  userId    String
+  type      ReactionType
+  createdAt DateTime     @default(now())
+
+  // Relations
+  post      Post         @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Prevent duplicate reactions (one reaction type per user per post)
+  @@unique([postId, userId])
+  @@index([postId, type])        // Aggregate reactions by type
+  @@index([userId, createdAt])   // User's reaction history
+  @@map("post_reactions")
+}
+
+model Comment {
+  id              String    @id @default(uuid())
+  postId          String
+  authorId        String
+  parentId        String?   // For nested replies
+  content         String    @db.Text
+
+  // Denormalized metrics
+  likesCount      Int       @default(0)
+  repliesCount    Int       @default(0)
+
+  // Moderation
+  isFlagged       Boolean   @default(false)
+  flaggedReason   String?   @db.VarChar(500)
+
+  // Audit fields
+  editedAt        DateTime?
+  deletedAt       DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  // Relations
+  post            Post               @relation(fields: [postId], references: [id], onDelete: Cascade)
+  author          User               @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  parent          Comment?           @relation("CommentThread", fields: [parentId], references: [id], onDelete: Cascade)
+  replies         Comment[]          @relation("CommentThread")
+  reactions       CommentReaction[]
+  mentions        CommentMention[]
+
+  // Indexes for nested comment queries
+  @@index([postId, createdAt(sort: Desc)])      // Post's comments chronologically
+  @@index([postId, parentId, createdAt])        // Nested replies
+  @@index([authorId, createdAt])                // User's comments
+  @@index([parentId])                           // Child comments lookup
+  @@map("comments")
+}
+
+model CommentReaction {
+  id        String       @id @default(uuid())
+  commentId String
+  userId    String
+  type      ReactionType
+  createdAt DateTime     @default(now())
+
+  // Relations
+  comment   Comment      @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Prevent duplicate reactions
+  @@unique([commentId, userId])
+  @@index([commentId, type])
+  @@index([userId, createdAt])
+  @@map("comment_reactions")
+}
+
+model SavedPost {
+  id        String   @id @default(uuid())
+  userId    String
+  postId    String
+  createdAt DateTime @default(now())
+
+  // Relations
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, postId])
+  @@index([userId, createdAt(sort: Desc)])
+  @@map("saved_posts")
+}
+
+model PostMention {
+  id           String   @id @default(uuid())
+  postId       String
+  mentionedId  String   // User being mentioned
+  createdAt    DateTime @default(now())
+
+  // Relations
+  post         Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, mentionedId])
+  @@index([mentionedId, createdAt])
+  @@map("post_mentions")
+}
+
+model CommentMention {
+  id           String   @id @default(uuid())
+  commentId    String
+  mentionedId  String   // User being mentioned
+  createdAt    DateTime @default(now())
+
+  // Relations
+  comment      Comment  @relation(fields: [commentId], references: [id], onDelete: Cascade)
+
+  @@unique([commentId, mentionedId])
+  @@index([mentionedId, createdAt])
+  @@map("comment_mentions")
+}
+
+model PostShare {
+  id              String    @id @default(uuid())
+  postId          String
+  sharedBy        String
+  sharedToGroupId String?   // Optional: shared to a group
+  caption         String?   @db.Text
+  createdAt       DateTime  @default(now())
+
+  // Relations
+  post            Post      @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@index([postId, createdAt])
+  @@index([sharedBy, createdAt])
+  @@map("post_shares")
+}
+
+// Feed Cache Table (Fan-out on Write strategy)
+model FeedCache {
+  id        String   @id @default(uuid())
+  userId    String   // User whose feed this belongs to
+  postId    String
+  score     Float    @default(0) // Ranking score (engagement + recency)
+  createdAt DateTime @default(now())
+  expiresAt DateTime // TTL for cache invalidation
+
+  @@unique([userId, postId])
+  @@index([userId, score(sort: Desc), createdAt(sort: Desc)]) // Feed retrieval
+  @@index([expiresAt])                                        // Cleanup old entries
+  @@map("feed_cache")
 }
