@@ -2,10 +2,13 @@ import { Request, Response, NextFunction } from 'express';
 import { ZodSchema, ZodError } from 'zod';
 import { ValidationError } from '@common/errors.js';
 
-export const validate = (schema: ZodSchema, source: 'body' | 'params' | 'query' = 'body') => {
+export const validate = (schema: ZodSchema, source?: 'body' | 'params' | 'query') => {
   return (req: Request, _res: Response, next: NextFunction) => {
     try {
-      schema.parse(req[source]);
+      // If source is specified, validate only that part of the request
+      // Otherwise, validate the entire request object (for schemas with params/query/body structure)
+      const dataToValidate = source ? req[source] : { params: req.params, query: req.query, body: req.body };
+      schema.parse(dataToValidate);
       next();
     } catch (error) {
       if (error instanceof ZodError) {

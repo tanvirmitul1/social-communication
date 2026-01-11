@@ -29,22 +29,22 @@ const postController = container.resolve(PostController);
 // ============================================================================
 
 // Get personalized feed (must be before /:id to avoid route conflict)
-router.get('/feed', authenticate, validate(getFeedSchema, 'query'), postController.getFeed);
+router.get('/feed', authenticate, validate(getFeedSchema), postController.getFeed);
 
 // Get saved posts
-router.get('/saved', authenticate, validate(getSavedPostsSchema, 'query'), postController.getSavedPosts);
+router.get('/saved', authenticate, validate(getSavedPostsSchema), postController.getSavedPosts);
 
 // Create post
-router.post('/', authenticate, validate(createPostSchema, 'body'), postController.createPost);
+router.post('/', authenticate, validate(createPostSchema), postController.createPost);
 
 // Get single post
-router.get('/:id', validate(getPostSchema, 'params'), postController.getPost);
+router.get('/:id', validate(getPostSchema), postController.getPost);
 
 // Update post
 router.patch('/:id', authenticate, validate(updatePostSchema), postController.updatePost);
 
 // Delete post
-router.delete('/:id', authenticate, validate(deletePostSchema, 'params'), postController.deletePost);
+router.delete('/:id', authenticate, validate(deletePostSchema), postController.deletePost);
 
 // ============================================================================
 // POST REACTIONS
@@ -52,7 +52,7 @@ router.delete('/:id', authenticate, validate(deletePostSchema, 'params'), postCo
 
 router.post('/:id/react', authenticate, validate(reactToPostSchema), postController.reactToPost);
 
-router.delete('/:id/react', authenticate, validate(unreactToPostSchema, 'params'), postController.unreactToPost);
+router.delete('/:id/react', authenticate, validate(unreactToPostSchema), postController.unreactToPost);
 
 router.get('/:id/reactions', validate(getPostReactionsSchema), postController.getPostReactions);
 
@@ -60,9 +60,9 @@ router.get('/:id/reactions', validate(getPostReactionsSchema), postController.ge
 // SAVE/BOOKMARK
 // ============================================================================
 
-router.post('/:id/save', authenticate, validate(savePostSchema, 'params'), postController.savePost);
+router.post('/:id/save', authenticate, validate(savePostSchema), postController.savePost);
 
-router.delete('/:id/save', authenticate, validate(unsavePostSchema, 'params'), postController.unsavePost);
+router.delete('/:id/save', authenticate, validate(unsavePostSchema), postController.unsavePost);
 
 // ============================================================================
 // SHARE

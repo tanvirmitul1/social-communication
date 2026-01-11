@@ -33,13 +33,13 @@ router.post('/', authenticate, validate(createCommentSchema), commentController.
 // ============================================================================
 
 // Get single comment
-router.get('/:id', validate(getCommentSchema, 'params'), commentController.getComment);
+router.get('/:id', validate(getCommentSchema), commentController.getComment);
 
 // Update comment
 router.patch('/:id', authenticate, validate(updateCommentSchema), commentController.updateComment);
 
 // Delete comment
-router.delete('/:id', authenticate, validate(deleteCommentSchema, 'params'), commentController.deleteComment);
+router.delete('/:id', authenticate, validate(deleteCommentSchema), commentController.deleteComment);
 
 // Get replies to a comment
 router.get('/:commentId/replies', validate(getRepliesSchema), commentController.getReplies);
@@ -50,7 +50,7 @@ router.get('/:commentId/replies', validate(getRepliesSchema), commentController.
 
 router.post('/:id/react', authenticate, validate(reactToCommentSchema), commentController.reactToComment);
 
-router.delete('/:id/react', authenticate, validate(unreactToCommentSchema, 'params'), commentController.unreactToComment);
+router.delete('/:id/react', authenticate, validate(unreactToCommentSchema), commentController.unreactToComment);
 
 router.get('/:id/reactions', validate(getCommentReactionsSchema), commentController.getCommentReactions);
 
