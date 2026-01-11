@@ -5,9 +5,34 @@ import { ValidationError } from '@common/errors.js';
 export const validate = (schema: ZodSchema, source?: 'body' | 'params' | 'query') => {
   return (req: Request, _res: Response, next: NextFunction) => {
     try {
-      // If source is specified, validate only that part of the request
-      // Otherwise, validate the entire request object (for schemas with params/query/body structure)
-      const dataToValidate = source ? req[source] : { params: req.params, query: req.query, body: req.body };
+      let dataToValidate: unknown;
+
+      if (source) {
+        // If source is explicitly specified, validate only that part
+        dataToValidate = req[source];
+      } else {
+        // Auto-detect: Check if schema has 'body', 'params', or 'query' keys
+        // by attempting to parse a test object and checking the error path
+        const testParse = schema.safeParse({ params: {}, query: {}, body: {} });
+
+        if (!testParse.success) {
+          const hasStructuredKeys = testParse.error.errors.some((err) =>
+            err.path[0] === 'body' || err.path[0] === 'params' || err.path[0] === 'query'
+          );
+
+          if (hasStructuredKeys) {
+            // Schema expects structured request (e.g., { body: {...}, params: {...}, query: {...} })
+            dataToValidate = { params: req.params, query: req.query, body: req.body };
+          } else {
+            // Schema expects direct body data (backward compatibility)
+            dataToValidate = req.body;
+          }
+        } else {
+          // If test parse succeeds with empty object, assume direct body validation
+          dataToValidate = req.body;
+        }
+      }
+
       schema.parse(dataToValidate);
       next();
     } catch (error) {
