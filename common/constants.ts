@@ -15,6 +15,11 @@ export const CONSTANTS = {
     RATE_LIMIT: (identifier: string) => `ratelimit:${identifier}`,
     ACTIVE_CALL: (callId: string) => `call:${callId}`,
     BLACKLISTED_TOKEN: (token: string) => `blacklist:${token}`,
+    CACHED_POST: (postId: string) => `post:${postId}`,
+    CACHED_COMMENT: (commentId: string) => `comment:${commentId}`,
+    USER_FEED: (userId: string) => `feed:${userId}`,
+    POST_REACTIONS: (postId: string) => `reactions:post:${postId}`,
+    COMMENT_REACTIONS: (commentId: string) => `reactions:comment:${commentId}`,
   },
 
   // WebSocket Events
@@ -80,5 +85,8 @@ export const CONSTANTS = {
     MESSAGE: 1800, // 30 minutes
     PRESENCE: 300, // 5 minutes
     TYPING: 10, // 10 seconds
+    POST: 1800, // 30 minutes
+    COMMENT: 900, // 15 minutes
+    FEED: 300, // 5 minutes
   },
 } as const;
