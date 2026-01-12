@@ -14,6 +14,7 @@ export class PostController {
     this.getUserPosts = this.getUserPosts.bind(this);
     this.getFeed = this.getFeed.bind(this);
     this.reactToPost = this.reactToPost.bind(this);
+    this.updateReaction = this.updateReaction.bind(this);
     this.unreactToPost = this.unreactToPost.bind(this);
     this.getPostReactions = this.getPostReactions.bind(this);
     this.savePost = this.savePost.bind(this);
@@ -302,6 +303,46 @@ export class PostController {
 
     const reaction = await this.postService.reactToPost(id, userId, type);
     return ResponseHandler.created(res, reaction, 'Reaction added successfully');
+  }
+
+  /**
+   * @swagger
+   * /posts/{id}/react:
+   *   put:
+   *     summary: Update reaction on a post
+   *     tags: [Posts]
+   *     security:
+   *       - bearerAuth: []
+   *     parameters:
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         schema:
+   *           type: string
+   *           format: uuid
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             required:
+   *               - type
+   *             properties:
+   *               type:
+   *                 type: string
+   *                 enum: [LIKE, LOVE, HAHA, WOW, SAD, ANGRY]
+   *     responses:
+   *       200:
+   *         description: Reaction updated successfully
+   */
+  async updateReaction(req: AuthRequest, res: Response): Promise<Response> {
+    const { id } = req.params;
+    const userId = req.user!.id;
+    const { type } = req.body;
+
+    const reaction = await this.postService.updateReaction(id, userId, type);
+    return ResponseHandler.success(res, reaction, 'Reaction updated successfully');
   }
 
   /**

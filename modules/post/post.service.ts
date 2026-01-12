@@ -174,6 +174,29 @@ export class PostService {
     return reaction;
   }
 
+  async updateReaction(postId: string, userId: string, type: ReactionType): Promise<PostReaction> {
+    const post = await this.postRepository.findById(postId);
+
+    if (!post || post.deletedAt) {
+      throw new NotFoundError('Post not found');
+    }
+
+    // Check if user has already reacted
+    const existingReaction = await this.postRepository.findReaction(postId, userId);
+
+    if (!existingReaction) {
+      throw new NotFoundError('You have not reacted to this post');
+    }
+
+    // Update the reaction type
+    const reaction = await this.postRepository.createReaction(postId, userId, type);
+
+    // Invalidate post cache
+    await this.invalidatePostCache(postId);
+
+    return reaction;
+  }
+
   async unreactToPost(postId: string, userId: string): Promise<void> {
     const post = await this.postRepository.findById(postId);
 

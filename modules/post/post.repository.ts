@@ -358,14 +358,23 @@ export class PostRepository extends BaseRepository {
       select: { followingId: true },
     });
 
-    const authorIds = [...followingIds.map((f) => f.followingId), userId];
+    const followingUserIds = followingIds.map((f) => f.followingId);
 
     return this.findMany(
       {
-        authorId: { in: authorIds },
         status: PostStatus.ACTIVE,
         deletedAt: null,
-        OR: [{ privacy: PostPrivacy.PUBLIC }, { privacy: PostPrivacy.FRIENDS }],
+        OR: [
+          // User's own posts (all privacy levels)
+          {
+            authorId: userId,
+          },
+          // Posts from following users (PUBLIC or FRIENDS only)
+          {
+            authorId: { in: followingUserIds },
+            privacy: { in: [PostPrivacy.PUBLIC, PostPrivacy.FRIENDS] },
+          },
+        ],
       },
       { cursor, limit, userId }
     );

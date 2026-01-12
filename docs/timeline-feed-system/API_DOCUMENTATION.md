@@ -311,7 +311,8 @@ Get user's personalized feed (following, discover, or trending).
 ```
 
 **Feed Types**:
-- **following**: Posts from users you follow (fast, cached)
+
+- **following**: Posts from users you follow + your own posts (all privacy levels). Fast, cached.
 - **discover**: Public posts from all users (explore new content)
 - **trending**: Most popular posts in last 24 hours
 
@@ -532,9 +533,63 @@ Add or change reaction to a post (idempotent).
 ```
 
 **Idempotent Behavior**:
+
 - Calling with same `type`: No change, returns existing reaction
 - Calling with different `type`: Updates reaction type
 - Like count incremented only on first reaction
+
+---
+
+### Update Reaction on Post
+
+Update an existing reaction to a different type.
+
+**Endpoint**: `PUT /posts/:id/react`
+**Auth**: Required
+
+**Request Body**:
+
+```json
+{
+  "type": "HAHA"
+}
+```
+
+**Reaction Types**: Same as POST (LIKE, LOVE, HAHA, WOW, SAD, ANGRY)
+
+**Response** (200 OK):
+
+```json
+{
+  "success": true,
+  "message": "Reaction updated successfully",
+  "data": {
+    "id": "reaction-uuid",
+    "postId": "post-uuid",
+    "userId": "user-uuid",
+    "type": "HAHA",
+    "createdAt": "2024-01-15T10:40:00Z",
+    "updatedAt": "2024-01-15T10:45:00Z"
+  }
+}
+```
+
+**Note**: This endpoint requires that the user has already reacted. If no existing reaction, returns 404 error.
+
+**Frontend Implementation**:
+
+```typescript
+async function updateReaction(postId: string, newType: ReactionType) {
+  await fetch(`/api/v1/posts/${postId}/react`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${getAccessToken()}`
+    },
+    body: JSON.stringify({ type: newType })
+  });
+}
+```
 
 ---
 
@@ -593,6 +648,7 @@ Get users who reacted to a post (optionally filtered by type).
 ```
 
 **Frontend Implementation (Reaction Picker)**:
+
 ```typescript
 const reactionEmojis = {
   LIKE: '👍',
@@ -603,6 +659,7 @@ const reactionEmojis = {
   ANGRY: '😠'
 };
 
+// Add new reaction or change existing (idempotent)
 async function reactToPost(postId: string, type: ReactionType) {
   await fetch(`/api/v1/posts/${postId}/react`, {
     method: 'POST',
@@ -614,6 +671,19 @@ async function reactToPost(postId: string, type: ReactionType) {
   });
 }
 
+// Update existing reaction only (requires existing reaction)
+async function updateReaction(postId: string, type: ReactionType) {
+  await fetch(`/api/v1/posts/${postId}/react`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${getAccessToken()}`
+    },
+    body: JSON.stringify({ type })
+  });
+}
+
+// Remove reaction
 async function unreactToPost(postId: string) {
   await fetch(`/api/v1/posts/${postId}/react`, {
     method: 'DELETE',
@@ -1048,6 +1118,11 @@ function FeedComponent() {
 ---
 
 ## Changelog
+
+- **v1.1.0** (2026-01-12): Feed and Reaction Updates
+  - Added PUT endpoint for updating reactions (`/posts/:id/react`)
+  - Fixed following feed to include user's own posts (all privacy levels)
+  - User's own posts now appear in following feed alongside followed users' posts
 
 - **v1.0.0** (2024-01-15): Initial release
   - Posts CRUD

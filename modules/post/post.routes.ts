@@ -10,6 +10,7 @@ import {
   deletePostSchema,
   getFeedSchema,
   reactToPostSchema,
+  updateReactionSchema,
   unreactToPostSchema,
   getPostReactionsSchema,
   savePostSchema,
@@ -50,6 +51,8 @@ router.delete('/:id', authenticate, validate(deletePostSchema), postController.d
 // ============================================================================
 
 router.post('/:id/react', authenticate, validate(reactToPostSchema), postController.reactToPost);
+
+router.put('/:id/react', authenticate, validate(updateReactionSchema), postController.updateReaction);
 
 router.delete('/:id/react', authenticate, validate(unreactToPostSchema), postController.unreactToPost);
 

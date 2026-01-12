@@ -75,6 +75,15 @@ export const reactToPostSchema = z.object({
   }),
 });
 
+export const updateReactionSchema = z.object({
+  params: z.object({
+    id: z.string().uuid('Invalid post ID'),
+  }),
+  body: z.object({
+    type: z.nativeEnum(ReactionType, { errorMap: () => ({ message: 'Invalid reaction type' }) }),
+  }),
+});
+
 export const unreactToPostSchema = z.object({
   params: z.object({
     id: z.string().uuid('Invalid post ID'),
