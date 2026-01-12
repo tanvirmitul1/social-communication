@@ -358,7 +358,7 @@ export class PostRepository extends BaseRepository {
       select: { followingId: true },
     });
 
-    const authorIds = followingIds.map((f) => f.followingId);
+    const authorIds = [...followingIds.map((f) => f.followingId), userId];
 
     return this.findMany(
       {
