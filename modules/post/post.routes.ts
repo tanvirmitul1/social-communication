@@ -8,7 +8,6 @@ import {
   updatePostSchema,
   getPostSchema,
   deletePostSchema,
-  getUserPostsSchema,
   getFeedSchema,
   reactToPostSchema,
   unreactToPostSchema,

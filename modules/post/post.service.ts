@@ -1,8 +1,8 @@
 import { injectable, inject } from 'tsyringe';
-import { Post, PostReaction, SavedPost, PostShare, ReactionType, PostPrivacy, Prisma } from '@prisma/client';
+import { Post, PostReaction, SavedPost, PostShare, ReactionType, PostPrivacy, MediaType } from '@prisma/client';
 import { PostRepository, PostWithDetails } from '@modules/post/post.repository.js';
 import { CacheService } from '@infrastructure/cache.service.js';
-import { NotFoundError, ForbiddenError, ConflictError } from '@common/errors.js';
+import { NotFoundError, ForbiddenError } from '@common/errors.js';
 import { CONSTANTS } from '@common/constants.js';
 
 interface CreatePostData {
@@ -10,7 +10,7 @@ interface CreatePostData {
   content: string;
   privacy?: PostPrivacy;
   media?: Array<{
-    type: string;
+    type: MediaType;
     url: string;
     thumbnail?: string;
     width?: number;
