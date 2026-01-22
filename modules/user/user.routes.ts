@@ -18,6 +18,7 @@ router.get('/', userController.searchUsers);
 // Note: /suggestions must come before /:id to avoid route conflict
 router.get('/suggestions', authenticate, userController.getUserSuggestions);
 router.get('/:id', authenticate, userController.getUser);
+router.get('/:id/preview', authenticate, userController.getProfilePreview);
 router.patch('/:id', authenticate, userController.updateUser);
 router.delete('/:id', authenticate, userController.deleteUser);
 router.get('/:id/presence', authenticate, userController.getUserPresence);

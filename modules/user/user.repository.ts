@@ -162,4 +162,61 @@ export class UserRepository extends BaseRepository {
       return userData as User;
     });
   }
+
+  async getProfilePreview(targetUserId: string, viewerId: string) {
+    const user = await this.db.user.findUnique({
+      where: { id: targetUserId, status: { not: UserStatus.DELETED } },
+      select: {
+        id: true,
+        username: true,
+        avatar: true,
+        statusMessage: true,
+        isOnline: true,
+        lastSeen: true,
+        _count: {
+          select: {
+            followers: true,
+            following: true,
+          },
+        },
+      },
+    });
+
+    if (!user) return null;
+
+    // Check friendship status
+    const [friendship, pendingRequest, sentRequest, mutualFriends] = await Promise.all([
+      this.db.friendRequest.findFirst({
+        where: {
+          OR: [
+            { senderId: viewerId, receiverId: targetUserId, status: 'ACCEPTED' },
+            { senderId: targetUserId, receiverId: viewerId, status: 'ACCEPTED' },
+          ],
+        },
+      }),
+      this.db.friendRequest.findFirst({
+        where: { senderId: targetUserId, receiverId: viewerId, status: 'PENDING' },
+      }),
+      this.db.friendRequest.findFirst({
+        where: { senderId: viewerId, receiverId: targetUserId, status: 'PENDING' },
+      }),
+      this.db.$queryRaw<Array<{ count: bigint }>>`
+        SELECT COUNT(DISTINCT f2."followingId")::int as count
+        FROM "Follow" f1
+        INNER JOIN "Follow" f2 ON f1."followingId" = f2."followerId"
+        WHERE f1."followerId" = ${viewerId}
+        AND f2."followingId" = ${targetUserId}
+      `,
+    ]);
+
+    return {
+      ...user,
+      followersCount: user._count.followers,
+      followingCount: user._count.following,
+      isFriend: !!friendship,
+      hasPendingRequest: !!pendingRequest,
+      hasSentRequest: !!sentRequest,
+      mutualFriendsCount: Number(mutualFriends[0]?.count || 0),
+    };
+  }
 }

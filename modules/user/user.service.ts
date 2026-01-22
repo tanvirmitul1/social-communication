@@ -119,4 +119,16 @@ export class UserService {
 
     return suggestions;
   }
+
+  async getProfilePreview(targetUserId: string, viewerId: string) {
+    const cacheKey = `profile:preview:${targetUserId}:${viewerId}`;
+    const cached = await this.cacheService.get(cacheKey);
+    if (cached) return cached;
+
+    const profile = await this.userRepository.getProfilePreview(targetUserId, viewerId);
+    if (!profile) throw new NotFoundError('User not found');
+
+    await this.cacheService.setWithExpiry(cacheKey, profile, 300); // 5 min cache
+    return profile;
+  }
 }

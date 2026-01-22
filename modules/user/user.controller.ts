@@ -14,6 +14,7 @@ export class UserController {
     this.searchUsers = this.searchUsers.bind(this);
     this.getUserPresence = this.getUserPresence.bind(this);
     this.getUserSuggestions = this.getUserSuggestions.bind(this);
+    this.getProfilePreview = this.getProfilePreview.bind(this);
   }
 
   /**
@@ -330,5 +331,59 @@ export class UserController {
       suggestions.map((u) => Helpers.sanitizeUser(u)),
       'User suggestions retrieved successfully'
     );
+  }
+
+  /**
+   * @swagger
+   * /users/{id}/preview:
+   *   get:
+   *     summary: Get user profile preview (for hover popup)
+   *     tags: [Users]
+   *     security:
+   *       - bearerAuth: []
+   *     parameters:
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         schema:
+   *           type: string
+   *         description: Target user ID
+   *     responses:
+   *       200:
+   *         description: Profile preview retrieved
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 id:
+   *                   type: string
+   *                 username:
+   *                   type: string
+   *                 avatar:
+   *                   type: string
+   *                 statusMessage:
+   *                   type: string
+   *                 isOnline:
+   *                   type: boolean
+   *                 followersCount:
+   *                   type: integer
+   *                 followingCount:
+   *                   type: integer
+   *                 isFriend:
+   *                   type: boolean
+   *                 hasPendingRequest:
+   *                   type: boolean
+   *                 hasSentRequest:
+   *                   type: boolean
+   *                 mutualFriendsCount:
+   *                   type: integer
+   */
+  async getProfilePreview(req: AuthRequest, res: Response): Promise<Response> {
+    const { id } = req.params;
+    const viewerId = req.user!.id;
+
+    const preview = await this.userService.getProfilePreview(id, viewerId);
+    return ResponseHandler.success(res, preview);
   }
 }
