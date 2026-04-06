@@ -16,4 +16,10 @@ router.post('/logout-all', authenticate, authController.logoutAll);
 router.post('/refresh', validate(refreshTokenSchema), authController.refreshToken);
 router.get('/me', authenticate, authController.getProfile);
 
+// Two-Factor Authentication
+router.post('/2fa/setup', authenticate, authController.setup2FA);
+router.post('/2fa/enable', authenticate, authController.enable2FA);
+router.post('/2fa/disable', authenticate, authController.disable2FA);
+router.post('/2fa/verify', authLimiter, authController.verifyTwoFactorLogin);
+
 export { router as authRoutes };

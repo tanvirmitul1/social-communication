@@ -15,6 +15,10 @@ export class AuthController {
     this.logoutAll = this.logoutAll.bind(this);
     this.refreshToken = this.refreshToken.bind(this);
     this.getProfile = this.getProfile.bind(this);
+    this.setup2FA = this.setup2FA.bind(this);
+    this.enable2FA = this.enable2FA.bind(this);
+    this.disable2FA = this.disable2FA.bind(this);
+    this.verifyTwoFactorLogin = this.verifyTwoFactorLogin.bind(this);
   }
 
   /**
@@ -144,15 +148,19 @@ export class AuthController {
   async login(req: Request, res: Response): Promise<Response> {
     const { email, password } = req.body as LoginInput;
 
-    const { user, tokens } = await this.authService.login(email, password);
-    const sanitizedUser = Helpers.sanitizeUser(user);
+    const result = await this.authService.login(email, password);
+
+    if (result.requiresTwoFactor) {
+      return ResponseHandler.success(
+        res,
+        { requiresTwoFactor: true, twoFactorToken: result.twoFactorToken },
+        'Two-factor authentication required'
+      );
+    }
 
     return ResponseHandler.success(
       res,
-      {
-        user: sanitizedUser,
-        ...tokens,
-      },
+      { user: Helpers.sanitizeUser(result.user), ...result.tokens },
       'Login successful'
     );
   }
@@ -313,5 +321,120 @@ export class AuthController {
     const sanitizedUser = Helpers.sanitizeUser(user);
 
     return ResponseHandler.success(res, sanitizedUser);
+  }
+
+  // ============================================================================
+  // TWO-FACTOR AUTHENTICATION
+  // ============================================================================
+
+  /**
+   * @swagger
+   * /auth/2fa/setup:
+   *   post:
+   *     summary: Generate a 2FA secret and QR code
+   *     description: Returns a QR code data URL to scan with an authenticator app. Call enable after scanning.
+   *     tags: [Authentication]
+   *     security:
+   *       - bearerAuth: []
+   *     responses:
+   *       200:
+   *         description: Secret and QR code generated
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 secret: { type: string }
+   *                 otpauthUrl: { type: string }
+   *                 qrCodeDataUrl: { type: string }
+   */
+  async setup2FA(req: AuthRequest, res: Response): Promise<Response> {
+    const result = await this.authService.setup2FA(req.user!.id);
+    return ResponseHandler.success(res, result, '2FA setup initiated — scan the QR code');
+  }
+
+  /**
+   * @swagger
+   * /auth/2fa/enable:
+   *   post:
+   *     summary: Activate 2FA by verifying the first code
+   *     tags: [Authentication]
+   *     security:
+   *       - bearerAuth: []
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             required: [token]
+   *             properties:
+   *               token: { type: string, description: "6-digit code from authenticator app" }
+   *     responses:
+   *       200:
+   *         description: 2FA enabled
+   *       401:
+   *         description: Invalid code
+   */
+  async enable2FA(req: AuthRequest, res: Response): Promise<Response> {
+    await this.authService.enable2FA(req.user!.id, req.body.token);
+    return ResponseHandler.success(res, null, '2FA enabled successfully');
+  }
+
+  /**
+   * @swagger
+   * /auth/2fa/disable:
+   *   post:
+   *     summary: Disable 2FA (requires password + current code)
+   *     tags: [Authentication]
+   *     security:
+   *       - bearerAuth: []
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             required: [password, token]
+   *             properties:
+   *               password: { type: string }
+   *               token: { type: string }
+   */
+  async disable2FA(req: AuthRequest, res: Response): Promise<Response> {
+    await this.authService.disable2FA(req.user!.id, req.body.password, req.body.token);
+    return ResponseHandler.success(res, null, '2FA disabled successfully');
+  }
+
+  /**
+   * @swagger
+   * /auth/2fa/verify:
+   *   post:
+   *     summary: Complete login by verifying 2FA code
+   *     description: Exchange the twoFactorToken (from login) + a valid code for full auth tokens.
+   *     tags: [Authentication]
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             required: [twoFactorToken, token]
+   *             properties:
+   *               twoFactorToken: { type: string }
+   *               token: { type: string, description: "6-digit authenticator code" }
+   *     responses:
+   *       200:
+   *         description: Login complete — full tokens returned
+   *       401:
+   *         description: Invalid or expired token / wrong code
+   */
+  async verifyTwoFactorLogin(req: Request, res: Response): Promise<Response> {
+    const { twoFactorToken, token } = req.body;
+    const result = await this.authService.verifyTwoFactorLogin(twoFactorToken, token);
+    return ResponseHandler.success(
+      res,
+      { user: Helpers.sanitizeUser(result.user), ...result.tokens },
+      'Login successful'
+    );
   }
 }
