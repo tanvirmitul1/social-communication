@@ -275,4 +275,92 @@ export class MessageService {
 
     return { chats, total, page, limit };
   }
+
+  // ============================================================================
+  // MESSAGE PINNING
+  // ============================================================================
+
+  /**
+   * Pins a message.
+   * - In a group chat: only the sender OR a group admin/owner may pin.
+   * - In a DM: either participant may pin.
+   * Limit: max 5 pinned messages per conversation (oldest auto-unpinned on overflow).
+   */
+  async pinMessage(messageId: string, userId: string): Promise<Message> {
+    const message = await this.messageRepository.findById(messageId);
+    if (!message || message.deletedAt) throw new NotFoundError('Message not found');
+    if (message.isPinned) return message as Message;
+
+    if (message.groupId) {
+      // Must be a group member with ADMIN/OWNER role or the sender
+      const membership = await this.messageRepository.prisma.groupMember.findUnique({
+        where: { groupId_userId: { groupId: message.groupId, userId } },
+      });
+      const isPrivileged =
+        membership && (membership.role === 'ADMIN' || membership.role === 'OWNER');
+      if (!isPrivileged && message.senderId !== userId) {
+        throw new ForbiddenError('Only group admins or the message author can pin messages');
+      }
+
+      // Enforce max 5 pinned per group
+      const pinned = await this.messageRepository.findPinned({ groupId: message.groupId }, 5);
+      if (pinned.length >= 5) {
+        // Unpin the oldest to make room
+        const oldest = pinned[pinned.length - 1];
+        await this.messageRepository.setPinned(oldest.id, false);
+        await this.cacheService.delete(CONSTANTS.REDIS_KEYS.CACHED_MESSAGE(oldest.id));
+      }
+    } else {
+      // DM: must be a participant
+      if (message.senderId !== userId && message.receiverId !== userId) {
+        throw new ForbiddenError('You are not a participant in this conversation');
+      }
+    }
+
+    const pinned = await this.messageRepository.setPinned(messageId, true);
+    await this.cacheService.delete(CONSTANTS.REDIS_KEYS.CACHED_MESSAGE(messageId));
+    return pinned;
+  }
+
+  async unpinMessage(messageId: string, userId: string): Promise<Message> {
+    const message = await this.messageRepository.findById(messageId);
+    if (!message || message.deletedAt) throw new NotFoundError('Message not found');
+    if (!message.isPinned) return message as Message;
+
+    if (message.groupId) {
+      const membership = await this.messageRepository.prisma.groupMember.findUnique({
+        where: { groupId_userId: { groupId: message.groupId, userId } },
+      });
+      const isPrivileged =
+        membership && (membership.role === 'ADMIN' || membership.role === 'OWNER');
+      if (!isPrivileged && message.senderId !== userId) {
+        throw new ForbiddenError('Only group admins or the message author can unpin messages');
+      }
+    } else {
+      if (message.senderId !== userId && message.receiverId !== userId) {
+        throw new ForbiddenError('You are not a participant in this conversation');
+      }
+    }
+
+    const unpinned = await this.messageRepository.setPinned(messageId, false);
+    await this.cacheService.delete(CONSTANTS.REDIS_KEYS.CACHED_MESSAGE(messageId));
+    return unpinned;
+  }
+
+  async getPinnedMessages(opts: {
+    groupId?: string;
+    otherUserId?: string;
+    requesterId: string;
+  }): Promise<Message[]> {
+    if (opts.groupId) {
+      return this.messageRepository.findPinned({ groupId: opts.groupId }, 5);
+    }
+    if (opts.otherUserId) {
+      return this.messageRepository.findPinned(
+        { userId1: opts.requesterId, userId2: opts.otherUserId },
+        5
+      );
+    }
+    return [];
+  }
 }

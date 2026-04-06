@@ -21,7 +21,9 @@ router.post('/', messageLimiter, validate(sendMessageSchema), messageController.
 router.get('/chats', validate(getChatListSchema, 'query'), messageController.getChatList);
 router.get('/search', messageController.searchMessages);
 router.get('/group/:groupId', messageController.getGroupMessages);
+router.get('/group/:groupId/pinned', messageController.getGroupPinnedMessages);
 router.get('/direct/:otherUserId', messageController.getDirectMessages);
+router.get('/direct/:otherUserId/pinned', messageController.getDirectPinnedMessages);
 router.get('/:id', messageController.getMessage);
 router.patch('/:id', validate(editMessageSchema), messageController.editMessage);
 router.delete('/:id', messageController.deleteMessage);
@@ -32,5 +34,7 @@ router.delete('/:id/react', validate(reactToMessageSchema), messageController.re
 router.get('/:id/reactions', messageController.getMessageReactions);
 router.get('/:id/reaction', messageController.getUserReaction);
 router.post('/:id/forward', validate(forwardMessageSchema), messageController.forwardMessage);
+router.post('/:id/pin', messageController.pinMessage);
+router.delete('/:id/pin', messageController.unpinMessage);
 
 export { router as messageRoutes };

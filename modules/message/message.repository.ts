@@ -208,6 +208,42 @@ export class MessageRepository extends BaseRepository {
     });
   }
 
+  // ============================================================================
+  // PINNING
+  // ============================================================================
+
+  async setPinned(id: string, isPinned: boolean): Promise<Message> {
+    return this.db.message.update({ where: { id }, data: { isPinned } });
+  }
+
+  /** Returns up to `limit` pinned messages for a group or DM conversation. */
+  async findPinned(
+    opts: { groupId: string } | { userId1: string; userId2: string },
+    limit: number = 5
+  ): Promise<Message[]> {
+    const where =
+      'groupId' in opts
+        ? { groupId: opts.groupId, isPinned: true, deletedAt: null }
+        : {
+            isPinned: true,
+            deletedAt: null,
+            OR: [
+              { senderId: opts.userId1, receiverId: opts.userId2 },
+              { senderId: opts.userId2, receiverId: opts.userId1 },
+            ],
+          };
+
+    return this.db.message.findMany({
+      where,
+      include: {
+        sender: { select: { id: true, username: true, avatar: true } },
+        reactions: true,
+      },
+      orderBy: { createdAt: 'desc' },
+      take: limit,
+    });
+  }
+
   async getChatList(userId: string, skip: number, take: number) {
     // Get all unique user IDs that current user has conversations with
     const directMessages = await this.db.message.findMany({

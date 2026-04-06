@@ -24,6 +24,10 @@ export class MessageController {
     this.searchMessages = this.searchMessages.bind(this);
     this.forwardMessage = this.forwardMessage.bind(this);
     this.getChatList = this.getChatList.bind(this);
+    this.pinMessage = this.pinMessage.bind(this);
+    this.unpinMessage = this.unpinMessage.bind(this);
+    this.getGroupPinnedMessages = this.getGroupPinnedMessages.bind(this);
+    this.getDirectPinnedMessages = this.getDirectPinnedMessages.bind(this);
   }
 
   /**
@@ -883,5 +887,88 @@ export class MessageController {
     );
 
     return ResponseHandler.paginated(res, result.chats, result.page, result.limit, result.total);
+  }
+
+  // ============================================================================
+  // PINNING
+  // ============================================================================
+
+  /**
+   * @swagger
+   * /messages/{id}/pin:
+   *   post:
+   *     summary: Pin a message
+   *     tags: [Messages]
+   *     security:
+   *       - bearerAuth: []
+   *     parameters:
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         schema: { type: string, format: uuid }
+   *     responses:
+   *       200:
+   *         description: Message pinned
+   *       403:
+   *         description: Insufficient permissions
+   *       404:
+   *         description: Message not found
+   */
+  async pinMessage(req: AuthRequest, res: Response): Promise<Response> {
+    const message = await this.messageService.pinMessage(req.params.id, req.user!.id);
+    return ResponseHandler.success(res, message, 'Message pinned');
+  }
+
+  /**
+   * @swagger
+   * /messages/{id}/pin:
+   *   delete:
+   *     summary: Unpin a message
+   *     tags: [Messages]
+   *     security:
+   *       - bearerAuth: []
+   *     parameters:
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         schema: { type: string, format: uuid }
+   */
+  async unpinMessage(req: AuthRequest, res: Response): Promise<Response> {
+    const message = await this.messageService.unpinMessage(req.params.id, req.user!.id);
+    return ResponseHandler.success(res, message, 'Message unpinned');
+  }
+
+  /**
+   * @swagger
+   * /messages/group/{groupId}/pinned:
+   *   get:
+   *     summary: Get pinned messages for a group
+   *     tags: [Messages]
+   *     security:
+   *       - bearerAuth: []
+   */
+  async getGroupPinnedMessages(req: AuthRequest, res: Response): Promise<Response> {
+    const messages = await this.messageService.getPinnedMessages({
+      groupId: req.params.groupId,
+      requesterId: req.user!.id,
+    });
+    return ResponseHandler.success(res, messages);
+  }
+
+  /**
+   * @swagger
+   * /messages/direct/{otherUserId}/pinned:
+   *   get:
+   *     summary: Get pinned messages in a DM conversation
+   *     tags: [Messages]
+   *     security:
+   *       - bearerAuth: []
+   */
+  async getDirectPinnedMessages(req: AuthRequest, res: Response): Promise<Response> {
+    const messages = await this.messageService.getPinnedMessages({
+      otherUserId: req.params.otherUserId,
+      requesterId: req.user!.id,
+    });
+    return ResponseHandler.success(res, messages);
   }
 }
