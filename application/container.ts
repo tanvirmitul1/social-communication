@@ -9,6 +9,8 @@ import { CallRepository } from '@modules/call/call.repository.js';
 import { FriendRequestRepository } from '@modules/user/friend-request.repository.js';
 import { PostRepository } from '@modules/post/post.repository.js';
 import { CommentRepository } from '@modules/comment/comment.repository.js';
+import { AIConversationRepository } from '@modules/ai-agent/ai-conversation.repository.js';
+import { AIChatMessageRepository } from '@modules/ai-agent/ai-chat-message.repository.js';
 
 // Import services
 import { AuthService } from '@modules/auth/auth.service.js';
@@ -21,6 +23,7 @@ import { JitsiService } from '@infrastructure/jitsi.service.js';
 import { FriendRequestService } from '@modules/user/friend-request.service.js';
 import { PostService } from '@modules/post/post.service.js';
 import { CommentService } from '@modules/comment/comment.service.js';
+import { AIAgentService } from '@modules/ai-agent/ai-agent.service.js';
 
 // Register repositories
 container.registerSingleton('UserRepository', UserRepository);
@@ -30,6 +33,8 @@ container.registerSingleton('CallRepository', CallRepository);
 container.registerSingleton('FriendRequestRepository', FriendRequestRepository);
 container.registerSingleton('PostRepository', PostRepository);
 container.registerSingleton('CommentRepository', CommentRepository);
+container.registerSingleton('AIConversationRepository', AIConversationRepository);
+container.registerSingleton('AIChatMessageRepository', AIChatMessageRepository);
 
 // Register services
 container.registerSingleton('AuthService', AuthService);
@@ -42,5 +47,6 @@ container.registerSingleton('JitsiService', JitsiService);
 container.registerSingleton('FriendRequestService', FriendRequestService);
 container.registerSingleton('PostService', PostService);
 container.registerSingleton('CommentService', CommentService);
+container.registerSingleton('AIAgentService', AIAgentService);
 
 export { container };

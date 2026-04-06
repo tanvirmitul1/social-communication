@@ -357,8 +357,95 @@ For detailed documentation, see: [Full API Documentation](https://github.com/you
             },
           },
         },
+        AIAgentExecuteRequest: {
+          type: 'object',
+          required: ['userInput'],
+          properties: {
+            userInput: {
+              type: 'string',
+              description: 'The input from the user to send to the AI agent',
+              example: 'Can you help me find friends with similar interests?',
+              minLength: 1,
+              maxLength: 10000,
+            },
+            conversationId: {
+              type: 'string',
+              format: 'uuid',
+              description: 'Existing conversation ID to continue a conversation. If not provided, a new conversation will be created.',
+              example: 'a1b2c3d4-e5f6-7890-1234-567890abcdef',
+            },
+          },
+        },
+        AIAgentExecuteResponse: {
+          type: 'object',
+          properties: {
+            success: { type: 'boolean', example: true },
+            data: {
+              type: 'object',
+              properties: {
+                conversationId: {
+                  type: 'string',
+                  format: 'uuid',
+                  example: 'a1b2c3d4-e5f6-7890-1234-567890abcdef',
+                },
+                response: {
+                  type: 'string',
+                  description: 'The AI-generated response',
+                  example: 'I\'d be happy to help you find friends with similar interests...',
+                },
+              },
+            },
+          },
+        },
+        Conversation: {
+          type: 'object',
+          properties: {
+            id: { type: 'string', format: 'uuid' },
+            userId: { type: 'string', format: 'uuid' },
+            title: { type: 'string', nullable: true },
+            createdAt: { type: 'string', format: 'date-time' },
+            updatedAt: { type: 'string', format: 'date-time' },
+          },
+        },
+        ChatMessage: {
+          type: 'object',
+          properties: {
+            id: { type: 'string', format: 'uuid' },
+            conversationId: { type: 'string', format: 'uuid' },
+            sender: { type: 'string', enum: ['user', 'ai'] },
+            content: { type: 'string' },
+            timestamp: { type: 'string', format: 'date-time' },
+            metadata: { type: 'object', nullable: true },
+          },
+        },
+        AIAgentConversationsResponse: {
+          type: 'object',
+          properties: {
+            success: { type: 'boolean', example: true },
+            data: {
+              type: 'array',
+              items: { $ref: '#/components/schemas/Conversation' },
+            },
+          },
+        },
+        AIAgentHistoryResponse: {
+          type: 'object',
+          properties: {
+            success: { type: 'boolean', example: true },
+            data: {
+              type: 'array',
+              items: { $ref: '#/components/schemas/ChatMessage' },
+            },
+          },
+        },
       },
     },
+    tags: [
+      {
+        name: 'AI-Agent',
+        description: 'AI Agent functionality with multiple provider fallback mechanism',
+      },
+    ],
     security: [
       {
         bearerAuth: [],

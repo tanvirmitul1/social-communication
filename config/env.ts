@@ -58,4 +58,9 @@ export const config = envsafe({
   ENABLE_EMAIL_NOTIFICATIONS: bool({ default: false }),
   ENABLE_PUSH_NOTIFICATIONS: bool({ default: false }),
   ENABLE_ANALYTICS: bool({ default: true }),
+
+  // AI Providers
+  OPENAI_API_KEY: str({ default: '', allowEmpty: true }),
+  GOOGLE_AI_API_KEY: str({ default: '', allowEmpty: true }),
+  DEEPSEEK_AI_API_KEY: str({ default: '', allowEmpty: true }),
 });

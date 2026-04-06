@@ -91,10 +91,10 @@ services:
       redis:
         condition: service_healthy
     volumes:
-      # Mount source code for hot reload
+      # Mount source code for hot reload (excluding node_modules)
       - .:/app
-      # Prevent node_modules from being overwritten
-      - /app/node_modules
+      # Named volume for node_modules to preserve installed packages
+      - social_comm_node_modules:/app/node_modules
       # Persist uploads and logs
       - ./uploads:/app/uploads
       - ./logs:/app/logs
@@ -124,6 +124,7 @@ volumes:
   postgres_data_dev:
   redis_data_dev:
   pgadmin_data_dev:
+  social_comm_node_modules:
 
 networks:
   social-comm-network:

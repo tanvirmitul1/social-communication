@@ -25,6 +25,7 @@ import { groupRoutes } from '@modules/group/group.routes.js';
 import { callRoutes } from '@modules/call/call.routes.js';
 import { friendRoutes } from '@modules/user/friend.routes.js';
 import { postRoutes } from '@modules/post/post.routes.js';
+import aiAgentRoutes from '@modules/ai-agent/ai-agent.routes.js';
 import { HealthController } from '@modules/health/health.controller.js';
 
 export function createApp(): ExpressApplication {
@@ -101,6 +102,7 @@ export function createApp(): ExpressApplication {
   app.use(`/api/${API_VERSION}/calls`, callRoutes);
   app.use(`/api/${API_VERSION}/friends`, friendRoutes);
   app.use(`/api/${API_VERSION}/posts`, postRoutes);
+  app.use(`/api/${API_VERSION}/ai-agent`, aiAgentRoutes);
 
   // Root endpoint
   app.get('/', (_req, res) => {
