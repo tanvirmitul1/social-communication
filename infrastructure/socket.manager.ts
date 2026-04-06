@@ -6,6 +6,7 @@ import { createClient } from 'redis';
 import { config } from '@config/env.js';
 import { ChatSocketHandler } from '@modules/message/message.gateway.js';
 import { CallSocketHandler } from '@modules/call/call.gateway.js';
+import { SocketService } from '@infrastructure/socket.service.js';
 import { logger } from '@config/logger.js';
 
 export class SocketManager {
@@ -22,6 +23,7 @@ export class SocketManager {
       transports: ['websocket', 'polling'],
     });
 
+    SocketService.initialize(this.io);
     this.setupRedisAdapter();
     this.setupAuthentication();
 
