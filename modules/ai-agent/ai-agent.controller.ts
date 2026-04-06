@@ -60,8 +60,8 @@ export class AIAgentController {
 
     try {
       const result = await this.aiAgentService.executeAgent(userId, userInput, conversationId);
-      
-      res.status(200).json({
+
+      return res.status(200).json({
         success: true,
         data: result,
       });
@@ -128,7 +128,7 @@ export class AIAgentController {
 
     const history = await this.aiAgentService.getConversationHistory(conversationId);
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       data: history,
     });
