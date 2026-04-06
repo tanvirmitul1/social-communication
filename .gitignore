@@ -37,3 +37,5 @@ uploads/
 # Temp
 tmp/
 temp/
+.env
+.env.dev.example .env.development .env.docker .env.example .env.production .env.production.example .env.test
