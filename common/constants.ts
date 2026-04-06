@@ -20,6 +20,16 @@ export const CONSTANTS = {
     USER_FEED: (userId: string) => `feed:${userId}`,
     POST_REACTIONS: (postId: string) => `reactions:post:${postId}`,
     COMMENT_REACTIONS: (commentId: string) => `reactions:comment:${commentId}`,
+    // Notifications
+    NOTIFICATION_COUNT: (userId: string) => `notif:count:${userId}`,
+    // Block list
+    BLOCKED_USERS: (userId: string) => `blocked:${userId}`,
+    // Pinned messages per conversation
+    PINNED_MESSAGES: (chatKey: string) => `pinned:${chatKey}`,
+    // User settings
+    USER_SETTINGS: (userId: string) => `settings:${userId}`,
+    // 2FA temp token
+    TWO_FA_TEMP: (token: string) => `2fa:temp:${token}`,
   },
 
   // WebSocket Events
@@ -40,6 +50,8 @@ export const CONSTANTS = {
     MESSAGE_EDIT: 'message:edit',
     MESSAGE_DELETE: 'message:delete',
     MESSAGE_REACTION: 'message:reaction',
+    MESSAGE_PIN: 'message:pin',
+    MESSAGE_UNPIN: 'message:unpin',
     TYPING_START: 'typing:start',
     TYPING_STOP: 'typing:stop',
 
@@ -59,6 +71,8 @@ export const CONSTANTS = {
 
     // Notifications
     NOTIFICATION: 'notification',
+    NOTIFICATION_NEW: 'notification:new',
+    NOTIFICATION_READ: 'notification:read',
   },
 
   // Pagination
@@ -88,5 +102,9 @@ export const CONSTANTS = {
     POST: 1800, // 30 minutes
     COMMENT: 900, // 15 minutes
     FEED: 300, // 5 minutes
+    NOTIFICATION: 60, // 1 minute (unread count)
+    BLOCKED_USERS: 300, // 5 minutes
+    USER_SETTINGS: 3600, // 1 hour
+    TWO_FA_TEMP: 300, // 5 minutes (temp 2FA token)
   },
 } as const;
