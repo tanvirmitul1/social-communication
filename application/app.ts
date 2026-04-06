@@ -26,6 +26,9 @@ import { callRoutes } from '@modules/call/call.routes.js';
 import { friendRoutes } from '@modules/user/friend.routes.js';
 import { postRoutes } from '@modules/post/post.routes.js';
 import aiAgentRoutes from '@modules/ai-agent/ai-agent.routes.js';
+import { notificationRoutes } from '@modules/notification/notification.routes.js';
+import { blockRoutes } from '@modules/user/block.routes.js';
+import { uploadRoutes } from '@modules/upload/upload.routes.js';
 import { HealthController } from '@modules/health/health.controller.js';
 
 export function createApp(): ExpressApplication {
@@ -103,6 +106,9 @@ export function createApp(): ExpressApplication {
   app.use(`/api/${API_VERSION}/friends`, friendRoutes);
   app.use(`/api/${API_VERSION}/posts`, postRoutes);
   app.use(`/api/${API_VERSION}/ai-agent`, aiAgentRoutes);
+  app.use(`/api/${API_VERSION}/notifications`, notificationRoutes);
+  app.use(`/api/${API_VERSION}/users/blocks`, blockRoutes);
+  app.use(`/api/${API_VERSION}/upload`, uploadRoutes);
 
   // Root endpoint
   app.get('/', (_req, res) => {

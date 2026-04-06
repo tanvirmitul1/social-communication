@@ -11,6 +11,9 @@ import { PostRepository } from '@modules/post/post.repository.js';
 import { CommentRepository } from '@modules/comment/comment.repository.js';
 import { AIConversationRepository } from '@modules/ai-agent/ai-conversation.repository.js';
 import { AIChatMessageRepository } from '@modules/ai-agent/ai-chat-message.repository.js';
+import { NotificationRepository } from '@modules/notification/notification.repository.js';
+import { BlockRepository } from '@modules/user/block.repository.js';
+import { UserSettingsRepository } from '@modules/user/user-settings.repository.js';
 
 // Import services
 import { AuthService } from '@modules/auth/auth.service.js';
@@ -24,6 +27,11 @@ import { FriendRequestService } from '@modules/user/friend-request.service.js';
 import { PostService } from '@modules/post/post.service.js';
 import { CommentService } from '@modules/comment/comment.service.js';
 import { AIAgentService } from '@modules/ai-agent/ai-agent.service.js';
+import { NotificationService } from '@modules/notification/notification.service.js';
+import { BlockService } from '@modules/user/block.service.js';
+import { UserSettingsService } from '@modules/user/user-settings.service.js';
+import { UploadService } from '@infrastructure/upload.service.js';
+import { PushNotificationService } from '@infrastructure/push-notification.service.js';
 
 // Register repositories
 container.registerSingleton('UserRepository', UserRepository);
@@ -35,6 +43,9 @@ container.registerSingleton('PostRepository', PostRepository);
 container.registerSingleton('CommentRepository', CommentRepository);
 container.registerSingleton('AIConversationRepository', AIConversationRepository);
 container.registerSingleton('AIChatMessageRepository', AIChatMessageRepository);
+container.registerSingleton('NotificationRepository', NotificationRepository);
+container.registerSingleton('BlockRepository', BlockRepository);
+container.registerSingleton('UserSettingsRepository', UserSettingsRepository);
 
 // Register services
 container.registerSingleton('AuthService', AuthService);
@@ -48,5 +59,10 @@ container.registerSingleton('FriendRequestService', FriendRequestService);
 container.registerSingleton('PostService', PostService);
 container.registerSingleton('CommentService', CommentService);
 container.registerSingleton('AIAgentService', AIAgentService);
+container.registerSingleton('NotificationService', NotificationService);
+container.registerSingleton('BlockService', BlockService);
+container.registerSingleton('UserSettingsService', UserSettingsService);
+container.registerSingleton('UploadService', UploadService);
+container.registerSingleton('PushNotificationService', PushNotificationService);
 
 export { container };
