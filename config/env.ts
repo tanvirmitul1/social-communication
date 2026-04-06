@@ -63,4 +63,14 @@ export const config = envsafe({
   OPENAI_API_KEY: str({ default: '', allowEmpty: true }),
   GOOGLE_AI_API_KEY: str({ default: '', allowEmpty: true }),
   DEEPSEEK_AI_API_KEY: str({ default: '', allowEmpty: true }),
+
+  // Cloudinary (media uploads)
+  CLOUDINARY_CLOUD_NAME: str({ default: '', allowEmpty: true }),
+  CLOUDINARY_API_KEY: str({ default: '', allowEmpty: true }),
+  CLOUDINARY_API_SECRET: str({ default: '', allowEmpty: true }),
+
+  // Firebase (push notifications)
+  FIREBASE_PROJECT_ID: str({ default: '', allowEmpty: true }),
+  FIREBASE_CLIENT_EMAIL: str({ default: '', allowEmpty: true }),
+  FIREBASE_PRIVATE_KEY: str({ default: '', allowEmpty: true }),
 });
