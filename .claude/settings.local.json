@@ -28,7 +28,10 @@
       "Bash(docker inspect:*)",
       "Bash(pnpm prisma migrate dev:*)",
       "Bash(git reset:*)",
-      "Bash(git show:*)"
+      "Bash(git show:*)",
+      "Bash(netstat:*)",
+      "Bash(tasklist:*)",
+      "Bash(docker stop:*)"
     ],
     "deny": [],
     "ask": []
