@@ -438,13 +438,97 @@ For detailed documentation, see: [Full API Documentation](https://github.com/you
             },
           },
         },
+        // ── Notifications ────────────────────────────────────────────────────
+        Notification: {
+          type: 'object',
+          properties: {
+            id: { type: 'string', format: 'uuid' },
+            userId: { type: 'string', format: 'uuid' },
+            type: {
+              type: 'string',
+              enum: ['MESSAGE', 'CALL', 'FRIEND_REQUEST', 'GROUP_INVITE', 'MENTION', 'REACTION', 'SYSTEM'],
+            },
+            title: { type: 'string', example: 'New message' },
+            message: { type: 'string', example: 'John sent you a message' },
+            isRead: { type: 'boolean', example: false },
+            data: { type: 'object', nullable: true, description: 'Extra context payload (e.g. messageId, senderId)' },
+            createdAt: { type: 'string', format: 'date-time' },
+          },
+        },
+        // ── Upload ───────────────────────────────────────────────────────────
+        UploadResult: {
+          type: 'object',
+          properties: {
+            url: { type: 'string', format: 'uri', description: 'HTTP URL' },
+            secureUrl: { type: 'string', format: 'uri', description: 'HTTPS URL — always use this' },
+            publicId: { type: 'string', description: 'Cloudinary public ID — store this to delete the file later' },
+            resourceType: { type: 'string', enum: ['image', 'video', 'raw'] },
+            format: { type: 'string', example: 'webp' },
+            width: { type: 'integer', nullable: true },
+            height: { type: 'integer', nullable: true },
+            duration: { type: 'number', nullable: true, description: 'Video duration in seconds' },
+            size: { type: 'integer', description: 'File size in bytes' },
+            thumbnailUrl: { type: 'string', format: 'uri', nullable: true },
+          },
+        },
+        // ── User Settings ─────────────────────────────────────────────────────
+        UserSettings: {
+          type: 'object',
+          properties: {
+            id: { type: 'string', format: 'uuid' },
+            userId: { type: 'string', format: 'uuid' },
+            notifyMessages: { type: 'boolean', default: true },
+            notifyMentions: { type: 'boolean', default: true },
+            notifyReactions: { type: 'boolean', default: true },
+            notifyFriendRequests: { type: 'boolean', default: true },
+            notifyCalls: { type: 'boolean', default: true },
+            showOnlineStatus: { type: 'boolean', default: true },
+            allowFriendRequests: { type: 'boolean', default: true },
+            theme: { type: 'string', enum: ['light', 'dark', 'system'], default: 'system' },
+            language: { type: 'string', example: 'en', default: 'en' },
+            updatedAt: { type: 'string', format: 'date-time' },
+          },
+        },
+        // ── Two-Factor Auth ───────────────────────────────────────────────────
+        TwoFactorSetupResponse: {
+          type: 'object',
+          properties: {
+            secret: { type: 'string', description: 'Base32 TOTP secret (show as text fallback)' },
+            otpauthUrl: { type: 'string', description: 'otpauth:// URI — pass to a QR library' },
+            qrCodeDataUrl: { type: 'string', description: 'Base64 data URL of the QR code image — render as <img src="..." />' },
+          },
+        },
+        TwoFactorRequiredResponse: {
+          type: 'object',
+          description: 'Returned by POST /auth/login when the account has 2FA enabled. Exchange twoFactorToken via POST /auth/2fa/verify.',
+          properties: {
+            requiresTwoFactor: { type: 'boolean', example: true },
+            twoFactorToken: { type: 'string', description: 'Short-lived JWT (5 min) to use with POST /auth/2fa/verify' },
+          },
+        },
+        // ── Block ─────────────────────────────────────────────────────────────
+        BlockedUser: {
+          type: 'object',
+          properties: {
+            id: { type: 'string', format: 'uuid', description: 'Block record ID' },
+            blockerId: { type: 'string', format: 'uuid' },
+            blockedId: { type: 'string', format: 'uuid' },
+            reason: { type: 'string', nullable: true },
+            createdAt: { type: 'string', format: 'date-time' },
+            blocked: { $ref: '#/components/schemas/User' },
+          },
+        },
       },
     },
     tags: [
-      {
-        name: 'AI-Agent',
-        description: 'AI Agent functionality with multiple provider fallback mechanism',
-      },
+      { name: 'Authentication', description: 'Registration, login, token refresh, and two-factor authentication' },
+      { name: 'Messages', description: 'Send, edit, delete, react, pin messages; chat list' },
+      { name: 'Groups', description: 'Group creation, membership, and management' },
+      { name: 'Calls', description: 'Audio/video calls via Jitsi integration' },
+      { name: 'Notifications', description: 'In-app notification feed with real-time Socket.IO delivery' },
+      { name: 'Upload', description: 'Cloudinary media upload — images, videos, documents, avatars' },
+      { name: 'Users', description: 'User profiles, friend system, block/unblock, settings' },
+      { name: 'AI-Agent', description: 'AI Agent with multi-provider fallback (OpenAI, Gemini, DeepSeek)' },
     ],
     security: [
       {

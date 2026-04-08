@@ -97,6 +97,10 @@ export class AuthController {
    * /auth/login:
    *   post:
    *     summary: Login with email and password
+   *     description: |
+   *       Returns full auth tokens on success.
+   *       If the account has 2FA enabled, returns `{ requiresTwoFactor: true, twoFactorToken }` instead.
+   *       Exchange the `twoFactorToken` via `POST /auth/2fa/verify`.
    *     tags: [Authentication]
    *     requestBody:
    *       required: true
@@ -104,9 +108,7 @@ export class AuthController {
    *         application/json:
    *           schema:
    *             type: object
-   *             required:
-   *               - email
-   *               - password
+   *             required: [email, password]
    *             properties:
    *               email:
    *                 type: string
@@ -117,31 +119,28 @@ export class AuthController {
    *                 example: Password123
    *     responses:
    *       200:
-   *         description: Login successful
+   *         description: Login successful (or 2FA required)
    *         content:
    *           application/json:
    *             schema:
-   *               type: object
-   *               properties:
-   *                 success:
-   *                   type: boolean
-   *                   example: true
-   *                 message:
-   *                   type: string
-   *                   example: Login successful
-   *                 data:
-   *                   type: object
+   *               oneOf:
+   *                 - $ref: '#/components/schemas/LoginResponse'
+   *                 - type: object
+   *                   description: 2FA is enabled — use twoFactorToken with POST /auth/2fa/verify
    *                   properties:
-   *                     user:
-   *                       $ref: '#/components/schemas/User'
-   *                     accessToken:
-   *                       type: string
-   *                     refreshToken:
-   *                       type: string
+   *                     success: { type: boolean, example: true }
+   *                     data:
+   *                       $ref: '#/components/schemas/TwoFactorRequiredResponse'
    *       400:
    *         description: Validation error
+   *         content:
+   *           application/json:
+   *             schema: { $ref: '#/components/schemas/Error' }
    *       401:
    *         description: Invalid credentials
+   *         content:
+   *           application/json:
+   *             schema: { $ref: '#/components/schemas/Error' }
    *       429:
    *         description: Too many requests
    */
@@ -331,22 +330,31 @@ export class AuthController {
    * @swagger
    * /auth/2fa/setup:
    *   post:
-   *     summary: Generate a 2FA secret and QR code
-   *     description: Returns a QR code data URL to scan with an authenticator app. Call enable after scanning.
+   *     summary: Step 1 — Generate a 2FA secret and QR code
+   *     description: |
+   *       Generates a TOTP secret, stores it on the account, and returns a QR code.
+   *       Render `data.qrCodeDataUrl` as an `<img>` tag for the user to scan.
+   *       2FA is **not active** until the user calls `POST /auth/2fa/enable` with a valid code.
    *     tags: [Authentication]
    *     security:
    *       - bearerAuth: []
    *     responses:
    *       200:
-   *         description: Secret and QR code generated
+   *         description: Secret and QR code generated successfully
    *         content:
    *           application/json:
    *             schema:
    *               type: object
    *               properties:
-   *                 secret: { type: string }
-   *                 otpauthUrl: { type: string }
-   *                 qrCodeDataUrl: { type: string }
+   *                 success: { type: boolean, example: true }
+   *                 message: { type: string, example: 2FA setup initiated — scan the QR code }
+   *                 data:
+   *                   $ref: '#/components/schemas/TwoFactorSetupResponse'
+   *       401:
+   *         description: Unauthorized
+   *         content:
+   *           application/json:
+   *             schema: { $ref: '#/components/schemas/Error' }
    */
   async setup2FA(req: AuthRequest, res: Response): Promise<Response> {
     const result = await this.authService.setup2FA(req.user!.id);
@@ -357,7 +365,8 @@ export class AuthController {
    * @swagger
    * /auth/2fa/enable:
    *   post:
-   *     summary: Activate 2FA by verifying the first code
+   *     summary: Step 2 — Activate 2FA by verifying the first code
+   *     description: Verifies the 6-digit code from the authenticator app and marks 2FA as active on the account.
    *     tags: [Authentication]
    *     security:
    *       - bearerAuth: []
@@ -369,12 +378,30 @@ export class AuthController {
    *             type: object
    *             required: [token]
    *             properties:
-   *               token: { type: string, description: "6-digit code from authenticator app" }
+   *               token:
+   *                 type: string
+   *                 description: 6-digit code from authenticator app
+   *                 example: '123456'
    *     responses:
    *       200:
-   *         description: 2FA enabled
+   *         description: 2FA enabled successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success: { type: boolean, example: true }
+   *                 message: { type: string, example: 2FA enabled successfully }
    *       401:
-   *         description: Invalid code
+   *         description: Invalid 2FA code
+   *         content:
+   *           application/json:
+   *             schema: { $ref: '#/components/schemas/Error' }
+   *       409:
+   *         description: 2FA is already enabled on this account
+   *         content:
+   *           application/json:
+   *             schema: { $ref: '#/components/schemas/Error' }
    */
   async enable2FA(req: AuthRequest, res: Response): Promise<Response> {
     await this.authService.enable2FA(req.user!.id, req.body.token);
@@ -385,7 +412,8 @@ export class AuthController {
    * @swagger
    * /auth/2fa/disable:
    *   post:
-   *     summary: Disable 2FA (requires password + current code)
+   *     summary: Disable 2FA (requires current password + valid code)
+   *     description: Requires both the account password and a valid TOTP code to prevent unauthorized disabling.
    *     tags: [Authentication]
    *     security:
    *       - bearerAuth: []
@@ -397,8 +425,33 @@ export class AuthController {
    *             type: object
    *             required: [password, token]
    *             properties:
-   *               password: { type: string }
-   *               token: { type: string }
+   *               password:
+   *                 type: string
+   *                 description: Current account password
+   *               token:
+   *                 type: string
+   *                 description: 6-digit code from authenticator app
+   *                 example: '654321'
+   *     responses:
+   *       200:
+   *         description: 2FA disabled successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success: { type: boolean, example: true }
+   *                 message: { type: string, example: 2FA disabled successfully }
+   *       401:
+   *         description: Invalid password or 2FA code
+   *         content:
+   *           application/json:
+   *             schema: { $ref: '#/components/schemas/Error' }
+   *       409:
+   *         description: 2FA is not enabled on this account
+   *         content:
+   *           application/json:
+   *             schema: { $ref: '#/components/schemas/Error' }
    */
   async disable2FA(req: AuthRequest, res: Response): Promise<Response> {
     await this.authService.disable2FA(req.user!.id, req.body.password, req.body.token);
@@ -409,8 +462,10 @@ export class AuthController {
    * @swagger
    * /auth/2fa/verify:
    *   post:
-   *     summary: Complete login by verifying 2FA code
-   *     description: Exchange the twoFactorToken (from login) + a valid code for full auth tokens.
+   *     summary: Step 3 — Complete 2FA login and receive full auth tokens
+   *     description: |
+   *       Exchange the `twoFactorToken` received from `POST /auth/login` (when 2FA is required)
+   *       along with the 6-digit authenticator code for full access + refresh tokens.
    *     tags: [Authentication]
    *     requestBody:
    *       required: true
@@ -420,13 +475,25 @@ export class AuthController {
    *             type: object
    *             required: [twoFactorToken, token]
    *             properties:
-   *               twoFactorToken: { type: string }
-   *               token: { type: string, description: "6-digit authenticator code" }
+   *               twoFactorToken:
+   *                 type: string
+   *                 description: The short-lived JWT returned by POST /auth/login when 2FA is required
+   *               token:
+   *                 type: string
+   *                 description: 6-digit code from authenticator app
+   *                 example: '123456'
    *     responses:
    *       200:
    *         description: Login complete — full tokens returned
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/LoginResponse'
    *       401:
-   *         description: Invalid or expired token / wrong code
+   *         description: Invalid or expired twoFactorToken, or wrong authenticator code
+   *         content:
+   *           application/json:
+   *             schema: { $ref: '#/components/schemas/Error' }
    */
   async verifyTwoFactorLogin(req: Request, res: Response): Promise<Response> {
     const { twoFactorToken, token } = req.body;

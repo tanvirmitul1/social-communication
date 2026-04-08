@@ -143,6 +143,21 @@ export class NotificationController {
    *     tags: [Notifications]
    *     security:
    *       - bearerAuth: []
+   *     responses:
+   *       200:
+   *         description: All notifications marked as read
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success: { type: boolean, example: true }
+   *                 message: { type: string, example: All notifications marked as read }
+   *       401:
+   *         description: Unauthorized
+   *         content:
+   *           application/json:
+   *             schema: { $ref: '#/components/schemas/Error' }
    */
   async markAllAsRead(req: AuthRequest, res: Response): Promise<Response> {
     await this.notificationService.markAllAsRead(req.user!.id);
@@ -181,6 +196,21 @@ export class NotificationController {
    *     tags: [Notifications]
    *     security:
    *       - bearerAuth: []
+   *     responses:
+   *       200:
+   *         description: All notifications deleted
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success: { type: boolean, example: true }
+   *                 message: { type: string, example: All notifications deleted }
+   *       401:
+   *         description: Unauthorized
+   *         content:
+   *           application/json:
+   *             schema: { $ref: '#/components/schemas/Error' }
    */
   async deleteAllNotifications(req: AuthRequest, res: Response): Promise<Response> {
     await this.notificationService.deleteAllNotifications(req.user!.id);

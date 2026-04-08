@@ -932,6 +932,27 @@ export class MessageController {
    *         name: id
    *         required: true
    *         schema: { type: string, format: uuid }
+   *         description: Message ID to unpin
+   *     responses:
+   *       200:
+   *         description: Message unpinned
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success: { type: boolean, example: true }
+   *                 data: { $ref: '#/components/schemas/Message' }
+   *       403:
+   *         description: Insufficient permissions (must be group admin/owner or DM participant)
+   *         content:
+   *           application/json:
+   *             schema: { $ref: '#/components/schemas/Error' }
+   *       404:
+   *         description: Message not found
+   *         content:
+   *           application/json:
+   *             schema: { $ref: '#/components/schemas/Error' }
    */
   async unpinMessage(req: AuthRequest, res: Response): Promise<Response> {
     const message = await this.messageService.unpinMessage(req.params.id, req.user!.id);
@@ -942,10 +963,33 @@ export class MessageController {
    * @swagger
    * /messages/group/{groupId}/pinned:
    *   get:
-   *     summary: Get pinned messages for a group
+   *     summary: Get pinned messages in a group (max 5)
    *     tags: [Messages]
    *     security:
    *       - bearerAuth: []
+   *     parameters:
+   *       - in: path
+   *         name: groupId
+   *         required: true
+   *         schema: { type: string, format: uuid }
+   *         description: Group ID
+   *     responses:
+   *       200:
+   *         description: Pinned messages returned (up to 5, newest first)
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success: { type: boolean, example: true }
+   *                 data:
+   *                   type: array
+   *                   items: { $ref: '#/components/schemas/Message' }
+   *       403:
+   *         description: Not a member of this group
+   *         content:
+   *           application/json:
+   *             schema: { $ref: '#/components/schemas/Error' }
    */
   async getGroupPinnedMessages(req: AuthRequest, res: Response): Promise<Response> {
     const messages = await this.messageService.getPinnedMessages({
@@ -959,10 +1003,33 @@ export class MessageController {
    * @swagger
    * /messages/direct/{otherUserId}/pinned:
    *   get:
-   *     summary: Get pinned messages in a DM conversation
+   *     summary: Get pinned messages in a direct message conversation (max 5)
    *     tags: [Messages]
    *     security:
    *       - bearerAuth: []
+   *     parameters:
+   *       - in: path
+   *         name: otherUserId
+   *         required: true
+   *         schema: { type: string, format: uuid }
+   *         description: The other participant's user ID
+   *     responses:
+   *       200:
+   *         description: Pinned messages returned (up to 5, newest first)
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success: { type: boolean, example: true }
+   *                 data:
+   *                   type: array
+   *                   items: { $ref: '#/components/schemas/Message' }
+   *       403:
+   *         description: Not a participant in this conversation
+   *         content:
+   *           application/json:
+   *             schema: { $ref: '#/components/schemas/Error' }
    */
   async getDirectPinnedMessages(req: AuthRequest, res: Response): Promise<Response> {
     const messages = await this.messageService.getPinnedMessages({

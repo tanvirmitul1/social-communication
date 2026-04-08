@@ -30,13 +30,25 @@ export class UserSettingsController {
    * @swagger
    * /users/settings:
    *   get:
-   *     summary: Get current user's settings
+   *     summary: Get current user's settings (auto-created with defaults on first access)
    *     tags: [Users]
    *     security:
    *       - bearerAuth: []
    *     responses:
    *       200:
    *         description: Settings retrieved
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success: { type: boolean, example: true }
+   *                 data: { $ref: '#/components/schemas/UserSettings' }
+   *       401:
+   *         description: Unauthorized
+   *         content:
+   *           application/json:
+   *             schema: { $ref: '#/components/schemas/Error' }
    */
   async getSettings(req: AuthRequest, res: Response): Promise<Response> {
     const settings = await this.settingsService.getSettings(req.user!.id);
@@ -47,7 +59,7 @@ export class UserSettingsController {
    * @swagger
    * /users/settings:
    *   patch:
-   *     summary: Update current user's settings
+   *     summary: Update current user's settings (partial update — only send fields you want to change)
    *     tags: [Users]
    *     security:
    *       - bearerAuth: []
@@ -66,10 +78,28 @@ export class UserSettingsController {
    *               showOnlineStatus: { type: boolean }
    *               allowFriendRequests: { type: boolean }
    *               theme: { type: string, enum: [light, dark, system] }
-   *               language: { type: string }
+   *               language: { type: string, minLength: 2, maxLength: 10, example: en }
    *     responses:
    *       200:
-   *         description: Settings updated
+   *         description: Settings updated successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success: { type: boolean, example: true }
+   *                 message: { type: string, example: Settings updated successfully }
+   *                 data: { $ref: '#/components/schemas/UserSettings' }
+   *       400:
+   *         description: Validation error (e.g. invalid theme value)
+   *         content:
+   *           application/json:
+   *             schema: { $ref: '#/components/schemas/Error' }
+   *       401:
+   *         description: Unauthorized
+   *         content:
+   *           application/json:
+   *             schema: { $ref: '#/components/schemas/Error' }
    */
   async updateSettings(req: AuthRequest, res: Response): Promise<Response> {
     const data = updateSettingsSchema.parse(req.body);

@@ -18,7 +18,12 @@ export class UploadController {
    * @swagger
    * /upload/image:
    *   post:
-   *     summary: Upload an image (post/message media)
+   *     summary: Upload an image (max 10 MB — converted to WebP, thumbnail generated)
+   *     description: |
+   *       Accepts JPEG, PNG, GIF, WebP. Converts to WebP at max 1920×1080.
+   *       A 320×320 thumbnail is also generated.
+   *       Store `secureUrl` and `publicId` — pass `secureUrl` to POST /posts or messages,
+   *       use `publicId` to delete the file later via Cloudinary.
    *     tags: [Upload]
    *     security:
    *       - bearerAuth: []
@@ -37,6 +42,7 @@ export class UploadController {
    *                 type: string
    *                 enum: [posts, messages, groups]
    *                 default: posts
+   *                 description: Cloudinary sub-folder for organisation
    *     responses:
    *       200:
    *         description: Image uploaded successfully
@@ -45,13 +51,17 @@ export class UploadController {
    *             schema:
    *               type: object
    *               properties:
-   *                 url: { type: string }
-   *                 secureUrl: { type: string }
-   *                 publicId: { type: string }
-   *                 width: { type: integer }
-   *                 height: { type: integer }
-   *                 size: { type: integer }
-   *                 thumbnailUrl: { type: string }
+   *                 success: { type: boolean, example: true }
+   *                 data: { $ref: '#/components/schemas/UploadResult' }
+   *       400:
+   *         description: No file provided, unsupported MIME type, or file too large
+   *         content:
+   *           application/json:
+   *             schema: { $ref: '#/components/schemas/Error' }
+   *       401:
+   *         description: Unauthorized
+   *       429:
+   *         description: Rate limit exceeded (20 uploads/min)
    */
   async uploadImage(req: AuthRequest, res: Response): Promise<Response> {
     const file = req.file;
@@ -67,7 +77,8 @@ export class UploadController {
    * @swagger
    * /upload/video:
    *   post:
-   *     summary: Upload a video
+   *     summary: Upload a video (max 50 MB — poster thumbnail auto-generated)
+   *     description: Accepts MP4, WebM, MOV, AVI. A poster thumbnail is generated at the 1s mark.
    *     tags: [Upload]
    *     security:
    *       - bearerAuth: []
@@ -82,6 +93,25 @@ export class UploadController {
    *               file:
    *                 type: string
    *                 format: binary
+   *     responses:
+   *       200:
+   *         description: Video uploaded successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success: { type: boolean, example: true }
+   *                 data: { $ref: '#/components/schemas/UploadResult' }
+   *       400:
+   *         description: No file, unsupported MIME type, or exceeds 50 MB limit
+   *         content:
+   *           application/json:
+   *             schema: { $ref: '#/components/schemas/Error' }
+   *       401:
+   *         description: Unauthorized
+   *       429:
+   *         description: Rate limit exceeded (20 uploads/min)
    */
   async uploadVideo(req: AuthRequest, res: Response): Promise<Response> {
     const file = req.file;
@@ -95,7 +125,8 @@ export class UploadController {
    * @swagger
    * /upload/file:
    *   post:
-   *     summary: Upload a document/file
+   *     summary: Upload a document or binary file (max 25 MB)
+   *     description: Accepts PDF, DOC/DOCX, XLS/XLSX, PPT/PPTX, TXT, ZIP, CSV. Stored as raw (no transformation).
    *     tags: [Upload]
    *     security:
    *       - bearerAuth: []
@@ -110,6 +141,25 @@ export class UploadController {
    *               file:
    *                 type: string
    *                 format: binary
+   *     responses:
+   *       200:
+   *         description: File uploaded successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success: { type: boolean, example: true }
+   *                 data: { $ref: '#/components/schemas/UploadResult' }
+   *       400:
+   *         description: No file, unsupported MIME type, or exceeds 25 MB limit
+   *         content:
+   *           application/json:
+   *             schema: { $ref: '#/components/schemas/Error' }
+   *       401:
+   *         description: Unauthorized
+   *       429:
+   *         description: Rate limit exceeded (20 uploads/min)
    */
   async uploadFile(req: AuthRequest, res: Response): Promise<Response> {
     const file = req.file;
@@ -123,7 +173,11 @@ export class UploadController {
    * @swagger
    * /upload/avatar:
    *   post:
-   *     summary: Upload a user avatar (square crop, max 500x500)
+   *     summary: Upload a user avatar (auto-cropped to 500×500 square, face-gravity)
+   *     description: |
+   *       Accepts JPEG, PNG, GIF, WebP (max 10 MB).
+   *       Cloudinary auto-detects faces and centers the crop on the face.
+   *       Use the returned `secureUrl` as the user's `avatar` field.
    *     tags: [Upload]
    *     security:
    *       - bearerAuth: []
@@ -138,6 +192,25 @@ export class UploadController {
    *               file:
    *                 type: string
    *                 format: binary
+   *     responses:
+   *       200:
+   *         description: Avatar uploaded and cropped successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success: { type: boolean, example: true }
+   *                 data: { $ref: '#/components/schemas/UploadResult' }
+   *       400:
+   *         description: No file, unsupported MIME type, or exceeds 10 MB limit
+   *         content:
+   *           application/json:
+   *             schema: { $ref: '#/components/schemas/Error' }
+   *       401:
+   *         description: Unauthorized
+   *       429:
+   *         description: Rate limit exceeded (20 uploads/min)
    */
   async uploadAvatar(req: AuthRequest, res: Response): Promise<Response> {
     const file = req.file;

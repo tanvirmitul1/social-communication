@@ -73,7 +73,7 @@ export class BlockController {
    * @swagger
    * /users/blocks:
    *   get:
-   *     summary: Get list of blocked users
+   *     summary: Get paginated list of users you have blocked
    *     tags: [Users]
    *     security:
    *       - bearerAuth: []
@@ -81,12 +81,32 @@ export class BlockController {
    *       - in: query
    *         name: cursor
    *         schema: { type: string, format: uuid }
+   *         description: Pagination cursor (last block record ID from previous page)
    *       - in: query
    *         name: limit
    *         schema: { type: integer, default: 20, maximum: 50 }
    *     responses:
    *       200:
    *         description: Blocked users list
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success: { type: boolean, example: true }
+   *                 data:
+   *                   type: object
+   *                   properties:
+   *                     items:
+   *                       type: array
+   *                       items: { $ref: '#/components/schemas/BlockedUser' }
+   *                     nextCursor: { type: string, format: uuid, nullable: true }
+   *                     hasMore: { type: boolean }
+   *       401:
+   *         description: Unauthorized
+   *         content:
+   *           application/json:
+   *             schema: { $ref: '#/components/schemas/Error' }
    */
   async getBlockedUsers(req: AuthRequest, res: Response): Promise<Response> {
     const userId = req.user!.id;
@@ -105,10 +125,35 @@ export class BlockController {
    * @swagger
    * /users/blocks/{userId}/status:
    *   get:
-   *     summary: Check if a user is blocked (bidirectional)
+   *     summary: Check block status between you and another user (bidirectional)
+   *     description: Returns true if either you blocked them OR they blocked you.
    *     tags: [Users]
    *     security:
    *       - bearerAuth: []
+   *     parameters:
+   *       - in: path
+   *         name: userId
+   *         required: true
+   *         schema: { type: string, format: uuid }
+   *         description: The other user's ID to check
+   *     responses:
+   *       200:
+   *         description: Block status returned
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success: { type: boolean, example: true }
+   *                 data:
+   *                   type: object
+   *                   properties:
+   *                     isBlocked: { type: boolean, example: false }
+   *       401:
+   *         description: Unauthorized
+   *         content:
+   *           application/json:
+   *             schema: { $ref: '#/components/schemas/Error' }
    */
   async checkBlocked(req: AuthRequest, res: Response): Promise<Response> {
     const isBlocked = await this.blockService.isBlocked(req.user!.id, req.params.userId);
