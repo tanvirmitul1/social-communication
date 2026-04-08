@@ -344,13 +344,29 @@ Errors are automatically caught by `express-async-errors` and handled by `errorH
 
 ## Important Conventions
 
-1. **Always use asyncHandler** for controller methods (handles promise rejections)
+1. **Do NOT use asyncHandler** — `express-async-errors` is installed and handles async errors automatically. Use plain `.bind(this)` in the constructor instead.
 2. **Always sanitize user objects** before sending responses (use `Helpers.sanitizeUser()`)
 3. **All file imports need .js extension** (ES modules requirement)
 4. **Use ResponseHandler** for consistent API responses
 5. **Register new services/repositories** in `application/container.ts`
 6. **Invalidate cache** when updating entities
 7. **Use logger, not console.log** (`logger.info()`, `logger.error()`, etc.)
+
+**Correct controller method pattern:**
+
+```typescript
+@injectable()
+export class MyController {
+  constructor(@inject('MyService') private myService: MyService) {
+    this.myMethod = this.myMethod.bind(this); // bind, not asyncHandler
+  }
+
+  async myMethod(req: AuthRequest, res: Response): Promise<Response> {
+    const result = await this.myService.doSomething(req.user!.id);
+    return ResponseHandler.success(res, result);
+  }
+}
+```
 
 ## WebSocket Event Naming
 
@@ -513,3 +529,81 @@ Swagger configuration is in `config/swagger.ts`.
 
 - Unhandled rejections logged but don't crash
 - Uncaught exceptions logged then process exits
+
+---
+
+## Development Standards (Always Apply Without Being Asked)
+
+These rules are **always active**. Do not wait for the user to specify them per-request.
+
+### 1. Swagger / OpenAPI Documentation
+
+Every new controller method MUST have a complete JSDoc `@swagger` annotation including:
+
+- `summary` and `description` (if the endpoint has non-obvious behavior)
+- `tags` (match the module: Authentication, Messages, Groups, Calls, Notifications, Upload, Users, AI-Agent, etc.)
+- `security: - bearerAuth: []` for all protected routes
+- `parameters` — all path params, query params (name, in, required, schema, description)
+- `requestBody` — required flag, `application/json` content with full inline schema or `$ref`
+- `responses` — ALL applicable codes:
+  - `200` / `201` with response schema (`$ref` or inline)
+  - `400` for validation errors
+  - `401` for auth-protected routes
+  - `403` for permission checks
+  - `404` for resource lookups
+  - `409` for conflict operations
+  - `429` for rate-limited routes
+
+When a new response shape is introduced, add its schema to the `components.schemas` section in `config/swagger.ts`.
+
+### 2. Scalability Patterns
+
+Always apply these patterns — they are not optional:
+
+- **Cursor-based pagination** for all list endpoints (never offset-based for large tables). Use `cursor` + `limit` query params, return `{ items, nextCursor, hasMore }`.
+- **Redis caching** for all read-heavy service methods. Use `CacheService.setWithExpiry()` with a TTL from `CONSTANTS.CACHE_TTL`. Invalidate on mutations.
+- **Redis keys** must be defined in `CONSTANTS.REDIS_KEYS` (never hardcode strings inline).
+- **Real-time events** via `SocketService` for any state change that the frontend needs to react to immediately (new message, friend request, notification, call, etc.).
+- **Rate limiting** on all public/write endpoints. Use existing limiters from `config/rate-limiter.ts` or create new ones there.
+
+### 3. Database & Schema Changes
+
+- After any `prisma/schema.prisma` change, always run `pnpm prisma:generate` (then `pnpm prisma:migrate` for a real migration).
+- Use database-level constraints (unique, cascade, index) rather than application-level enforcement where possible.
+- Add indexes on all foreign keys and columns used in `WHERE`/`ORDER BY` clauses.
+- Use transactions (`prisma.$transaction`) for multi-step writes.
+
+### 4. Optional Integrations (Cloudinary, Firebase)
+
+- All integrations with external services must **degrade gracefully** when their env vars are absent.
+- Check `if (!env.CLOUDINARY_API_KEY)` (or equivalent) before calling the service and throw a descriptive `AppError` rather than crashing.
+- Never assume optional services are available — always guard with a check.
+
+### 5. Error Handling
+
+- Always throw typed errors from `common/errors.ts`: `ValidationError`, `UnauthorizedError`, `ForbiddenError`, `NotFoundError`, `ConflictError`, `AppError`.
+- Never use `res.status(x).json(...)` directly — always use `ResponseHandler.*` methods.
+- Never swallow errors silently — at minimum log with `logger.warn()` or `logger.error()`.
+
+### 6. New Feature Checklist
+
+When adding any new feature, complete ALL of the following:
+
+- [ ] Zod validation schema in `[feature].validation.ts`
+- [ ] Repository method(s) in `[feature].repository.ts`
+- [ ] Service method(s) in `[feature].service.ts` (with Redis caching where applicable)
+- [ ] Controller method(s) in `[feature].controller.ts` (with full Swagger JSDoc)
+- [ ] Routes in `[feature].routes.ts` (with auth, validation, rate-limit middleware)
+- [ ] Register new service/repo tokens in `application/container.ts`
+- [ ] Mount router in `application/app.ts` if it's a new module
+- [ ] Emit Socket.IO events for any real-time state changes
+- [ ] Add new Swagger component schemas to `config/swagger.ts` if needed
+- [ ] Add new env vars to `.env.example` and validate in `config/env.ts`
+
+### 7. Code Quality
+
+- Use `logger` (from `@config/logger.js`) not `console.log` anywhere.
+- Never hardcode strings that belong in `CONSTANTS` — add them there first.
+- Prefer specific error messages that tell the consumer exactly what went wrong.
+- Keep controllers thin: delegate all business logic to services.
+- Keep services focused: delegate all DB access to repositories.
