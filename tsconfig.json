@@ -13,7 +13,8 @@
       "@modules/*": ["modules/*"],
       "@common/*": ["common/*"],
       "@infrastructure/*": ["infrastructure/*"],
-      "@middlewares/*": ["middlewares/*"]
+      "@middlewares/*": ["middlewares/*"],
+      "@adminjs/prisma": ["./node_modules/@adminjs/prisma/lib/index"]
     },
     "resolveJsonModule": true,
     "allowJs": true,

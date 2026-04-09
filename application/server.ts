@@ -15,8 +15,8 @@ import './container.js'; // Initialize DI container
 
 export async function startServer() {
   try {
-    // Create Express app
-    const app = createApp();
+    // Create Express app (async — initializes AdminJS panel)
+    const app = await createApp();
 
     // Create HTTP server
     const server = createServer(app);

@@ -16,6 +16,7 @@ enum UserRole {
   USER
   MODERATOR
   ADMIN
+  SUPER_ADMIN
 }
 
 enum UserStatus {

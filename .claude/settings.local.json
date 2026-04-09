@@ -31,7 +31,15 @@
       "Bash(git show:*)",
       "Bash(netstat:*)",
       "Bash(tasklist:*)",
-      "Bash(docker stop:*)"
+      "Bash(docker stop:*)",
+      "Bash(pnpm remove:*)",
+      "Bash(pnpm exec tsc:*)",
+      "Bash(echo:*)",
+      "Bash(timeout 30 pnpm dev:*)",
+      "Bash(python3:*)",
+      "Bash(node -e:*)",
+      "Bash(timeout:*)",
+      "Bash(export PORT=3001)"
     ],
     "deny": [],
     "ask": []

@@ -30,8 +30,9 @@ import { notificationRoutes } from '@modules/notification/notification.routes.js
 import { blockRoutes } from '@modules/user/block.routes.js';
 import { uploadRoutes } from '@modules/upload/upload.routes.js';
 import { HealthController } from '@modules/health/health.controller.js';
+import { createAdminRouter } from '@modules/admin/admin.module.js';
 
-export function createApp(): ExpressApplication {
+export async function createApp(): Promise<ExpressApplication> {
   const app = express();
 
   // Security middleware
@@ -60,7 +61,13 @@ export function createApp(): ExpressApplication {
   // Compression
   app.use(compression());
 
-  // Body parsing
+  // Admin Panel — MUST be mounted before express.json() / express.urlencoded()
+  // @adminjs/express parses its own form bodies; registering body-parser first
+  // causes a WrongArgumentError on login.
+  const adminRouter = await createAdminRouter();
+  app.use('/admin', adminRouter);
+
+  // Body parsing (after admin panel)
   app.use(express.json({ limit: '10mb' }));
   app.use(express.urlencoded({ extended: true, limit: '10mb' }));
   app.use(cookieParser());
@@ -117,7 +124,7 @@ export function createApp(): ExpressApplication {
       version: '1.0.0',
       docs: '/api/docs',
       health: '/health',
-      message: 'Testing mitul hot reload with polling! 🎯',
+      admin: '/admin',
       timestamp: new Date().toISOString(),
     });
   });

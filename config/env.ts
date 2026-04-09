@@ -73,4 +73,10 @@ export const config = envsafe({
   FIREBASE_PROJECT_ID: str({ default: '', allowEmpty: true }),
   FIREBASE_CLIENT_EMAIL: str({ default: '', allowEmpty: true }),
   FIREBASE_PRIVATE_KEY: str({ default: '', allowEmpty: true }),
+
+  // Admin Panel
+  // ADMIN_SESSION_SECRET: min 32 random chars — used to sign session cookies
+  ADMIN_SESSION_SECRET: str({ devDefault: 'change-me-in-production-session-secret-32chars' }),
+  // ADMIN_COOKIE_SECRET: min 32 random chars — used by @adminjs/express to sign cookies
+  ADMIN_COOKIE_SECRET: str({ devDefault: 'change-me-in-production-cookie-secret-32chars' }),
 });
