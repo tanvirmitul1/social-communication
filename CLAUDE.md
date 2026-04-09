@@ -8,31 +8,18 @@ This is an enterprise-level real-time messaging and audio/video calling platform
 
 ## Documentation Structure
 
-All documentation is organized in the `docs/` directory:
+All documentation is in the `docs/` directory:
 
-### Getting Started
-
-- `docs/getting-started/quickstart.md` - Quick start guide (Docker & local setup)
-- `docs/getting-started/installation.md` - Comprehensive installation instructions
-- `docs/getting-started/postgres-setup.md` - PostgreSQL setup guide (Windows-specific)
-
-### API Documentation
-
-- `docs/api/overview.md` - Complete API reference (endpoints, events, formats)
-- `docs/api/examples.md` - Practical API usage examples
+- `docs/setup.md` - Dev setup (Docker & local) + production deployment
+- `docs/database.md` - Database management, backup & restore
+- `docs/api/frontend.md` - Full REST + WebSocket API reference for frontend
+- `docs/api/admin.md` - Admin panel usage and security
+- `docs/timeline-feed/architecture.md` - Timeline/feed system design
+- `docs/timeline-feed/api.md` - Timeline/feed API reference
+- `docs/timeline-feed/implementation.md` - Timeline/feed frontend integration
 - Interactive Swagger docs at: http://localhost:3000/api/docs
 
-### Development
-
-- `docs/development/architecture.md` - Detailed architecture documentation
-- `docs/development/setup.md` - Development environment setup
-- `docs/development/docker-workflow.md` - Docker development workflow (recommended)
-
-### Guides
-
-- `docs/guides/troubleshooting.md` - Common issues and solutions
-
-**Note**: The README.md contains quick links to all documentation. Always refer users to specific docs rather than duplicating information.
+**Note**: Always refer to these docs rather than duplicating information inline.
 
 ## Essential Commands
 
