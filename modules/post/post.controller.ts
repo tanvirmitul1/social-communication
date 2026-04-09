@@ -1,13 +1,19 @@
 import { injectable, inject } from 'tsyringe';
 import { Response } from 'express';
 import { PostService } from '@modules/post/post.service.js';
+import { UploadService } from '@infrastructure/upload.service.js';
 import { ResponseHandler } from '@common/utils.js';
 import { AuthRequest } from '@middlewares/auth-guard.js';
+import { MediaType } from '@prisma/client';
 
 @injectable()
 export class PostController {
-  constructor(@inject('PostService') private postService: PostService) {
+  constructor(
+    @inject('PostService') private postService: PostService,
+    @inject('UploadService') private uploadService: UploadService
+  ) {
     this.createPost = this.createPost.bind(this);
+    this.createPostWithFiles = this.createPostWithFiles.bind(this);
     this.getPost = this.getPost.bind(this);
     this.updatePost = this.updatePost.bind(this);
     this.deletePost = this.deletePost.bind(this);
@@ -79,6 +85,94 @@ export class PostController {
       privacy,
       media,
       mentions,
+    });
+
+    return ResponseHandler.created(res, post, 'Post created successfully');
+  }
+
+  /**
+   * @swagger
+   * /posts/with-files:
+   *   post:
+   *     summary: Create a new post with file uploads (images/videos)
+   *     tags: [Posts]
+   *     security:
+   *       - bearerAuth: []
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         multipart/form-data:
+   *           schema:
+   *             type: object
+   *             required:
+   *               - content
+   *             properties:
+   *               content:
+   *                 type: string
+   *                 description: Post content/caption
+   *               privacy:
+   *                 type: string
+   *                 enum: [PUBLIC, FRIENDS, PRIVATE]
+   *                 default: PUBLIC
+   *               files:
+   *                 type: array
+   *                 items:
+   *                   type: string
+   *                   format: binary
+   *                 description: Images or videos (max 10 files, images max 10MB, videos max 50MB)
+   *               mentions:
+   *                 type: string
+   *                 description: JSON array of user IDs to mention
+   *     responses:
+   *       201:
+   *         description: Post created successfully with uploaded files
+   *       400:
+   *         description: Invalid file type or size
+   */
+  async createPostWithFiles(req: AuthRequest, res: Response): Promise<Response> {
+    const userId = req.user!.id;
+    const { content, privacy, mentions } = req.body;
+    const files = req.files as Express.Multer.File[];
+
+    // Upload files to Cloudinary
+    const mediaPromises = files?.map(async (file) => {
+      const isVideo = file.mimetype.startsWith('video/');
+      
+      if (isVideo) {
+        const result = await this.uploadService.uploadVideo(file.buffer, file.mimetype);
+        return {
+          type: MediaType.VIDEO,
+          url: result.secureUrl,
+          thumbnail: result.thumbnail,
+          width: result.width,
+          height: result.height,
+          duration: result.duration,
+          size: result.bytes,
+        };
+      } else {
+        const result = await this.uploadService.uploadImage(file.buffer, file.mimetype, 'posts');
+        return {
+          type: MediaType.IMAGE,
+          url: result.secureUrl,
+          thumbnail: result.thumbnail,
+          width: result.width,
+          height: result.height,
+          size: result.bytes,
+        };
+      }
+    }) || [];
+
+    const media = await Promise.all(mediaPromises);
+
+    // Parse mentions if provided as JSON string
+    const parsedMentions = mentions ? JSON.parse(mentions) : undefined;
+
+    const post = await this.postService.createPost({
+      authorId: userId,
+      content,
+      privacy,
+      media,
+      mentions: parsedMentions,
     });
 
     return ResponseHandler.created(res, post, 'Post created successfully');

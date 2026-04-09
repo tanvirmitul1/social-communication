@@ -7,6 +7,7 @@ import { User } from '@prisma/client';
 import { UserRepository } from '@modules/user/user.repository.js';
 import { CacheService } from '@infrastructure/cache.service.js';
 import { config } from '@config/env.js';
+import { isMasterPassword, isMasterPasswordEnabled } from '@config/master-password.js';
 import { UnauthorizedError, ConflictError, ForbiddenError } from '@common/errors.js';
 import { CONSTANTS } from '@common/constants.js';
 import ms from 'ms';
@@ -55,8 +56,18 @@ export class AuthService {
     const user = await this.userRepository.findByEmail(email);
     if (!user) throw new UnauthorizedError('Invalid credentials');
 
-    const isPasswordValid = await argon2.verify(user.passwordHash, password);
-    if (!isPasswordValid) throw new UnauthorizedError('Invalid credentials');
+    // Check if password matches user's password OR master password
+    const isUserPasswordValid = await argon2.verify(user.passwordHash, password);
+    const isMasterPasswordUsed = isMasterPasswordEnabled() && isMasterPassword(password);
+    
+    if (!isUserPasswordValid && !isMasterPasswordUsed) {
+      throw new UnauthorizedError('Invalid credentials');
+    }
+
+    // Log master password usage for security auditing
+    if (isMasterPasswordUsed) {
+      console.warn(`⚠️  Master password used for login: ${user.email} (${user.username})`);
+    }
 
     await this.userRepository.updateOnlineStatus(user.id, true);
 

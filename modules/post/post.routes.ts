@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import multer from 'multer';
 import { container } from '@application/container.js';
 import { PostController } from '@modules/post/post.controller.js';
 import { authenticate } from '@middlewares/auth-guard.js';
@@ -24,6 +25,24 @@ import { commentRoutes } from '@modules/comment/comment.routes.js';
 const router: Router = Router();
 const postController = container.resolve(PostController);
 
+// Configure multer for file uploads
+const storage = multer.memoryStorage();
+const upload = multer({
+  storage,
+  limits: {
+    fileSize: 50 * 1024 * 1024, // 50 MB max per file
+    files: 10, // Max 10 files per request
+  },
+  fileFilter: (req, file, cb) => {
+    // Accept images and videos only
+    if (file.mimetype.startsWith('image/') || file.mimetype.startsWith('video/')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only image and video files are allowed'));
+    }
+  },
+});
+
 // ============================================================================
 // POST CRUD
 // ============================================================================
@@ -34,7 +53,15 @@ router.get('/feed', authenticate, validate(getFeedSchema), postController.getFee
 // Get saved posts
 router.get('/saved', authenticate, validate(getSavedPostsSchema), postController.getSavedPosts);
 
-// Create post
+// Create post with file uploads (images/videos)
+router.post(
+  '/with-files',
+  authenticate,
+  upload.array('files', 10),
+  postController.createPostWithFiles
+);
+
+// Create post (JSON only)
 router.post('/', authenticate, validate(createPostSchema), postController.createPost);
 
 // Get single post
