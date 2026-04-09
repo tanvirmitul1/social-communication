@@ -126,6 +126,41 @@ export class PostController {
    *     responses:
    *       201:
    *         description: Post created successfully with uploaded files
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 id:
+   *                   type: string
+   *                 content:
+   *                   type: string
+   *                 media:
+   *                   type: array
+   *                   items:
+   *                     type: object
+   *                     properties:
+   *                       id:
+   *                         type: string
+   *                       type:
+   *                         type: string
+   *                         enum: [IMAGE, VIDEO]
+   *                       url:
+   *                         type: string
+   *                         description: Cloudinary URL of uploaded file
+   *                       thumbnail:
+   *                         type: string
+   *                         description: Thumbnail URL
+   *                       width:
+   *                         type: integer
+   *                       height:
+   *                         type: integer
+   *                       duration:
+   *                         type: number
+   *                         description: Video duration in seconds
+   *                       size:
+   *                         type: integer
+   *                         description: File size in bytes
    *       400:
    *         description: Invalid file type or size
    */

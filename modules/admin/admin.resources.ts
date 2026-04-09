@@ -681,6 +681,31 @@ const friendRequestResource: ResourceWithOptions = {
 };
 
 // ---------------------------------------------------------------------------
+// POST MEDIA RESOURCE
+// ---------------------------------------------------------------------------
+const postMediaResource: ResourceWithOptions = {
+  resource: { model: getModelByName('PostMedia'), client: prisma },
+  options: {
+    navigation: NAV_CONTENT,
+    sort: { sortBy: 'createdAt', direction: 'desc' },
+
+    listProperties: ['postId', 'type', 'url', 'createdAt'],
+    filterProperties: ['postId', 'type', 'createdAt'],
+    showProperties: ['id', 'postId', 'type', 'url', 'thumbnail', 'width', 'height', 'duration', 'size', 'metadata', 'createdAt'],
+    editProperties: [],
+
+    actions: {
+      new: { isAccessible: () => false },
+      edit: { isAccessible: () => false },
+      delete: { isAccessible: isSuperAdmin, after: makeAuditHook('DELETE', 'PostMedia') },
+      list: { isAccessible: isAdminOrAbove },
+      show: { isAccessible: isAdminOrAbove },
+      bulkDelete: { isAccessible: () => false },
+    },
+  },
+};
+
+// ---------------------------------------------------------------------------
 // Exported resources list
 // ---------------------------------------------------------------------------
 export const adminResources: ResourceWithOptions[] = [
@@ -689,6 +714,7 @@ export const adminResources: ResourceWithOptions[] = [
   reportResource,
   groupResource,
   postResource,
+  postMediaResource,
   commentResource,
   callResource,
   notificationResource,
