@@ -594,3 +594,49 @@ When adding any new feature, complete ALL of the following:
 - Prefer specific error messages that tell the consumer exactly what went wrong.
 - Keep controllers thin: delegate all business logic to services.
 - Keep services focused: delegate all DB access to repositories.
+
+### 8. AdminJS Panel — Always Keep in Sync
+
+The admin panel lives in `modules/admin/` (4 files: `admin.auth.ts`, `admin.config.ts`, `admin.module.ts`, `admin.resources.ts`). These rules are **always active** — update the admin module whenever any of the following changes:
+
+#### When Prisma schema changes (`prisma/schema.prisma`)
+
+- **New model added** → add a matching resource in `modules/admin/admin.resources.ts` using `getModelByName('ModelName')`. Register properties, list/show/edit visibility, and RBAC guards.
+- **Model removed** → remove the corresponding resource from `adminResources` array in `admin.resources.ts`.
+- **New enum value** → update any `availableValues` arrays in the affected resource's property definitions.
+- **`UserRole` enum** → `modules/admin/admin.auth.ts` checks for `ADMIN | SUPER_ADMIN` — update the role check if roles are renamed or added.
+- **New field on an existing model** → decide whether it should appear in list/show/edit/filter views and add it to that resource's `properties` config.
+- After any schema change always run `pnpm prisma:generate` (and `pnpm prisma:migrate` for dev).
+
+#### When Express middleware order changes (`application/app.ts`)
+
+- The admin router **MUST** be mounted **before** `express.json()` / `express.urlencoded()`. This is a hard requirement of `@adminjs/express` — moving it after body-parsers causes a `WrongArgumentError` on every login attempt.
+- Current order (do not break):
+  1. Security / CORS middleware
+  2. `app.use('/admin', adminRouter)` ← admin FIRST
+  3. `app.use(express.json(...))` ← body parsers AFTER
+
+#### When adding new env vars
+
+- If the new var is needed in the admin module, add it to `config/env.ts` with `devDefault`, document it in `.env.example`, and read it from `config` (never `process.env` directly).
+- Admin-specific vars: `ADMIN_SESSION_SECRET`, `ADMIN_COOKIE_SECRET` (both required, min 32 chars).
+
+#### AdminJS-specific gotchas (do not repeat these mistakes)
+
+| Problem | Root cause | Fix |
+|---|---|---|
+| `ERR_PACKAGE_PATH_NOT_EXPORTED` for `@adminjs/prisma` | `moduleResolution:"node"` ignores `exports` field | Import from `'@adminjs/prisma'` (not a subpath); tsconfig `paths` maps it to `./node_modules/@adminjs/prisma/lib/index` |
+| `NoResourceAdapterError` | Passed `prisma.user` (query delegate) as `model:` | Always use `getModelByName('ModelName')` from `@adminjs/prisma` |
+| `WrongArgumentError` on login | `express.json()` registered before admin router | Mount admin router BEFORE all body-parser middleware |
+| `SyntaxError` from `@tiptap` | pnpm resolves `@tiptap` extensions to `2.27.x` but `@adminjs/design-system` pins `@tiptap/starter-kit@2.1.13` | Keep `"pnpm": { "overrides": { "@tiptap/starter-kit": "^2.11.0" } }` in `package.json` |
+| `TS2353: 'label' does not exist` in Action | `label` removed from `Action` type in AdminJS v7 | Use locale translations: `AdminJSOptions.locale.translations.en.actions.{key}` |
+| `TS2353: 'softwareBrothers' does not exist` | Renamed in AdminJS v7 | Use `withMadeWithLove` in branding options |
+| Session store error with `connect-redis` | `connect-redis@9` requires `redis@>=5`, project uses `ioredis` | Use the custom `IoRedisSessionStore` in `admin.module.ts` (wraps ioredis) |
+
+#### Custom actions checklist (when adding a new admin action)
+
+- [ ] Add handler in `modules/admin/admin.resources.ts` under the resource's `actions:` object
+- [ ] Do **NOT** add a `label:` property to the action object — this causes a TypeScript error
+- [ ] Add the display label to `modules/admin/admin.config.ts` under `locale.translations.en.actions.{actionKey}`
+- [ ] Guard the action with an `isAccessible` predicate (`isAdminOrAbove` or `isSuperAdmin`)
+- [ ] Log the action to `ActivityLog` via the audit hook or inside the action handler
