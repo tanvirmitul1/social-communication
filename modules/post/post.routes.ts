@@ -33,7 +33,7 @@ const upload = multer({
     fileSize: 50 * 1024 * 1024, // 50 MB max per file
     files: 10, // Max 10 files per request
   },
-  fileFilter: (req, file, cb) => {
+  fileFilter: (_req, file, cb) => {
     // Accept images and videos only
     if (file.mimetype.startsWith('image/') || file.mimetype.startsWith('video/')) {
       cb(null, true);

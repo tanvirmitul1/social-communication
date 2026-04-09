@@ -101,7 +101,7 @@ async function updatePasswords() {
       const roleFilter = args.role === 'admin' ? ['ADMIN', 'SUPER_ADMIN'] : ['USER'];
       console.log(`📊 Updating all ${args.role.toUpperCase()} users...\n`);
       users = await prisma.user.findMany({
-        where: { role: { in: roleFilter } },
+        where: { role: { in: roleFilter as any } },
         select: { id: true, email: true, username: true, role: true },
       });
     } else {
