@@ -26,9 +26,11 @@ export interface UploadResult {
   duration?: number;
   size: number;
   thumbnailUrl?: string;
+  thumbnail?: string; // Alias for thumbnailUrl
+  bytes?: number; // Alias for size
 }
 
-export type UploadFolder = 'avatars' | 'posts' | 'messages' | 'groups';
+export type UploadFolder = 'avatars' | 'posts' | 'messages' | 'groups' | 'files';
 
 const MAX_IMAGE_BYTES = 10 * 1024 * 1024; // 10 MB
 const MAX_VIDEO_BYTES = 50 * 1024 * 1024; // 50 MB
@@ -41,14 +43,19 @@ const ALLOWED_IMAGE_MIMES = new Set([
   'image/webp',
   'image/svg+xml',
 ]);
-const ALLOWED_VIDEO_MIMES = new Set(['video/mp4', 'video/webm', 'video/ogg', 'video/quicktime']);
+const ALLOWED_VIDEO_MIMES = new Set(['video/mp4', 'video/webm', 'video/ogg', 'video/quicktime', 'video/x-msvideo', 'video/x-matroska', 'video/avi']);
 const ALLOWED_FILE_MIMES = new Set([
   'application/pdf',
   'application/msword',
   'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
   'application/vnd.ms-excel',
   'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  'application/vnd.ms-powerpoint',
+  'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+  'application/zip',
+  'application/x-rar-compressed',
   'text/plain',
+  'text/csv',
 ]);
 
 @injectable()
@@ -111,15 +118,32 @@ export class UploadService {
   }
 
   /**
+   * Upload an audio file (voice messages).
+   */
+  async uploadAudio(buffer: Buffer, mimetype: string): Promise<UploadResult> {
+    this.assertConfigured();
+    const allowedAudioMimes = new Set(['audio/mpeg', 'audio/mp3', 'audio/wav', 'audio/ogg', 'audio/webm', 'audio/aac', 'audio/m4a']);
+    this.validateMime(mimetype, allowedAudioMimes, 'audio');
+    this.validateSize(buffer.length, MAX_FILE_BYTES, 'audio');
+
+    const result = await this.uploadToCloudinary(buffer, {
+      folder: 'social/messages',
+      resource_type: 'video', // Cloudinary treats audio as video
+    });
+
+    return this.mapResult(result);
+  }
+
+  /**
    * Upload a video file. Generates a poster thumbnail automatically.
    */
-  async uploadVideo(buffer: Buffer, mimetype: string): Promise<UploadResult> {
+  async uploadVideo(buffer: Buffer, mimetype: string, folder: UploadFolder = 'posts'): Promise<UploadResult> {
     this.assertConfigured();
     this.validateMime(mimetype, ALLOWED_VIDEO_MIMES, 'video');
     this.validateSize(buffer.length, MAX_VIDEO_BYTES, 'video');
 
     const result = await this.uploadToCloudinary(buffer, {
-      folder: 'social/posts',
+      folder: `social/${folder}`,
       resource_type: 'video',
       // Auto-generate poster thumbnail at 1 second
       eager: [{ format: 'jpg', transformation: [{ start_offset: '1' }] }],
@@ -136,13 +160,13 @@ export class UploadService {
   /**
    * Upload a generic file (PDF, doc, etc.).
    */
-  async uploadFile(buffer: Buffer, mimetype: string): Promise<UploadResult> {
+  async uploadFile(buffer: Buffer, mimetype: string, folder: UploadFolder = 'messages'): Promise<UploadResult> {
     this.assertConfigured();
     this.validateMime(mimetype, ALLOWED_FILE_MIMES, 'file');
     this.validateSize(buffer.length, MAX_FILE_BYTES, 'file');
 
     const result = await this.uploadToCloudinary(buffer, {
-      folder: 'social/files',
+      folder: `social/${folder}`,
       resource_type: 'raw',
     });
 
@@ -215,7 +239,9 @@ export class UploadService {
       height: result.height,
       duration: result.duration,
       size: result.bytes,
+      bytes: result.bytes,
       thumbnailUrl,
+      thumbnail: thumbnailUrl,
     };
   }
 

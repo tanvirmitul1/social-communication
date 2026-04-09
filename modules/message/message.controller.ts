@@ -1,15 +1,20 @@
 import { injectable, inject } from 'tsyringe';
 import { Response } from 'express';
 import { MessageService } from '@modules/message/message.service.js';
+import { UploadService } from '@infrastructure/upload.service.js';
 import { ResponseHandler } from '@common/utils.js';
 import { AuthRequest } from '@middlewares/auth-guard.js';
 import { SendMessageInput, EditMessageInput, ForwardMessageInput } from './message.validation.js';
-import { MessageStatus } from '@prisma/client';
+import { MessageStatus, MessageType } from '@prisma/client';
 
 @injectable()
 export class MessageController {
-  constructor(@inject('MessageService') private messageService: MessageService) {
+  constructor(
+    @inject('MessageService') private messageService: MessageService,
+    @inject('UploadService') private uploadService: UploadService
+  ) {
     this.sendMessage = this.sendMessage.bind(this);
+    this.sendMessageWithFiles = this.sendMessageWithFiles.bind(this);
     this.getMessage = this.getMessage.bind(this);
     this.getGroupMessages = this.getGroupMessages.bind(this);
     this.getDirectMessages = this.getDirectMessages.bind(this);
@@ -101,6 +106,157 @@ export class MessageController {
     const message = await this.messageService.sendMessage({
       senderId,
       ...data,
+    });
+
+    return ResponseHandler.created(res, message, 'Message sent successfully');
+  }
+
+  /**
+   * @swagger
+   * /messages/with-files:
+   *   post:
+   *     summary: Send a message with file attachments (images/videos/audio/files)
+   *     tags: [Messages]
+   *     security:
+   *       - bearerAuth: []
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         multipart/form-data:
+   *           schema:
+   *             type: object
+   *             properties:
+   *               content:
+   *                 type: string
+   *                 description: Message text content (optional if files provided)
+   *               groupId:
+   *                 type: string
+   *                 format: uuid
+   *                 description: Target group ID (for group messages)
+   *               receiverId:
+   *                 type: string
+   *                 format: uuid
+   *                 description: Target user ID (for direct messages)
+   *               files:
+   *                 type: array
+   *                 items:
+   *                   type: string
+   *                   format: binary
+   *                 description: Files to upload (images, videos, audio, documents - max 5 files, 50MB each)
+   *     responses:
+   *       201:
+   *         description: Message sent successfully with uploaded files
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                 message:
+   *                   type: string
+   *                 data:
+   *                   type: object
+   *                   properties:
+   *                     id:
+   *                       type: string
+   *                     content:
+   *                       type: string
+   *                     type:
+   *                       type: string
+   *                       enum: [TEXT, IMAGE, VIDEO, VOICE, FILE]
+   *                     metadata:
+   *                       type: object
+   *                       properties:
+   *                         files:
+   *                           type: array
+   *                           items:
+   *                             type: object
+   *                             properties:
+   *                               type:
+   *                                 type: string
+   *                                 enum: [image, video, audio, file]
+   *                               url:
+   *                                 type: string
+   *                                 description: Cloudinary URL
+   *                               thumbnail:
+   *                                 type: string
+   *                                 description: Thumbnail URL (for images/videos)
+   *                               filename:
+   *                                 type: string
+   *                               size:
+   *                                 type: integer
+   *                               format:
+   *                                 type: string
+   *                               width:
+   *                                 type: integer
+   *                               height:
+   *                                 type: integer
+   *                               duration:
+   *                                 type: number
+   *       400:
+   *         description: Invalid file type or size
+   */
+  async sendMessageWithFiles(req: AuthRequest, res: Response): Promise<Response> {
+    const senderId = req.user!.id;
+    const { content = '', groupId, receiverId } = req.body;
+    const files = req.files as Express.Multer.File[];
+
+    if (!files || files.length === 0) {
+      return ResponseHandler.error(res, 'No files provided', 400);
+    }
+
+    // Upload files to Cloudinary
+    const uploadedFiles = await Promise.all(
+      files.map(async (file) => {
+        const isImage = file.mimetype.startsWith('image/');
+        const isVideo = file.mimetype.startsWith('video/');
+        const isAudio = file.mimetype.startsWith('audio/');
+
+        let result;
+        let fileType: 'image' | 'video' | 'audio' | 'file';
+
+        if (isImage) {
+          result = await this.uploadService.uploadImage(file.buffer, file.mimetype, 'messages');
+          fileType = 'image';
+        } else if (isVideo) {
+          result = await this.uploadService.uploadVideo(file.buffer, file.mimetype, 'messages');
+          fileType = 'video';
+        } else if (isAudio) {
+          result = await this.uploadService.uploadAudio(file.buffer, file.mimetype);
+          fileType = 'audio';
+        } else {
+          result = await this.uploadService.uploadFile(file.buffer, file.mimetype, 'messages');
+          fileType = 'file';
+        }
+
+        return {
+          type: fileType,
+          url: result.secureUrl,
+          thumbnail: result.thumbnail,
+          filename: file.originalname,
+          size: result.bytes || result.size,
+          format: result.format,
+          width: result.width,
+          height: result.height,
+          duration: result.duration,
+        };
+      })
+    );
+
+    // Determine message type based on first file
+    let messageType: MessageType = MessageType.FILE;
+    if (uploadedFiles[0].type === 'image') messageType = MessageType.IMAGE;
+    else if (uploadedFiles[0].type === 'video') messageType = MessageType.VIDEO;
+    else if (uploadedFiles[0].type === 'audio') messageType = MessageType.VOICE;
+
+    const message = await this.messageService.sendMessage({
+      senderId,
+      content,
+      type: messageType,
+      groupId,
+      receiverId,
+      metadata: { files: uploadedFiles },
     });
 
     return ResponseHandler.created(res, message, 'Message sent successfully');
